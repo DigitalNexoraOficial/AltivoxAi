@@ -1707,28 +1707,64 @@ async function solicitarImagenCompleta(encodedUrl) {
         alert("Tus datos se registraron correctamente.");
     }
 }
+// --- ESTO DEBE IR EN TU FUNCIÓN QUE GESTIONA EL ENVÍO DE MENSAJES ---
 
-async function solicitarImagenCompleta(encodedUrl) {
-    const imageUrl = decodeURIComponent(encodedUrl);
-    const clienteEmail = prompt("Introduce tu email para enviarte la imagen completa y desbloquearla:");
-    
-    if (!clienteEmail) return;
+let esperandoSolicitudImagen = false; // Variable global en el scope de tu chat
+
+async function sendChatMessage(userMessage) {
+    const inputField = document.getElementById('chat-input');
+    const chatBox = document.getElementById('chat-box');
+    const message = userMessage || inputField.value.trim();
+
+    if (!message) return;
+
+    // 1. Mostrar mensaje del usuario
+    chatBox.innerHTML += `<div class="p-2 my-2 text-right text-xs text-gray-300 font-mono bg-gray-950/30 rounded border border-gray-800/50"><strong>Tú:</strong> ${message}</div>`;
+    inputField.value = '';
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // 2. Si estábamos esperando confirmación de la imagen, enviamos la solicitud al backend
+    if (esperandoSolicitudImagen) {
+        console.log("Enviando confirmación de imagen:", message);
+        // ... Lógica para enviar el mensaje al backend de Supabase/Pollinations y limpiar el estado ...
+        esperandoSolicitudImagen = false; 
+        return; // Salimos de la función tras enviar la confirmación
+    }
+
+    // 3. Crear y mostrar indicador de carga
+    const loadingId = 'loading-' + Date.now();
+    chatBox.innerHTML += `<div id="${loadingId}" class="p-2 my-2 text-xs text-cyan-400 font-mono animate-pulse">// Procesando...</div>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
-        // Supongamos que tienes configurado tu cliente de Supabase en la web
-        const { data, error } = await supabase
-            .from('leads_imagenes') // Cambia por el nombre de tu tabla en Supabase
-            .insert([
-                { email: clienteEmail, imagen_solicitada: imageUrl, fecha: new Date() }
-            ]);
+        // 4. Llamada al backend (Vercel)
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: message, model: activeModel })
+        });
 
-        if (error) throw error;
-
-        alert("¡Solicitud enviada con éxito! Revisa tu correo o la plataforma para recibir la versión completa.");
+        const data = await response.json();
         
+        // 5. Eliminar indicador de carga
+        const loadingElement = document.getElementById(loadingId);
+        if (loadingElement) loadingElement.remove();
+
+        // 6. LÓGICA DE DETECCIÓN DE IMAGEN
+        if (data.reply) {
+            // Usamos la nueva función que creamos para mostrar la imagen protegida
+            appendAssistantMessage(data.reply, activeAgentName);
+
+            // Si la respuesta contiene el formato de imagen, cambiamos el estado
+            if (data.reply.includes('""[Imagen:')) {
+                esperandoSolicitudImagen = true;
+                // Opcional: Cambiar el placeholder del input para guiar al usuario
+                inputField.placeholder = "Confirma tu email para obtener la imagen completa:"; 
+            }
+        }
+
     } catch (err) {
-        console.error("Error al guardar en Supabase:", err.message);
-        alert("Tus datos se registraron correctamente. Nos pondremos en contacto.");
+        // ... Manejo de errores ...
     }
 }
 // --- CONTROL DE VISIBILIDAD DEL CHAT FLOTANTE ---
