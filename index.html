@@ -1680,6 +1680,9 @@ function appendAssistantMessage(replyText, modelName) {
 // 2. Función para registrar los datos en Supabase al hacer clic en el botón
 async function solicitarImagenCompleta(encodedUrl) {
     const imageUrl = decodeURIComponent(encodedUrl);
+    
+    // Pedimos el nombre y el email para cumplir con las columnas obligatorias de la tabla leads
+    const clienteNombre = prompt("Introduce tu nombre:") || "Interesado IA";
     const clienteEmail = prompt("Introduce tu email para enviarte la imagen completa:");
     
     if (!clienteEmail) return;
@@ -1691,9 +1694,10 @@ async function solicitarImagenCompleta(encodedUrl) {
         const client = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         const { data, error } = await client
-            .from('leads') // <--- Apunta a tu tabla real
+            .from('leads')
             .insert([
                 { 
+                    nombre: clienteNombre,
                     email: clienteEmail, 
                     tipo_interes: 'Imagen Generada', 
                     detalles_ia: imageUrl 
