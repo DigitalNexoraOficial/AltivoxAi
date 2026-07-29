@@ -1641,12 +1641,15 @@ function toggleChat() {
         }
     }
 }
-      // --- MANEJADOR DE TECLADO PARA EL ENTER ---
 function enviarMensajeOmniroute(event) {
-    if (event.key === 'Enter') {
-        event.preventDefault();
-        sendChatMessage(); // Llama a la función principal de envío
+    // Si el evento existe, comprobamos si es Enter. Si no hay evento (clic en botón), pasa directo.
+    if (event && event.key && event.key !== 'Enter') {
+        return;
     }
+    if (event) {
+        event.preventDefault();
+    }
+    sendChatMessage(); // Llama a la función que procesa el mensaje
 }
 </script>
 <script>
