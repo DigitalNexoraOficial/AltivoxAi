@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-    // Permitir solicitudes CORS si es necesario
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -17,12 +16,12 @@ export default async function handler(req, res) {
     try {
         let reply = "";
 
-        // Usamos Google Gemini para todos los agentes de forma gratuita y 24/7
-        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+        // Usamos gemini-1.5-pro o el endpoint correcto soportado por Google AI Studio
+        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${process.env.GEMINI_API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: `Actúa como un asistente técnico experto. Responde breve y claramente a lo siguiente: ${message}` }] }]
+                contents: [{ parts: [{ text: `Actúa como ${model || 'asistente'}. Responde de forma clara y directa: ${message}` }] }]
             })
         });
 
@@ -32,10 +31,11 @@ export default async function handler(req, res) {
             throw new Error(data.error.message);
         }
 
-        if (data.candidates && data.candidates[0].content) {
+        // Verificamos de forma segura que la respuesta exista antes de leerla
+        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
             reply = data.candidates[0].content.parts[0].text;
         } else {
-            reply = "No he podido procesar una respuesta en este momento.";
+            reply = "El agente procesó la solicitud pero no devolvió contenido.";
         }
 
         return res.status(200).json({ reply });
