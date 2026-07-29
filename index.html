@@ -8,7 +8,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AltivoxAi | Ecosistema de Inteligencia Artificial y Automatización</title>
-    <link rel="icon" type="image/png" href="favicon.png">
     <meta name="description" content="Ecosistema digital especializado en inteligencia artificial, desarrollo web inmersivo, automatización de negocios autónomos y arquitecturas cloud.">
     
     <meta property="og:title" content="AltivoxAi | Ecosistema de Inteligencia Artificial">
@@ -242,7 +241,7 @@
 
     <!-- Barra de Navegación -->
     <nav class="fixed w-full z-50 glass-ui transition-all duration-300" id="navbar">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div class="max-w-7xl mx-auto px-4 md:px-6 py-4 flex justify-between items-center"
             <a href="#" class="font-display font-bold text-xl tracking-widest text-white">ALTIVOX<span class="text-cyan-400">AI</span></a>
             
             <div class="hidden lg:flex items-center gap-6 text-xs tracking-wide text-gray-300">
@@ -291,7 +290,7 @@
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
                 <span class="hero-tag text-[10px] md:text-xs text-gray-300 uppercase tracking-widest">Sistemas Operativos PWA 100% Online</span>
             </div>
-            <h1 class="hero-title font-display text-4xl md:text-7xl font-bold leading-tight mb-6 uppercase text-white">
+            <h1 class="hero-title font-display text-3xl md:text-7xl font-bold leading-tight mb-6 uppercase text-white">
                 Arquitectura <br /><span class="text-gradient">Inteligente</span>
             </h1>
             <p class="hero-desc text-gray-400 text-sm md:text-base max-w-2xl mx-auto mb-8 font-light leading-relaxed">
@@ -1194,17 +1193,23 @@ filterBtns.forEach(btn => {
         transform: translateY(-1px);
       }
       @media (max-width: 580px) {
-        .altivox-promo-banner {
-          flex-direction: column;
-          text-align: center;
-          bottom: 16px;
-          padding: 16px;
-        }
-        .altivox-banner-btn {
-          width: 100%;
-          text-align: center;
-        }
-      }
+  .altivox-promo-banner {
+    flex-direction: column;
+    text-align: center;
+    bottom: 110px; /* Subimos el banner para que no tape el botón de chat */
+    padding: 12px;
+    width: 92%;
+    gap: 8px;
+  }
+  .altivox-banner-title {
+    font-size: 13px; /* Un poco más pequeño para que quepa bien */
+  }
+  .altivox-banner-btn {
+    width: 100%;
+    text-align: center;
+    padding: 8px;
+  }
+}
     </style>
 
     <div id="altivox-video-banner" class="altivox-promo-banner">
