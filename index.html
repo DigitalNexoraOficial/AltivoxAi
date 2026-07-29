@@ -1685,16 +1685,17 @@ async function solicitarImagenCompleta(encodedUrl) {
     if (!clienteEmail) return;
 
     try {
-        // Buscamos de todas las formas posibles la instancia de Supabase en tu web
-        let db = window.supabaseClient || window.supabase || window.client || window._supabase;
-
-        // Si por alguna razón no se detecta automáticamente, la creamos al vuelo con tus credenciales públicas si las tienes expuestas
-        if (!db && typeof createClient === 'function') {
-            db = createClient('TU_SUPABASE_URL', 'TU_SUPABASE_ANON_KEY');
-        }
+        // Inicializamos la conexión directamente aquí para asegurarnos de que siempre funcione
+        // (Sustituye 'TU_SUPABASE_URL' y 'TU_SUPABASE_ANON_KEY' por tus credenciales reales si no las tienes cargadas globalmente)
+        const supabaseUrl = window.SUPABASE_URL || 'TU_SUPABASE_URL';
+        const supabaseKey = window.SUPABASE_ANON_KEY || 'TU_SUPABASE_ANON_KEY';
+        
+        const db = window.supabase?.createClient 
+            ? window.supabase.createClient(supabaseUrl, supabaseKey) 
+            : (window.supabase || null);
 
         if (!db || typeof db.from !== 'function') {
-            throw new Error("La instancia de Supabase no está disponible en este ámbito.");
+            throw new Error("No se pudo inicializar el cliente de Supabase.");
         }
 
         const { data, error } = await db
