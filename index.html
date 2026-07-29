@@ -225,12 +225,12 @@
 
     <canvas id="ai-network"></canvas>
 
-    <div class="fixed bottom-4 left-4 z-40 glass-ui px-3 py-2 rounded-lg border border-cyan-500/30 flex items-center gap-2 text-[10px] md:text-xs text-gray-300 font-mono shadow-lg">
+    <div class="fixed bottom-2 left-4 z-40 glass-ui px-3 py-2 rounded-lg border border-cyan-500/30 flex items-center gap-2 text-[10px] md:text-xs text-gray-300 font-mono shadow-lg">
         <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
         <span>Ping: <span id="ping-val" class="text-cyan-400">22</span>ms</span>
     </div>
 
-    <div class="fixed bottom-4 right-4 z-40 flex flex-col gap-2">
+    <div class="fixed bottom-16 left-4 z-40 flex flex-col gap-2">
         <button id="themeToggleBtn" class="glass-ui p-2.5 rounded-lg border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 transition shadow-lg" title="Cambiar Tema">
             <svg id="themeIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
         </button>
@@ -674,8 +674,8 @@
     <!-- ======================================================= -->
 
    <!-- Widget de Chat AltivoxAi -->
-<div id="chat-container" class="fixed bottom-24 right-6 z-[9999] hidden flex flex-col w-[90%] max-w-[420px] h-[500px] glass-ui border border-cyan-500/30 rounded-2xl shadow-2xl overflow-hidden transition-all duration-300">
-    
+<div id="chat-container" class="fixed bottom-24 right-6 z-[100000] hidden flex flex-col w-[90%] max-w-[420px] h-[500px] glass-ui border border-cyan-500/30 rounded-2xl shadow-2xl overflow-hidden transition-all duration-300">
+
     <!-- 1. HEADER -->
     <div class="bg-cyan-500/20 p-4 border-b border-cyan-500/30 flex justify-between items-center">
         <div class="flex items-center gap-2">
@@ -735,7 +735,7 @@
 </div>
 
     <!-- Botón disparador del Chat -->
-    <button onclick="toggleChat()" id="chat-toggle-btn" class="fixed bottom-24 right-6 z-[9999] bg-cyan-500 text-black p-4 rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center">
+    <button onclick="toggleChat()" id="chat-toggle-btn" class="fixed bottom-6 right-6 z-[100000] bg-cyan-500 text-black p-4 rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
     </button>
 
@@ -1129,24 +1129,31 @@ filterBtns.forEach(btn => {
         bottom: 24px;
         left: 50%;
         transform: translateX(-50%) translateY(120px);
-        width: 90%;
-        max-width: 680px;
-        background: linear-gradient(135deg, rgba(13, 13, 23, 0.96) 0%, rgba(20, 20, 35, 0.96) 100%);
+        width: auto; /* Que no ocupe todo el ancho en PC */
+        min-width: 400px;
+        max-width: 90%;
+        background: linear-gradient(135deg, rgba(13, 13, 23, 0.98) 0%, rgba(20, 20, 35, 0.98) 100%);
         border: 1px solid rgba(0, 255, 178, 0.35);
-        box-shadow: 0 10px 40px rgba(0, 255, 178, 0.15), inset 0 0 15px rgba(0, 255, 178, 0.05);
         border-radius: 16px;
-        padding: 16px 24px;
+        padding: 12px 20px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
         gap: 16px;
-        z-index: 999999;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
-        opacity: 0;
+        z-index: 50; /* Menos que el chat */
         pointer-events: none;
+        transition: transform 0.5s ease, opacity 0.5s ease;
       }
+
+/* En MÓVIL lo subimos para que no tape el botón de chat ni el ping */
+@media (max-width: 768px) {
+    .altivox-promo-banner {
+        bottom: 110px; /* Lo subimos bastante */
+        min-width: 90%;
+        flex-direction: column;
+        padding: 12px;
+        pointer-events: all;
+    }
+}
       .altivox-promo-banner.visible {
         transform: translateX(-50%) translateY(0);
         opacity: 1;
@@ -1192,23 +1199,36 @@ filterBtns.forEach(btn => {
         box-shadow: 0 4px 20px rgba(255, 255, 255, 0.4);
         transform: translateY(-1px);
       }
-      @media (max-width: 580px) {
-  .altivox-promo-banner {
-    flex-direction: column;
-    text-align: center;
-    bottom: 110px; /* Subimos el banner para que no tape el botón de chat */
-    padding: 12px;
-    width: 92%;
-    gap: 8px;
-  }
-  .altivox-banner-title {
-    font-size: 13px; /* Un poco más pequeño para que quepa bien */
-  }
-  .altivox-banner-btn {
-    width: 100%;
-    text-align: center;
-    padding: 8px;
-  }
+     @media (max-width: 767px) {
+    .altivox-promo-banner {
+        /* Subimos el banner para que el botón de chat (que está a 24px) quede libre */
+        bottom: 100px; 
+        width: 95%;
+        padding: 12px;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .altivox-banner-title {
+        font-size: 13px !important;
+        line-height: 1.2;
+    }
+
+    /* Ajuste para que el botón de chat sea más visible en móvil */
+    #chat-toggle-btn {
+        bottom: 20px !important;
+        right: 20px !important;
+        width: 50px !important;
+        height: 50px !important;
+    }
+}
+
+    /* DETECCIÓN DE TABLETS (Pantallas entre 768px y 1024px) */
+    @media (min-width: 768px) and (max-width: 1024px) {
+    .altivox-promo-banner {
+        bottom: 30px;
+        width: 80%;
+    }
 }
     </style>
 
@@ -1675,6 +1695,17 @@ filterBtns.forEach(btn => {
             });
         }
     });
+</script>
+<script>
+    function detectarDispositivo() {
+        const esMovil = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (esMovil) {
+            document.documentElement.classList.add('is-mobile');
+            // Si es móvil, podemos mover el banner por código si el CSS no fuera suficiente
+            console.log("Modo móvil activado");
+        }
+    }
+    detectarDispositivo();
 </script>
 </body>
 </html>
