@@ -1685,27 +1685,22 @@ async function solicitarImagenCompleta(encodedUrl) {
     if (!clienteEmail) return;
 
     try {
-        // Inicializamos la conexión directamente aquí para asegurarnos de que siempre funcione
-        // (Sustituye 'TU_SUPABASE_URL' y 'TU_SUPABASE_ANON_KEY' por tus credenciales reales si no las tienes cargadas globalmente)
-        const supabaseUrl = window.SUPABASE_URL || 'https://soeyfivsuwohuuzgfqar.supabase.co';
-        const supabaseKey = window.SUPABASE_ANON_KEY || 'sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2';
+        // Usamos tus credenciales reales de Supabase
+        const supabaseUrl = 'https://soeyfivsuwohuuzgfqar.supabase.co';
+        const supabaseKey = 'sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2';
         
-        const db = window.supabase?.createClient 
-            ? window.supabase.createClient(supabaseUrl, supabaseKey) 
-            : (window.supabase || null);
+        // Creamos la instancia de Supabase de forma limpia y segura para esta acción
+        const client = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        if (!db || typeof db.from !== 'function') {
-            throw new Error("No se pudo inicializar el cliente de Supabase.");
-        }
-
-        const { data, error } = await db
+        const { data, error } = await client
             .from('leads_imagenes')
             .insert([
                 { email: clienteEmail, imagen_solicitada: imageUrl, fecha: new Date() }
             ]);
 
         if (error) throw error;
-        alert("¡Solicitud enviada con éxito! Nos pondremos en contacto.");
+        
+        alert("¡Solicitud enviada con éxito! Revisa tus datos o correo.");
         
     } catch (err) {
         console.error("Error al guardar en Supabase:", err.message);
