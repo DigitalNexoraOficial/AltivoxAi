@@ -1,34 +1,39 @@
 export default async function handler(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-    if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
-
-    const { message, model } = req.body;
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method not allowed' });
+    }
 
     try {
-        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+        const { message, model } = req.body;
+
+        if (!message) {
+            return res.status(400).json({ error: 'Falta el mensaje.' });
+        }
+
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            return res.status(500).json({ error: 'Falta configurar la clave de la API en Vercel.' });
+        }
+
+        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: `Actúa como ${model || 'asistente'}. Responde de forma concisa: ${message}` }] }]
+                contents: [{ parts: [{ text: `Actúa como el agente ${model || 'asistente'}. Responde de forma clara y concisa a esto: ${message}` }] }]
             })
         });
 
         const data = await geminiRes.json();
-        
-        if (data.error) throw new Error(data.error.message);
 
-        let reply = "El agente procesó la solicitud pero no devolvió contenido.";
-        if (data.candidates && data.candidates[0]?.content?.parts) {
-            reply = data.candidates[0].content.parts[0].text;
+        if (!geminiRes.ok) {
+            const errorMsg = data.error?.message || 'Error desconocido en la API de Google';
+            return res.status(500).json({ error: errorMsg });
         }
 
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No se obtuvo respuesta.';
         return res.status(200).json({ reply });
 
-    } catch (error) {
-        return res.status(500).json({ error: error.message });
+    } catch (err) {
+        return res.status(500).json({ error: 'Error interno del servidor.' });
     }
 }
