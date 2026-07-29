@@ -741,7 +741,7 @@
         <input type="file" id="file-upload" class="hidden" accept=".pdf,.doc,.docx,.txt,.csv" onchange="procesarArchivoIA(this)">
 
         <!-- Input de texto (con flex-1 perfectamente integrado) -->
-        <input type="text" id="chat-input" onkeydown="handleChatKeyPress(event)" placeholder="Escribe un comando o mensaje..." class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono">
+        <input type="text" id="chat-input" onkeydown="enviarMensajeOmniroute(event)" placeholder="Escribe una consulta general..." class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono">
         
         <!-- Botón Enviar -->
         <button onclick="enviarMensajeOmniroute()" class="bg-cyan-500/20 text-cyan-400 p-2 rounded-lg border border-cyan-500/30 hover:bg-cyan-500/40 transition flex-shrink-0">
@@ -1591,36 +1591,38 @@ async function sendChatMessage() {
 
     if (!message) return;
 
-    // Mostrar mensaje del usuario
     chatBox.innerHTML += `<div class="p-2 my-2 text-right text-xs text-gray-300 font-mono">Tú: ${message}</div>`;
     inputField.value = '';
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    // Indicador de escribiendo...
     const loadingId = 'loading-' + Date.now();
-    chatBox.innerHTML += `<div id="${loadingId}" class="p-2 my-2 text-xs text-cyan-400 font-mono animate-pulse">// ${activeAgentName} está pensando...</div>`;
+    chatBox.innerHTML += `<div id="${loadingId}" class="p-2 my-2 text-xs text-cyan-400 font-mono animate-pulse">// Procesando consulta...</div>`;
     chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
-        const response = await fetch('/api/chat', {
+        // Sustituye 'TU_API_KEY_DE_GEMINI' por tu clave real de Google AI Studio
+        const GEMINI_API_KEY = "AQ.Ab8RN6JT6eDRTB5S6eWCURwpYz-sNVaGkaRlp4pfS_YQh9ZSqQ"; 
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, model: activeModel })
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: message }] }]
+            })
         });
 
         const data = await response.json();
-        
-        // Eliminar indicador de carga
         document.getElementById(loadingId).remove();
 
-        if (data.reply) {
-            chatBox.innerHTML += `<div class="p-2 my-2 text-xs text-cyan-200 font-mono bg-cyan-950/30 rounded border border-cyan-800/50"><strong>${activeAgentName}:</strong> ${data.reply}</div>`;
+        if (data.candidates && data.candidates[0].content) {
+            const reply = data.candidates[0].content.parts[0].text;
+            chatBox.innerHTML += `<div class="p-2 my-2 text-xs text-cyan-200 font-mono bg-cyan-950/30 rounded border border-cyan-800/50"><strong>Asistente:</strong> ${reply}</div>`;
         } else {
-            chatBox.innerHTML += `<div class="p-2 my-2 text-xs text-red-400 font-mono">// Error: El agente no respondió.</div>`;
+            chatBox.innerHTML += `<div class="p-2 my-2 text-xs text-red-400 font-mono">// Error: La IA no devolvió respuesta.</div>`;
         }
     } catch (err) {
         document.getElementById(loadingId).remove();
-        chatBox.innerHTML += `<div class="p-2 my-2 text-xs text-red-400 font-mono">// Error de conexión con el servidor.</div>`;
+        chatBox.innerHTML += `<div class="p-2 my-2 text-xs text-red-400 font-mono">// Error de conexión.</div>`;
     }
 
     chatBox.scrollTop = chatBox.scrollHeight;
