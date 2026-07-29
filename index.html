@@ -1591,39 +1591,52 @@ async function sendChatMessage() {
 
     if (!message) return;
 
-    chatBox.innerHTML += `<div class="p-2 my-2 text-right text-xs text-gray-300 font-mono">Tú: ${message}</div>`;
+    // 1. Mostrar mensaje del usuario
+    chatBox.innerHTML += `<div class="p-2 my-2 text-right text-xs text-gray-300 font-mono bg-gray-950/30 rounded border border-gray-800/50"><strong>Tú:</strong> ${message}</div>`;
     inputField.value = '';
     chatBox.scrollTop = chatBox.scrollHeight;
 
+    // 2. Crear y mostrar indicador de carga
     const loadingId = 'loading-' + Date.now();
     chatBox.innerHTML += `<div id="${loadingId}" class="p-2 my-2 text-xs text-cyan-400 font-mono animate-pulse">// Procesando consulta...</div>`;
     chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
-    const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: message, model: activeModel })
-    });
+        // 3. Llamada al backend (Vercel)
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: message, model: activeModel })
+        });
 
-    const data = await response.json();
-    
-    // Eliminar indicador de carga
-    document.getElementById(loadingId).remove();
+        const data = await response.json();
+        
+        // 4. ELIMINAR INDICADOR DE CARGA (Asegurado)
+        const loadingElement = document.getElementById(loadingId);
+        if (loadingElement) loadingElement.remove();
 
-    if (data.reply) {
-        // <--- AQUÍ ES DONDE LLAMAS A LA NUEVA FUNCIÓN DE LA IMAGEN PROTEGIDA:
-        appendAssistantMessage(data.reply, activeAgentName);
-    } else {
-        chatBox.innerHTML += `<div class="p-2 my-2 text-xs text-red-400 font-mono">// Error: La IA no devolvió respuesta.</div>`;
+        // 5. Mostrar respuesta del asistente (usando la nueva función de imagen protegida)
+        if (data.reply) {
+            // Esta es la función que implementamos en el paso anterior:
+            appendAssistantMessage(data.reply, activeAgentName); 
+        } else if (data.error) {
+            chatBox.innerHTML += `<div class="p-2 my-2 text-xs text-red-400 font-mono">// Error: ${data.error}</div>`;
+        } else {
+            chatBox.innerHTML += `<div class="p-2 my-2 text-xs text-red-400 font-mono">// Error: La IA no devolvió respuesta.</div>`;
+        }
+
+    } catch (err) {
+        // 5. ELIMINAR INDICADOR DE CARGA EN CASO DE ERROR
+        const loadingElement = document.getElementById(loadingId);
+        if (loadingElement) loadingElement.remove();
+        
+        chatBox.innerHTML += `<div class="p-2 my-2 text-xs text-red-400 font-mono">// Error de conexión.</div>`;
+        console.error(err);
     }
-} catch (err) {
-    document.getElementById(loadingId).remove();
-    chatBox.innerHTML += `<div class="p-2 my-2 text-xs text-red-400 font-mono">// Error de conexión.</div>`;
-}
-
+    
     chatBox.scrollTop = chatBox.scrollHeight;
 }
+
 async function solicitarImagenCompleta(encodedUrl) {
     const imageUrl = decodeURIComponent(encodedUrl);
     const clienteEmail = prompt("Introduce tu email para enviarte la imagen completa y desbloquearla:");
