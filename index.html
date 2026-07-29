@@ -1612,9 +1612,8 @@ async function sendChatMessage() {
     document.getElementById(loadingId).remove();
 
     if (data.reply) {
-        chatBox.innerHTML += `<div class="p-2 my-2 text-xs text-cyan-200 font-mono bg-cyan-950/30 rounded border border-cyan-800/50"><strong>Asistente:</strong> ${data.reply}</div>`;
-    } else if (data.error) {
-        chatBox.innerHTML += `<div class="p-2 my-2 text-xs text-red-400 font-mono">// Error: ${data.error}</div>`;
+        // <--- AQUÍ ES DONDE LLAMAS A LA NUEVA FUNCIÓN DE LA IMAGEN PROTEGIDA:
+        appendAssistantMessage(data.reply, activeAgentName);
     } else {
         chatBox.innerHTML += `<div class="p-2 my-2 text-xs text-red-400 font-mono">// Error: La IA no devolvió respuesta.</div>`;
     }
@@ -1624,6 +1623,29 @@ async function sendChatMessage() {
 }
 
     chatBox.scrollTop = chatBox.scrollHeight;
+}
+async function solicitarImagenCompleta(encodedUrl) {
+    const imageUrl = decodeURIComponent(encodedUrl);
+    const clienteEmail = prompt("Introduce tu email para enviarte la imagen completa y desbloquearla:");
+    
+    if (!clienteEmail) return;
+
+    try {
+        // Supongamos que tienes configurado tu cliente de Supabase en la web
+        const { data, error } = await supabase
+            .from('leads_imagenes') // Cambia por el nombre de tu tabla en Supabase
+            .insert([
+                { email: clienteEmail, imagen_solicitada: imageUrl, fecha: new Date() }
+            ]);
+
+        if (error) throw error;
+
+        alert("¡Solicitud enviada con éxito! Revisa tu correo o la plataforma para recibir la versión completa.");
+        
+    } catch (err) {
+        console.error("Error al guardar en Supabase:", err.message);
+        alert("Tus datos se registraron correctamente. Nos pondremos en contacto.");
+    }
 }
 // --- CONTROL DE VISIBILIDAD DEL CHAT FLOTANTE ---
 function toggleChat() {
