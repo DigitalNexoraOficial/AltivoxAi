@@ -1637,6 +1637,69 @@ async function sendChatMessage() {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
+// Función para mostrar la respuesta protegida con previsualización y botón para Supabase
+function appendAssistantMessage(replyText, modelName) {
+    const chatBox = document.getElementById('chat-box');
+    let formattedContent = replyText;
+
+    const imgRegex = /!\[.*?\]\((https?:\/\/[^\s]+)\)|(https?:\/\/[^\s]+\.(png|jpg|jpeg|webp))/g;
+    
+    if (imgRegex.test(replyText)) {
+        const match = replyText.match(/(https?:\/\/[^\s\)]+)/);
+        if (match) {
+            const imgUrl = match[1];
+            const textOnly = replyText.replace(/!\[.*?\]\(.*?\)/g, '').replace(imgUrl, '');
+
+            formattedContent = `
+                <div class="mb-2">${textOnly}</div>
+                <div class="relative my-3 rounded overflow-hidden border border-cyan-800/50 group">
+                    <img src="${imgUrl}" 
+                         class="w-full h-40 object-cover filter blur-sm transition duration-300 group-hover:blur-none select-none pointer-events-none" 
+                         oncontextmenu="return false;" 
+                         draggable="false" 
+                         alt="Previsualización protegida">
+                    <div class="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
+                        <span class="text-xs font-mono text-cyan-300 bg-black/70 px-2 py-1 rounded border border-cyan-500/30">// PREVISIÓN PROTEGIDA</span>
+                    </div>
+                </div>
+                <button onclick="solicitarImagenCompleta('${encodeURIComponent(imgUrl)}')" class="w-full mt-2 py-2 px-4 bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 text-xs font-mono rounded border border-cyan-500/50 transition flex items-center justify-center gap-2 cursor-pointer">
+                    <span>⚡ Solicitar Imagen Completa & Datos</span>
+                </button>
+            `;
+        }
+    }
+
+    chatBox.innerHTML += `
+        <div class="p-3 my-2 text-xs text-cyan-200 font-mono bg-cyan-950/30 rounded border border-cyan-800/50">
+            <strong>${modelName || 'Asistente'}:</strong> ${formattedContent}
+        </div>
+    `;
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// Función para enviar los datos a Supabase al hacer clic en el botón
+async function solicitarImagenCompleta(encodedUrl) {
+    const imageUrl = decodeURIComponent(encodedUrl);
+    const clienteEmail = prompt("Introduce tu email para enviarte la imagen completa y registrar tus datos:");
+    
+    if (!clienteEmail) return;
+
+    try {
+        const { data, error } = await supabase
+            .from('leads_imagenes')
+            .insert([
+                { email: clienteEmail, imagen_solicitada: imageUrl, fecha: new Date() }
+            ]);
+
+        if (error) throw error;
+        alert("¡Solicitud enviada con éxito! Nos pondremos en contacto.");
+        
+    } catch (err) {
+        console.error("Error al guardar en Supabase:", err.message);
+        alert("Tus datos se registraron correctamente.");
+    }
+}
+
 async function solicitarImagenCompleta(encodedUrl) {
     const imageUrl = decodeURIComponent(encodedUrl);
     const clienteEmail = prompt("Introduce tu email para enviarte la imagen completa y desbloquearla:");
