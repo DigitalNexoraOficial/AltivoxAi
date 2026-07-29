@@ -1580,13 +1580,13 @@ filterBtns.forEach(btn => {
             } else {
                 const response = await fetch(OMNIROUTE_ENDPOINT, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + MI_API_KEY },
+                    headers: {
+                    "Content-Type": "application/json"
+                    },
                     body: JSON.stringify({
-                        model: activeModel,
-                        messages: [{ role: "system", content: "Eres el experto de AltivoxAi. Responde siempre en el MISMO IDIOMA que el usuario." }, { role: "user", content: mensaje }],
-                        temperature: 0.7, max_tokens: 2000, stream: false
-                    })
-                });
+                    messages: [{ role: "user", content: mensaje }]
+                })
+            });
                 const data = await response.json();
                 document.getElementById(loadingId).remove();
                 chatBox.innerHTML += `<div class="flex justify-start mb-4"><div class="p-3 max-w-[85%] text-gray-200 bg-white/5 border border-white/10 rounded-xl rounded-tl-none">${data.choices[0].message.content}</div></div>`;
