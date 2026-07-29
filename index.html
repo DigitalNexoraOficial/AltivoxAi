@@ -1685,10 +1685,16 @@ async function solicitarImagenCompleta(encodedUrl) {
     if (!clienteEmail) return;
 
     try {
-        const db = window.supabase || window.client || window._supabase;
-        
+        // Buscamos de todas las formas posibles la instancia de Supabase en tu web
+        let db = window.supabaseClient || window.supabase || window.client || window._supabase;
+
+        // Si por alguna razón no se detecta automáticamente, la creamos al vuelo con tus credenciales públicas si las tienes expuestas
+        if (!db && typeof createClient === 'function') {
+            db = createClient('TU_SUPABASE_URL', 'TU_SUPABASE_ANON_KEY');
+        }
+
         if (!db || typeof db.from !== 'function') {
-            throw new Error("No se encontró la instancia activa de Supabase.");
+            throw new Error("La instancia de Supabase no está disponible en este ámbito.");
         }
 
         const { data, error } = await db
