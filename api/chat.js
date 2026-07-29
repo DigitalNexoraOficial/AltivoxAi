@@ -1,4 +1,13 @@
 export default async function handler(req, res) {
+    // Permitir solicitudes CORS si es necesario
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Método no permitido' });
     }
@@ -8,40 +17,31 @@ export default async function handler(req, res) {
     try {
         let reply = "";
 
-        // Enrutamiento según el agente seleccionado en el frontend
-        if (model === 'altivox-tech' || model === 'altivox-auditor') {
-            // Usamos Groq (Llama 3) para código y auditoría por su velocidad
-            const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    model: 'llama3-70b-8192',
-                    messages: [{ role: 'user', content: message }]
-                })
-            });
-            const data = await groqRes.json();
-            reply = data.choices[0].message.content;
+        // Usamos Google Gemini para todos los agentes de forma gratuita y 24/7
+        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: `Actúa como un asistente técnico experto. Responde breve y claramente a lo siguiente: ${message}` }] }]
+            })
+        });
 
-        } else {
-            // Usamos Google Gemini para investigación, creatividad y general
-            const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: message }] }]
-                })
-            });
-            const data = await geminiRes.json();
+        const data = await geminiRes.json();
+        
+        if (data.error) {
+            throw new Error(data.error.message);
+        }
+
+        if (data.candidates && data.candidates[0].content) {
             reply = data.candidates[0].content.parts[0].text;
+        } else {
+            reply = "No he podido procesar una respuesta en este momento.";
         }
 
         return res.status(200).json({ reply });
 
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Error procesando la petición con la IA.' });
+        console.error("Error en la API:", error.message);
+        return res.status(500).json({ error: error.message });
     }
 }
