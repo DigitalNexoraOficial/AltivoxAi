@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentes IA | AltivoxAI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
+body{display:flex;min-height:100vh;background:#0b1120;color:#fff;}
+.sidebar{width:250px;background:#111827;padding:30px 20px;display:flex;flex-direction:column;}
+.sidebar h2{margin-bottom:35px;color:#00b4ff;}
+.sidebar a{color:#d1d5db;text-decoration:none;padding:14px 0;}
+.sidebar a:hover{color:#00b4ff;padding-left:8px;}
+.contenido{flex:1;padding:30px;}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;margin-top:20px;}
+.card{background:#182235;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:25px;}
+.card h3{color:#cbd5e1;margin-bottom:12px;}
+.card span{font-size:28px;font-weight:bold;color:#00b4ff;}
+p{color:#9ca3af;}
+@media(max-width:800px){body{flex-direction:column;}.sidebar{width:100%;}}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <h2>🤖 AltivoxAI</h2>
+  <a href="dashboard.html">🏠 Dashboard</a>
+  <a href="clientes.html">👥 Clientes</a>
+  <a href="chatbot.html">💬 Chatbot</a>
+  <a href="jarvis.html">🤖 J.A.R.V.I.S.</a>
+  <a href="agentes.html">🧠 Agentes IA</a>
+  <a href="ajustes.html">⚙️ Ajustes</a>
+</div>
+<div class="contenido">
+  <h1>🧠 Agentes IA</h1>
+  <p>Módulos inteligentes disponibles para automatización.</p>
+  <section class="cards">
+    <div class="card"><h3>Atención</h3><span>Activo</span></div>
+    <div class="card"><h3>Soporte</h3><span>Activo</span></div>
+    <div class="card"><h3>Ventas</h3><span>Beta</span></div>
+  </section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const sb = window.supabase.createClient(
+  "https://soeyfivsuwohuuzgfqar.supabase.co",
+  "sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2"
+);
+(async () => {
+  const { data } = await sb.auth.getSession();
+  if (!data.session) window.location.href = "login.html";
+})();
+</script>
+</body>
+</html>

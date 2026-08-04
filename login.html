@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AltivoxAI | Login</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
+body{
+  background:linear-gradient(135deg,#050816,#0c1329,#101b3d);
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+}
+.card{
+  width:92%;
+  max-width:400px;
+  background:rgba(255,255,255,.05);
+  backdrop-filter:blur(25px);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:22px;
+  padding:35px;
+  box-shadow:0 0 45px rgba(0,0,0,.45);
+}
+.logo{font-size:34px;text-align:center;margin-bottom:12px;}
+h1{color:white;text-align:center;font-size:28px;margin-bottom:8px;}
+p{color:#b6bfd8;text-align:center;margin-bottom:30px;}
+input{
+  width:100%;
+  padding:15px;
+  margin-bottom:18px;
+  border:none;
+  outline:none;
+  border-radius:14px;
+  background:rgba(255,255,255,.08);
+  color:white;
+  font-size:16px;
+}
+input::placeholder{color:#9ca9c9;}
+button{
+  width:100%;
+  padding:16px;
+  border:none;
+  border-radius:14px;
+  cursor:pointer;
+  font-size:17px;
+  font-weight:bold;
+  background:linear-gradient(90deg,#0066ff,#00b4ff);
+  color:white;
+  transition:.3s;
+}
+button:hover{transform:scale(1.03);}
+button:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.estado{margin-top:18px;text-align:center;font-size:14px;color:#6cff95;}
+.footer{margin-top:25px;text-align:center;font-size:12px;color:#8794b2;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🤖</div>
+  <h1>AltivoxAI</h1>
+  <p>Panel privado de administración</p>
+
+  <input id="login-email" type="email" placeholder="Correo electrónico" autocomplete="email">
+  <input id="login-password" type="password" placeholder="Contraseña" autocomplete="current-password">
+
+  <button id="login-btn" type="button">Iniciar sesión</button>
+
+  <div id="login-status" class="estado">Sistema preparado</div>
+  <div class="footer">© 2026 AltivoxAI</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase.js"></script>
+<script src="assets/js/auth.js"></script>
+<script>
+(function () {
+  const emailEl = document.getElementById("login-email");
+  const passEl = document.getElementById("login-password");
+  const btnEl = document.getElementById("login-btn");
+  const statusEl = document.getElementById("login-status");
+
+  function setStatus(msg, ok) {
+    statusEl.textContent = msg;
+    statusEl.style.color = ok ? "#6cff95" : "#ff8080";
+  }
+
+  async function doLogin() {
+    try {
+      if (!window.Auth) {
+        setStatus("Auth no cargado. Revisa assets/js/auth.js");
+        return;
+      }
+      if (!window.supabaseClient) {
+        setStatus("Supabase no configurado. Revisa assets/js/supabase.js");
+        return;
+      }
+
+      const email = (emailEl.value || "").trim();
+      const password = passEl.value || "";
+
+      if (!email || !password) {
+        setStatus("Completa email y contraseña");
+        return;
+      }
+
+      btnEl.disabled = true;
+      setStatus("Iniciando sesión...", true);
+
+      await Auth.login(email, password);
+      setStatus("Acceso correcto", true);
+      window.location.href = "dashboard.html";
+    } catch (err) {
+      console.error(err);
+      setStatus(err.message || "Error al iniciar sesión");
+    } finally {
+      btnEl.disabled = false;
+    }
+  }
+
+  btnEl.addEventListener("click", doLogin);
+
+  passEl.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") doLogin();
+  });
+
+  emailEl.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") doLogin();
+  });
+
+  (async function () {
+    try {
+      if (window.Auth) {
+        const session = await Auth.getSession();
+        if (session) window.location.href = "dashboard.html";
+      }
+    } catch (e) {}
+  })();
+})();
+</script>
+</body>
+</html>

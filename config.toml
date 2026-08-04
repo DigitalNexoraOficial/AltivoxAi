@@ -1,0 +1,8 @@
+# A minimal Supabase config so CLI can find functions/
+project_id = "soeyfivsuwohuuzgfqar"
+
+[api]
+enabled = true
+
+[functions.jarvis-chat]
+verify_jwt = false

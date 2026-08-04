@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clientes | AltivoxAI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
+body{display:flex;min-height:100vh;background:#0b1120;color:#fff;}
+.sidebar{width:250px;background:#111827;padding:30px 20px;display:flex;flex-direction:column;}
+.sidebar h2{margin-bottom:35px;color:#00b4ff;}
+.sidebar a{color:#d1d5db;text-decoration:none;padding:14px 0;}
+.sidebar a:hover{color:#00b4ff;padding-left:8px;}
+.contenido{flex:1;padding:30px;}
+h1{margin-bottom:8px;}
+p{color:#9ca3af;margin-bottom:20px;}
+button{background:#00bfff;color:#fff;border:none;padding:12px 20px;border-radius:10px;cursor:pointer;margin:8px 8px 8px 0;}
+input{display:block;width:100%;max-width:420px;padding:12px;margin-bottom:10px;border:none;border-radius:10px;background:#182235;color:#fff;}
+table{width:100%;border-collapse:collapse;background:#1e293b;border-radius:12px;overflow:hidden;margin-top:20px;}
+th{background:#0ea5e9;padding:15px;text-align:left;}
+td{padding:15px;border-bottom:1px solid #334155;}
+#formulario{margin:15px 0;display:none;}
+@media(max-width:800px){body{flex-direction:column;}.sidebar{width:100%;}}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <h2>🤖 AltivoxAI</h2>
+  <a href="dashboard.html">🏠 Dashboard</a>
+  <a href="clientes.html">👥 Clientes</a>
+  <a href="chatbot.html">💬 Chatbot</a>
+  <a href="jarvis.html">🤖 J.A.R.V.I.S.</a>
+  <a href="agentes.html">🧠 Agentes IA</a>
+  <a href="ajustes.html">⚙️ Ajustes</a>
+</div>
+
+<div class="contenido">
+  <h1>👥 Clientes</h1>
+  <p>Gestiona todos los clientes de AltivoxAI.</p>
+
+  <button id="nuevoCliente">➕ Nuevo Cliente</button>
+
+  <div id="formulario">
+    <input id="nombre" type="text" placeholder="Nombre">
+    <input id="empresa" type="text" placeholder="Empresa">
+    <input id="email" type="email" placeholder="Correo electrónico">
+    <button id="guardarCliente">Guardar Cliente</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Nombre</th><th>Empresa</th><th>Email</th><th>Estado</th></tr>
+    </thead>
+    <tbody id="tablaClientes"></tbody>
+  </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://soeyfivsuwohuuzgfqar.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const tabla = document.getElementById("tablaClientes");
+const formulario = document.getElementById("formulario");
+
+(async () => {
+  const { data } = await sb.auth.getSession();
+  if (!data.session) window.location.href = "login.html";
+})();
+
+document.getElementById("nuevoCliente").onclick = () => {
+  formulario.style.display = "block";
+};
+
+async function cargarClientes() {
+  const { data, error } = await sb.from("clientes").select("*").order("id", { ascending: false });
+  if (error) {
+    tabla.innerHTML = `<tr><td colspan="4">${error.message}</td></tr>`;
+    return;
+  }
+  if (!data || !data.length) {
+    tabla.innerHTML = `<tr><td colspan="4">No hay clientes</td></tr>`;
+    return;
+  }
+  tabla.innerHTML = data.map(c => `
+    <tr>
+      <td>${c.nombre || ""}</td>
+      <td>${c.empresa || ""}</td>
+      <td>${c.email || ""}</td>
+      <td>${c.estado || ""}</td>
+    </tr>
+  `).join("");
+}
+
+document.getElementById("guardarCliente").onclick = async () => {
+  const nombre = document.getElementById("nombre").value.trim();
+  const empresa = document.getElementById("empresa").value.trim();
+  const email = document.getElementById("email").value.trim();
+  if (!nombre || !empresa || !email) return alert("Completa todos los campos");
+
+  const { error } = await sb.from("clientes").insert([{ nombre, empresa, email, estado: "Nuevo" }]);
+  if (error) return alert(error.message);
+
+  formulario.style.display = "none";
+  document.getElementById("nombre").value = "";
+  document.getElementById("empresa").value = "";
+  document.getElementById("email").value = "";
+  cargarClientes();
+};
+
+cargarClientes();
+</script>
+</body>
+</html>
