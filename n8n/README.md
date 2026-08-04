@@ -1,48 +1,36 @@
-# AltivoxAI ↔ n8n
+# n8n · AltivoxAI (plan FREE)
 
-## 1. Importar workflows
-- `n8n/workflows/01-lead-created.json`
-- `n8n/workflows/02-ops-contacted-onboarding.json`
+## Ya creado en tu cuenta n8n
 
-Activa el workflow y copia la **Production URL** del nodo Webhook.
-
-## 2. Variables en Vercel
-| Variable | Uso |
+| Recurso | ID / URL |
 |---|---|
-| `N8N_WEBHOOK_URL` | URL Production del Webhook n8n |
-| `N8N_WEBHOOK_TEST` | (opcional) URL de test |
-| `N8N_SECRET` | Secreto compartido para acciones inbound |
-| `SUPABASE_SERVICE_ROLE_KEY` | Solo si n8n escribe vía `/api/n8n` |
+| Workflow | [Altivox Hub FREE](https://altivoxai.app.n8n.cloud/workflow/sQGNntDkScnbdK9o) |
+| Webhook Production | `https://altivoxai.app.n8n.cloud/webhook/altivox-hub` |
+| Data table inbox | `Altivox_Event_Inbox` |
+| Data table hot | `Altivox_Hot_Queue` |
+| Data table digests | `Altivox_Daily_Digests` |
 
-Redeploy después de guardar.
+Un solo workflow activo = menos consumo del free tier.
 
-## 3. Probar
-1. Abre `https://www.altivoxai.es/ajustes.html`
-2. Pulsa **Probar n8n**
-3. En n8n → Executions debe aparecer `system.ping`
+## Qué hace (sin costes extra)
 
-## 4. Eventos que emite Altivox
-`lead.created` · `lead.hot` · `lead.updated` · `lead.contacted` · `cliente.created` · `cliente.updated` · `cliente.deleted` · `cliente.touched` · `jarvis.rescored` · `system.ping`
+1. **Webhook** — recibe eventos de la web/dashboard (`lead.*`, `cliente.*`, `jarvis.rescored`, `system.ping`).
+2. **Triage P0/P1/P2** — prioriza leads calientes.
+3. **Inbox + Hot Queue** — todo queda ordenado en Data Tables (gratis en n8n).
+4. **Draft Gmail** (opcional) — borrador de alerta P0 a `altivoxaiofi@gmail.com` (no envía hasta que conectes Gmail).
+5. **Digest diario 09:00** — health check de `/api/n8n` + `/api/chat` y resumen en `Altivox_Daily_Digests`.
 
-Payload típico:
-```json
-{
-  "source": "altivoxai",
-  "event": "lead.created",
-  "ts": "2026-08-04T12:00:00.000Z",
-  "data": { "...lead fields..." }
-}
-```
+## Tú debes completar (2 min)
 
-## 5. n8n → Altivox (inbound)
-`POST https://www.altivoxai.es/api/n8n`  
-Header: `x-altivox-secret: <N8N_SECRET>`
+1. Abre el workflow → **Publish / Activate**.
+2. En el nodo **Draft Hot Alert** y **Draft Daily Digest** → conecta credencial **Gmail** (OAuth gratis de Google). Si no quieres Gmail aún, desactiva esos 2 nodos; el resto funciona.
+3. En **Vercel** → Environment Variable:
+   - `N8N_WEBHOOK_URL` = `https://altivoxai.app.n8n.cloud/webhook/altivox-hub`
+4. Redeploy Vercel.
+5. En [Ajustes](https://www.altivoxai.es/ajustes.html) → **Probar n8n**.
 
-```json
-{ "action": "update_lead", "id": "<uuid>", "patch": { "estado": "contactado" } }
-```
+## Tips FREE
 
-Alternativa: nodo **Supabase** en n8n (recomendado para lecturas/escrituras masivas).
-
-## 6. Backup recomendado
-Supabase → Database Webhooks → tabla `leads` INSERT → misma URL de n8n.
+- No crees más workflows activos: amplía este hub.
+- El digest diario ≈ 30 ejecuciones/mes.
+- Mira la cola en n8n → Data tables → `Altivox_Hot_Queue`.
