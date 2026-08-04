@@ -73,14 +73,22 @@ button:disabled{opacity:.6;cursor:not-allowed;transform:none;}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/supabase.js"></script>
-<script src="assets/js/auth.js"></script>
 <script>
 (function () {
-  const emailEl = document.getElementById("login-email");
-  const passEl = document.getElementById("login-password");
-  const btnEl = document.getElementById("login-btn");
-  const statusEl = document.getElementById("login-status");
+  var SUPABASE_URL = "https://soeyfivsuwohuuzgfqar.supabase.co";
+  var SUPABASE_ANON_KEY = "sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2";
+
+  if (!window.supabase || !window.supabase.createClient) {
+    document.getElementById("login-status").textContent = "Error cargando Supabase CDN";
+    document.getElementById("login-status").style.color = "#ff8080";
+    return;
+  }
+
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  var emailEl = document.getElementById("login-email");
+  var passEl = document.getElementById("login-password");
+  var btnEl = document.getElementById("login-btn");
+  var statusEl = document.getElementById("login-status");
 
   function setStatus(msg, ok) {
     statusEl.textContent = msg;
@@ -89,17 +97,8 @@ button:disabled{opacity:.6;cursor:not-allowed;transform:none;}
 
   async function doLogin() {
     try {
-      if (!window.Auth) {
-        setStatus("Auth no cargado. Revisa assets/js/auth.js");
-        return;
-      }
-      if (!window.supabaseClient) {
-        setStatus("Supabase no configurado. Revisa assets/js/supabase.js");
-        return;
-      }
-
-      const email = (emailEl.value || "").trim();
-      const password = passEl.value || "";
+      var email = (emailEl.value || "").trim();
+      var password = passEl.value || "";
 
       if (!email || !password) {
         setStatus("Completa email y contraseña");
@@ -109,35 +108,32 @@ button:disabled{opacity:.6;cursor:not-allowed;transform:none;}
       btnEl.disabled = true;
       setStatus("Iniciando sesión...", true);
 
-      await Auth.login(email, password);
+      var result = await sb.auth.signInWithPassword({ email: email, password: password });
+      if (result.error) throw result.error;
+
       setStatus("Acceso correcto", true);
       window.location.href = "dashboard.html";
     } catch (err) {
       console.error(err);
-      setStatus(err.message || "Error al iniciar sesión");
+      setStatus((err && err.message) || "Error al iniciar sesión");
     } finally {
       btnEl.disabled = false;
     }
   }
 
   btnEl.addEventListener("click", doLogin);
-
   passEl.addEventListener("keydown", function (e) {
     if (e.key === "Enter") doLogin();
   });
-
   emailEl.addEventListener("keydown", function (e) {
     if (e.key === "Enter") doLogin();
   });
 
-  (async function () {
-    try {
-      if (window.Auth) {
-        const session = await Auth.getSession();
-        if (session) window.location.href = "dashboard.html";
-      }
-    } catch (e) {}
-  })();
+  sb.auth.getSession().then(function (res) {
+    if (res && res.data && res.data.session) {
+      window.location.href = "dashboard.html";
+    }
+  }).catch(function () {});
 })();
 </script>
 </body>
