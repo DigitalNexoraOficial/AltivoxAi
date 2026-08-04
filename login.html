@@ -61,15 +61,15 @@ button:disabled{opacity:.6;cursor:not-allowed;transform:none;}
 <div class="card">
   <div class="logo">🤖</div>
   <h1>AltivoxAI</h1>
-  <p>Panel privado de administración</p>
+  <p>Acceso restringido · solo usuarios autorizados</p>
 
-  <input id="login-email" type="email" placeholder="Correo electrónico" autocomplete="email">
+  <input id="login-email" type="email" placeholder="Correo electrónico" autocomplete="username">
   <input id="login-password" type="password" placeholder="Contraseña" autocomplete="current-password">
 
   <button id="login-btn" type="button">Iniciar sesión</button>
 
   <div id="login-status" class="estado">Sistema preparado</div>
-  <div class="footer">© 2026 AltivoxAI</div>
+  <div class="footer">No hay registro público. Acceso solo con cuenta creada en Supabase.</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -78,6 +78,7 @@ button:disabled{opacity:.6;cursor:not-allowed;transform:none;}
   var SUPABASE_URL = "https://soeyfivsuwohuuzgfqar.supabase.co";
   var SUPABASE_ANON_KEY = "sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2";
 
+  // Solo login. Nunca signUp desde la web.
   if (!window.supabase || !window.supabase.createClient) {
     document.getElementById("login-status").textContent = "Error cargando Supabase CDN";
     document.getElementById("login-status").style.color = "#ff8080";
@@ -97,7 +98,7 @@ button:disabled{opacity:.6;cursor:not-allowed;transform:none;}
 
   async function doLogin() {
     try {
-      var email = (emailEl.value || "").trim();
+      var email = (emailEl.value || "").trim().toLowerCase();
       var password = passEl.value || "";
 
       if (!email || !password) {
@@ -106,16 +107,26 @@ button:disabled{opacity:.6;cursor:not-allowed;transform:none;}
       }
 
       btnEl.disabled = true;
-      setStatus("Iniciando sesión...", true);
+      setStatus("Verificando credenciales...", true);
 
+      // Solo usuarios existentes en Supabase Auth pueden entrar.
+      // Si el email no está creado en Authentication → Users, falla.
       var result = await sb.auth.signInWithPassword({ email: email, password: password });
-      if (result.error) throw result.error;
+      if (result.error) {
+        setStatus("Acceso denegado. Credenciales no válidas o usuario no autorizado.");
+        return;
+      }
+
+      if (!result.data || !result.data.session) {
+        setStatus("Acceso denegado. Sin sesión válida.");
+        return;
+      }
 
       setStatus("Acceso correcto", true);
       window.location.href = "dashboard.html";
     } catch (err) {
       console.error(err);
-      setStatus((err && err.message) || "Error al iniciar sesión");
+      setStatus("Acceso denegado. Credenciales no válidas o usuario no autorizado.");
     } finally {
       btnEl.disabled = false;
     }
