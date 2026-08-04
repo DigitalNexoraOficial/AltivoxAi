@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ajustes | AltivoxAI</title>
 <style>
-:root{--bg:#070b14;--panel:#0f172a;--panel-2:#111c33;--line:rgba(148,163,184,.14);--text:#e2e8f0;--muted:#94a3b8;--cyan:#22d3ee;--ok:#34d399}
+:root{--bg:#070b14;--panel:#0f172a;--line:rgba(148,163,184,.14);--text:#e2e8f0;--muted:#94a3b8;--cyan:#22d3ee;--ok:#34d399}
 *{margin:0;padding:0;box-sizing:border-box}
 body{display:flex;min-height:100vh;background:radial-gradient(1200px 600px at 10% -10%,rgba(34,211,238,.08),transparent 50%),var(--bg);color:var(--text);font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif}
 a{color:inherit;text-decoration:none}
@@ -24,20 +24,24 @@ a{color:inherit;text-decoration:none}
 .btn-primary{background:linear-gradient(90deg,#0284c7,#22d3ee);color:#041018}
 .btn-danger{background:#7f1d1d;color:#fecaca;border:1px solid #991b1b}
 .btn-ok{background:#065f46;color:#a7f3d0;border:1px solid #047857}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px}
 .kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
 .kpi .label{font-size:11px;color:var(--muted);text-transform:uppercase}
 .kpi .value{font-size:18px;font-weight:700;margin-top:6px}
 .layout{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+.panel.wide{grid-column:1/-1}
 .panel h2{font-size:14px;margin-bottom:12px}
-.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;align-items:flex-start}
 .row:last-child{border:none}
 .meta{color:var(--muted);font-size:12px;line-height:1.45}
+.steps{margin:0;padding-left:18px;color:#cbd5e1;font-size:13px;line-height:1.55}
+.steps li{margin-bottom:8px}
 input,select{background:#0b1324;border:1px solid var(--line);color:#e2e8f0;border-radius:10px;padding:8px 10px;font-size:13px}
 code{background:#0b1324;padding:2px 6px;border-radius:6px;font-size:12px}
 #status{font-size:12px;color:#93c5fd;margin-bottom:10px}
 pre{background:#070d1a;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12px;white-space:pre-wrap;color:#cbd5e1}
+@media(max-width:1100px){.kpis{grid-template-columns:1fr 1fr 1fr}}
 @media(max-width:900px){.layout,.kpis{grid-template-columns:1fr}}
 @media(max-width:800px){body{flex-direction:column}.sidebar{width:100%;flex-direction:row;flex-wrap:wrap}}
 </style>
@@ -54,10 +58,11 @@ pre{background:#070d1a;border:1px solid var(--line);border-radius:10px;padding:1
 </aside>
 <main class="main">
   <header class="topbar">
-    <div><h1>Ajustes del sistema</h1><p class="sub">Sesión, conectividad, preferencias locales y checklist de producción.</p></div>
+    <div><h1>Ajustes del sistema</h1><p class="sub">Sesión, n8n, conectividad y checklist de producción.</p></div>
     <div class="top-actions">
       <div class="pill"><span class="dot"></span><span id="admin-email">Admin</span></div>
       <button class="btn btn-primary" id="btn-check" type="button">Diagnosticar</button>
+      <button class="btn btn-ok" id="btn-n8n-ping" type="button">Probar n8n</button>
       <button class="btn btn-ghost" id="btn-save" type="button">Guardar prefs</button>
       <button class="btn btn-danger" id="btn-logout" type="button">Salir</button>
     </div>
@@ -68,8 +73,31 @@ pre{background:#070d1a;border:1px solid var(--line);border-radius:10px;padding:1
     <div class="kpi"><div class="label">Auth</div><div class="value" id="k-auth">—</div></div>
     <div class="kpi"><div class="label">API Chat</div><div class="value" id="k-api">—</div></div>
     <div class="kpi"><div class="label">Tabla clientes</div><div class="value" id="k-cli">—</div></div>
+    <div class="kpi"><div class="label">n8n emit</div><div class="value" id="k-n8n">—</div></div>
   </section>
   <section class="layout">
+    <div class="panel wide">
+      <h2>Conexión n8n (haz esto en tu cuenta)</h2>
+      <ol class="steps">
+        <li>En n8n: <strong>Import from File</strong> → <code>n8n/workflows/01-lead-created.json</code> (y opcionalmente <code>02-ops-contacted-onboarding.json</code>).</li>
+        <li>Abre el nodo <strong>Webhook</strong> → Activa el workflow → copia la URL <strong>Production</strong>.</li>
+        <li>En Vercel (proyecto altivox-ai) → Settings → Environment Variables, añade:
+          <br><code>N8N_WEBHOOK_URL</code> = esa Production URL
+          <br><code>N8N_SECRET</code> = una clave larga aleatoria (misma en n8n si usas inbound)
+          <br><code>SUPABASE_SERVICE_ROLE_KEY</code> = service_role de Supabase (solo si n8n escribirá vía <code>/api/n8n</code>)
+        </li>
+        <li>Redeploy en Vercel tras guardar las variables.</li>
+        <li>Vuelve aquí y pulsa <strong>Probar n8n</strong>. En n8n deberías ver una ejecución <code>system.ping</code>.</li>
+        <li>(Recomendado) Supabase → Database → Webhooks → tabla <code>leads</code> INSERT → misma URL n8n (backup si el navegador no emite).</li>
+      </ol>
+      <p class="meta" style="margin-top:10px">Endpoint bridge: <code id="n8n-endpoint">/api/n8n</code> · Eventos: lead.created, lead.hot, lead.contacted, lead.updated, cliente.*, jarvis.rescored, system.ping</p>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" id="btn-n8n-status" type="button">Ver estado bridge</button>
+        <button class="btn btn-ghost" id="btn-n8n-hot" type="button">Emitir lead.hot de prueba</button>
+        <a class="btn btn-ghost" href="https://www.altivoxai.es/api/n8n" target="_blank" rel="noopener">Abrir /api/n8n</a>
+      </div>
+      <pre id="n8n-log" style="margin-top:12px">—</pre>
+    </div>
     <div class="panel">
       <h2>Sesión & entorno</h2>
       <div class="row"><span>Usuario</span><strong id="u-email">—</strong></div>
@@ -77,7 +105,7 @@ pre{background:#070d1a;border:1px solid var(--line);border-radius:10px;padding:1
       <div class="row"><span>Proyecto Supabase</span><strong>soeyfivsuwohuuzgfqar</strong></div>
       <div class="row"><span>Dominio</span><strong id="u-host">—</strong></div>
       <div class="row"><span>Último diagnóstico</span><strong id="u-diag">—</strong></div>
-      <p class="meta" style="margin-top:12px">El acceso al panel es solo para usuarios creados en Supabase Auth. No existe registro público.</p>
+      <p class="meta" style="margin-top:12px">El acceso al panel es solo para usuarios creados en Supabase Auth.</p>
     </div>
     <div class="panel">
       <h2>Preferencias locales</h2>
@@ -85,15 +113,16 @@ pre{background:#070d1a;border:1px solid var(--line);border-radius:10px;padding:1
       <div class="row"><span>Auto-refresh dashboard (seg)</span><input id="pref-refresh" type="number" min="0" step="30" value="0" style="width:110px"></div>
       <div class="row"><span>Sonido nuevos leads</span><select id="pref-sound"><option value="off">Off</option><option value="on">On</option></select></div>
       <div class="row"><span>Idioma panel</span><select id="pref-lang"><option value="es">Español</option><option value="en">English</option></select></div>
-      <p class="meta" style="margin-top:10px">Estas preferencias se guardan en este navegador (localStorage).</p>
+      <p class="meta" style="margin-top:10px">Preferencias en localStorage de este navegador.</p>
     </div>
     <div class="panel">
       <h2>Checklist producción</h2>
-      <div class="row"><span>SQL leads/chat</span><code>supabase/sql/chat-leads.sql</code></div>
-      <div class="row"><span>SQL auth RLS</span><code>supabase/sql/auth-admin-only.sql</code></div>
+      <div class="row"><span>SQL leads/chat</span><code>chat-leads.sql / auth-admin-only.sql</code></div>
       <div class="row"><span>SQL clientes CRM</span><code>supabase/sql/clientes.sql</code></div>
-      <div class="row"><span>Vercel env</span><code>OPENROUTER_API_KEY / GEMINI_API_KEY</code></div>
-      <div class="row"><span>Auth signup público</span><strong>Desactivado (recomendado)</strong></div>
+      <div class="row"><span>SQL n8n (opcional)</span><code>supabase/sql/n8n.sql</code></div>
+      <div class="row"><span>Vercel chat</span><code>OPENROUTER_API_KEY / GEMINI_API_KEY</code></div>
+      <div class="row"><span>Vercel n8n</span><code>N8N_WEBHOOK_URL / N8N_SECRET</code></div>
+      <div class="row"><span>Workflows</span><code>n8n/workflows/*.json</code></div>
     </div>
     <div class="panel">
       <h2>Log de diagnóstico</h2>
@@ -107,6 +136,7 @@ pre{background:#070d1a;border:1px solid var(--line);border-radius:10px;padding:1
   </section>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/n8n-bridge.js"></script>
 <script>
 (function(){
   var sb=window.supabase.createClient("https://soeyfivsuwohuuzgfqar.supabase.co","sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2");
@@ -117,6 +147,9 @@ pre{background:#070d1a;border:1px solid var(--line);border-radius:10px;padding:1
     document.getElementById("pref-sound").value=prefs.sound||"off";
     document.getElementById("pref-lang").value=prefs.lang||"es";
   }
+  function n8nLog(obj){
+    document.getElementById("n8n-log").textContent=typeof obj==="string"?obj:JSON.stringify(obj,null,2);
+  }
   async function auth(){
     var r=await sb.auth.getSession();
     if(!r.data.session){location.href="login.html";return null;}
@@ -125,6 +158,7 @@ pre{background:#070d1a;border:1px solid var(--line);border-radius:10px;padding:1
     document.getElementById("u-email").textContent=u.email||"—";
     document.getElementById("u-id").textContent=u.id||"—";
     document.getElementById("u-host").textContent=location.host;
+    document.getElementById("n8n-endpoint").textContent=location.origin+"/api/n8n";
     document.getElementById("k-auth").textContent="OK";
     return r.data.session;
   }
@@ -138,7 +172,7 @@ pre{background:#070d1a;border:1px solid var(--line);border-radius:10px;padding:1
     }catch(e){document.getElementById("k-sb").textContent="FAIL";lines.push("leads exception");}
     try{
       var c=await sb.from("clientes").select("id",{count:"exact",head:true});
-      if(c.error){document.getElementById("k-cli").textContent="NO";lines.push("clientes: ejecutar supabase/sql/clientes.sql ("+c.error.message+")");}
+      if(c.error){document.getElementById("k-cli").textContent="NO";lines.push("clientes: "+c.error.message);}
       else {document.getElementById("k-cli").textContent="OK";lines.push("clientes: OK");}
     }catch(e){document.getElementById("k-cli").textContent="NO";}
     try{
@@ -147,6 +181,15 @@ pre{background:#070d1a;border:1px solid var(--line);border-radius:10px;padding:1
       document.getElementById("k-api").textContent=res.ok?"OK":"FAIL";
       lines.push("/api/chat: "+(res.ok?"OK":(d.error||res.status)));
     }catch(e){document.getElementById("k-api").textContent="FAIL";lines.push("/api/chat: "+e.message);}
+    try{
+      var st=await window.AltivoxN8n.status();
+      document.getElementById("k-n8n").textContent=st.emitConfigured?"OK":"NO URL";
+      lines.push("n8n bridge: emitConfigured="+!!st.emitConfigured+" inboundSecret="+!!st.inboundSecretConfigured+" supabaseWrite="+!!st.supabaseWriteConfigured);
+      n8nLog(st);
+    }catch(e){
+      document.getElementById("k-n8n").textContent="FAIL";
+      lines.push("n8n: "+e.message);
+    }
     var now=new Date().toLocaleString("es-ES");
     document.getElementById("u-diag").textContent=now;
     document.getElementById("log").textContent=lines.join("\n");
@@ -163,6 +206,31 @@ pre{background:#070d1a;border:1px solid var(--line);border-radius:10px;padding:1
     document.getElementById("status").textContent="Preferencias guardadas";
   };
   document.getElementById("btn-check").onclick=diagnose;
+  document.getElementById("btn-n8n-status").onclick=async function(){
+    var st=await window.AltivoxN8n.status();
+    n8nLog(st);
+    document.getElementById("k-n8n").textContent=st.emitConfigured?"OK":"NO URL";
+    document.getElementById("status").textContent="Estado n8n actualizado";
+  };
+  document.getElementById("btn-n8n-ping").onclick=async function(){
+    document.getElementById("status").textContent="Enviando ping a n8n...";
+    var r=await window.AltivoxN8n.ping("ajustes");
+    n8nLog(r);
+    document.getElementById("k-n8n").textContent=r.ok&&r.json&&r.json.ok?"OK":"FAIL";
+    document.getElementById("status").textContent=r.ok&&r.json&&r.json.ok?"Ping n8n OK — revisa Executions en n8n":("Ping falló: "+((r.json&&r.json.error)||r.error||r.status));
+  };
+  document.getElementById("btn-n8n-hot").onclick=async function(){
+    var r=await window.AltivoxN8n.emit("lead.hot",{
+      nombre:"Prueba Altivox",
+      email:"test@altivoxai.es",
+      score:95,
+      clasificacion:"caliente",
+      fuente:"n8n_test",
+      mensaje:"Lead de prueba desde Ajustes"
+    });
+    n8nLog(r);
+    document.getElementById("status").textContent=r.ok?"lead.hot de prueba enviado":"Error emitiendo lead.hot";
+  };
   document.getElementById("btn-copy").onclick=async function(){
     try{await navigator.clipboard.writeText(document.getElementById("log").textContent);document.getElementById("status").textContent="Log copiado";}catch(e){alert("No se pudo copiar");}
   };

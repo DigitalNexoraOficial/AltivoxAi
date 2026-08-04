@@ -45,6 +45,7 @@ rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/n8n-bridge.js"></script>
 
 
 
@@ -2293,6 +2294,10 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
       return { action: "error", error: inserted.error.message };
     }
 
+    if (window.AltivoxN8n && inserted.data) {
+      window.AltivoxN8n.leadCreated(inserted.data);
+    }
+
     flushed = true;
     session = createSession();
     return { action: "saved", lead: inserted.data };
@@ -2329,10 +2334,13 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
         clasificacion: "caliente",
         prioridad: "alta"
       }
-    ]);
+    ]).select().single();
 
     if (result.error) alert("Error al registrar: " + result.error.message);
-    else alert("¡Solicitud enviada! Tus datos se han registrado.");
+    else {
+      if (window.AltivoxN8n && result.data) window.AltivoxN8n.leadCreated(result.data);
+      alert("¡Solicitud enviada! Tus datos se han registrado.");
+    }
   }
 
   function startVoiceRecognition() {

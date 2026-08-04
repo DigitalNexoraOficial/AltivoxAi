@@ -98,6 +98,7 @@ textarea,input{width:100%;background:#0b1324;border:1px solid var(--line);color:
   </section>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/n8n-bridge.js"></script>
 <script>
 (function(){
   var sb=window.supabase.createClient("https://soeyfivsuwohuuzgfqar.supabase.co","sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2");
@@ -161,8 +162,15 @@ textarea,input{width:100%;background:#0b1324;border:1px solid var(--line);color:
   document.getElementById("btn-apply").onclick=async function(){
     if(!selected)return alert("Selecciona un lead de la cola prioritaria");
     if(!lastAi)lastAi=classify(document.getElementById("txt").value||selected.mensaje);
-    var r=await sb.from("leads").update({score:lastAi.score,clasificacion:lastAi.clasificacion,prioridad:lastAi.prioridad,auto_respuesta:lastAi.auto_respuesta,ultimo_contacto:new Date().toISOString()}).eq("id",selected.id);
+    var r=await sb.from("leads").update({score:lastAi.score,clasificacion:lastAi.clasificacion,prioridad:lastAi.prioridad,auto_respuesta:lastAi.auto_respuesta,ultimo_contacto:new Date().toISOString()}).eq("id",selected.id).select().single();
     if(r.error)return alert(r.error.message);
+    if(window.AltivoxN8n){
+      var lead=Object.assign({},selected,r.data||{},lastAi);
+      window.AltivoxN8n.emit("jarvis.rescored", lead);
+      if(String(lastAi.clasificacion||"").toLowerCase()==="caliente"||Number(lastAi.score||0)>=70){
+        window.AltivoxN8n.emit("lead.hot", lead);
+      }
+    }
     await load();
     document.getElementById("status").textContent="Score aplicado a "+(selected.nombre||selected.id);
   };

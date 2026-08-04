@@ -272,6 +272,7 @@ a{color:inherit;text-decoration:none;}
   </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/n8n-bridge.js"></script>
 <script>
 (function () {
   var SUPABASE_URL = "https://soeyfivsuwohuuzgfqar.supabase.co";
@@ -360,8 +361,12 @@ a{color:inherit;text-decoration:none;}
   }
 
   async function updateLead(id, patch) {
-    var res = await sb.from("leads").update(patch).eq("id", id);
+    var res = await sb.from("leads").update(patch).eq("id", id).select().single();
     if (res.error) throw res.error;
+    if (window.AltivoxN8n) {
+      var lead = res.data || allLeads.find(function (l) { return String(l.id) === String(id); }) || { id: id };
+      window.AltivoxN8n.leadUpdated(Object.assign({}, lead, patch), patch);
+    }
   }
 
   function computeKpis(leads) {

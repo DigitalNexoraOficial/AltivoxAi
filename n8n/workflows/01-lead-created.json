@@ -1,0 +1,73 @@
+{
+  "name": "AltivoxAI · Lead created / hot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "altivox-leads",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "wh-1",
+      "name": "Webhook Altivox",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 300],
+      "webhookId": "altivox-leads"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.event }}",
+              "operation": "equals",
+              "value2": "lead.hot"
+            }
+          ]
+        }
+      },
+      "id": "if-hot",
+      "name": "¿Lead caliente?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const j = items[0].json;\nconst d = j.data || j.record || j;\nconst lead = d.lead || d;\nconst email = lead.email || '';\nconst nombre = lead.nombre || 'Lead';\nconst score = lead.score ?? '-';\nconst clas = lead.clasificacion || '-';\nconst msg = (lead.mensaje || '').toString().slice(0, 400);\nreturn [{\n  json: {\n    ...j,\n    notifyTitle: clas === 'caliente' || j.event === 'lead.hot' ? '🔥 Lead CALIENTE' : '🆕 Nuevo lead',\n    notifyText: `${nombre} · ${email} · score ${score}\\n${msg}`,\n    mailto: email && !String(email).includes('@pending.altivoxai') ? email : null\n  }\n}];"
+      },
+      "id": "norm-1",
+      "name": "Normalizar payload",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [720, 200]
+    },
+    {
+      "parameters": {
+        "content": "## Conectar notificaciones\n1. Sustituye este nodo por **Telegram**, **Slack**, **Gmail** o **WhatsApp**.\n2. Usa `{{$json.notifyTitle}}` y `{{$json.notifyText}}`.\n3. Activa el workflow y copia la **Production URL** del Webhook.\n4. Pégala en Vercel como `N8N_WEBHOOK_URL`.",
+        "height": 280,
+        "width": 360
+      },
+      "id": "note-1",
+      "name": "Instrucciones",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [940, 80]
+    }
+  ],
+  "connections": {
+    "Webhook Altivox": {
+      "main": [[{ "node": "¿Lead caliente?", "type": "main", "index": 0 }]]
+    },
+    "¿Lead caliente?": {
+      "main": [
+        [{ "node": "Normalizar payload", "type": "main", "index": 0 }],
+        [{ "node": "Normalizar payload", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": false },
+  "pinData": {}
+}

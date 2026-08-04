@@ -121,6 +121,7 @@ a{color:inherit;text-decoration:none}
   </section>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/n8n-bridge.js"></script>
 <script>
 (function(){
   var URL="https://soeyfivsuwohuuzgfqar.supabase.co";
@@ -239,11 +240,13 @@ a{color:inherit;text-decoration:none}
     document.getElementById("b-edit").onclick=function(){showForm(c);};
     document.getElementById("b-touch").onclick=async function(){
       await sb.from("clientes").update({ultimo_contacto:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",c.id);
+      if(window.AltivoxN8n) window.AltivoxN8n.clienteEvent("cliente.touched", c);
       await load(); selected=c.id; render();
     };
     document.getElementById("b-del").onclick=async function(){
       if(!confirm("¿Eliminar cliente?"))return;
       await sb.from("clientes").delete().eq("id",c.id);
+      if(window.AltivoxN8n) window.AltivoxN8n.clienteEvent("cliente.deleted", {id:c.id,nombre:c.nombre,email:c.email});
       selected=null; await load();
     };
   }
@@ -285,6 +288,9 @@ a{color:inherit;text-decoration:none}
       if(c){res=await sb.from("clientes").update(payload).eq("id",c.id).select().single(); selected=c.id;}
       else {payload.origen="manual";payload.created_at=new Date().toISOString();res=await sb.from("clientes").insert([payload]).select().single(); if(res.data) selected=res.data.id;}
       if(res.error)return alert(res.error.message);
+      if(window.AltivoxN8n && res.data){
+        window.AltivoxN8n.clienteEvent(c?"cliente.updated":"cliente.created", res.data);
+      }
       editing=null; await load();
     };
   }

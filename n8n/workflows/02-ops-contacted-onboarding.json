@@ -1,0 +1,84 @@
+{
+  "name": "AltivoxAI · Lead contactado + Cliente onboarding",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "altivox-ops",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "wh-ops",
+      "name": "Webhook Ops",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 320],
+      "webhookId": "altivox-ops"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "rules": [
+            { "outputKey": "contacted", "value": "lead.contacted" },
+            { "outputKey": "cliente", "value": "cliente.created" },
+            { "outputKey": "other", "value": "={{ $json.event }}" }
+          ]
+        },
+        "dataType": "string",
+        "value1": "={{ $json.event }}",
+        "propertyName": "event"
+      },
+      "id": "sw-1",
+      "name": "Switch evento",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [480, 320]
+    },
+    {
+      "parameters": {
+        "functionCode": "const j=items[0].json; const d=j.data||{}; const lead=d.lead||d; return [{json:{subject:'Lead contactado: '+(lead.nombre||''), body: JSON.stringify(lead,null,2), event:j.event}}];"
+      },
+      "id": "fn-c",
+      "name": "Prep contactado",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [720, 200]
+    },
+    {
+      "parameters": {
+        "functionCode": "const j=items[0].json; const c=j.data||{}; return [{json:{subject:'Onboarding cliente: '+(c.nombre||''), checklist:['Drive carpeta','Notion ficha','Email bienvenida','Factura/Stripe'], cliente:c}}];"
+      },
+      "id": "fn-o",
+      "name": "Prep onboarding",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [720, 400]
+    },
+    {
+      "parameters": {
+        "content": "Conecta Gmail/Slack/Notion aquí.\nPara escribir en Altivox desde n8n:\nHTTP Request → POST https://www.altivoxai.es/api/n8n\nHeader: x-altivox-secret: (N8N_SECRET)\nBody: {\"action\":\"update_lead\",\"id\":\"...\",\"patch\":{\"estado\":\"contactado\"}}",
+        "height": 260,
+        "width": 380
+      },
+      "id": "note-ops",
+      "name": "Inbound API",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [960, 260]
+    }
+  ],
+  "connections": {
+    "Webhook Ops": {
+      "main": [[{ "node": "Switch evento", "type": "main", "index": 0 }]]
+    },
+    "Switch evento": {
+      "main": [
+        [{ "node": "Prep contactado", "type": "main", "index": 0 }],
+        [{ "node": "Prep onboarding", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": {},
+  "pinData": {}
+}
