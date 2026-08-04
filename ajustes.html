@@ -5,49 +5,169 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ajustes | AltivoxAI</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
-body{display:flex;min-height:100vh;background:#0b1120;color:#fff;}
-.sidebar{width:250px;background:#111827;padding:30px 20px;display:flex;flex-direction:column;}
-.sidebar h2{margin-bottom:35px;color:#00b4ff;}
-.sidebar a{color:#d1d5db;text-decoration:none;padding:14px 0;}
-.sidebar a:hover{color:#00b4ff;padding-left:8px;}
-.contenido{flex:1;padding:30px;}
-.servicios{margin-top:20px;background:#182235;padding:25px;border-radius:18px;}
-.servicio{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08);}
-.servicio:last-child{border:none;}
-p{color:#9ca3af;}
-@media(max-width:800px){body{flex-direction:column;}.sidebar{width:100%;}}
+:root{--bg:#070b14;--panel:#0f172a;--panel-2:#111c33;--line:rgba(148,163,184,.14);--text:#e2e8f0;--muted:#94a3b8;--cyan:#22d3ee;--ok:#34d399}
+*{margin:0;padding:0;box-sizing:border-box}
+body{display:flex;min-height:100vh;background:radial-gradient(1200px 600px at 10% -10%,rgba(34,211,238,.08),transparent 50%),var(--bg);color:var(--text);font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif}
+a{color:inherit;text-decoration:none}
+.sidebar{width:220px;flex-shrink:0;background:rgba(15,23,42,.95);border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:6px}
+.brand{font-size:18px;font-weight:700;color:var(--cyan);margin:4px 8px 18px}
+.sidebar a{display:block;padding:10px 12px;border-radius:10px;color:#cbd5e1;font-size:14px}
+.sidebar a:hover,.sidebar a.active{background:rgba(34,211,238,.1);color:#fff}
+.main{flex:1;padding:18px 20px 28px;min-width:0}
+.topbar{display:flex;justify-content:space-between;gap:16px;margin-bottom:14px}
+.topbar h1{font-size:24px}.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.top-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.btn{border:none;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:600;font-size:13px}
+.btn-ghost{background:transparent;color:#cbd5e1;border:1px solid var(--line)}
+.btn-primary{background:linear-gradient(90deg,#0284c7,#22d3ee);color:#041018}
+.btn-danger{background:#7f1d1d;color:#fecaca;border:1px solid #991b1b}
+.btn-ok{background:#065f46;color:#a7f3d0;border:1px solid #047857}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.kpi .label{font-size:11px;color:var(--muted);text-transform:uppercase}
+.kpi .value{font-size:18px;font-weight:700;margin-top:6px}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+.panel h2{font-size:14px;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+.row:last-child{border:none}
+.meta{color:var(--muted);font-size:12px;line-height:1.45}
+input,select{background:#0b1324;border:1px solid var(--line);color:#e2e8f0;border-radius:10px;padding:8px 10px;font-size:13px}
+code{background:#0b1324;padding:2px 6px;border-radius:6px;font-size:12px}
+#status{font-size:12px;color:#93c5fd;margin-bottom:10px}
+pre{background:#070d1a;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12px;white-space:pre-wrap;color:#cbd5e1}
+@media(max-width:900px){.layout,.kpis{grid-template-columns:1fr}}
+@media(max-width:800px){body{flex-direction:column}.sidebar{width:100%;flex-direction:row;flex-wrap:wrap}}
 </style>
 </head>
 <body>
-<div class="sidebar">
-  <h2>🤖 AltivoxAI</h2>
-  <a href="dashboard.html">🏠 Dashboard</a>
-  <a href="clientes.html">👥 Clientes</a>
-  <a href="chatbot.html">💬 Chatbot</a>
-  <a href="jarvis.html">🤖 J.A.R.V.I.S.</a>
-  <a href="agentes.html">🧠 Agentes IA</a>
-  <a href="ajustes.html">⚙️ Ajustes</a>
-</div>
-<div class="contenido">
-  <h1>⚙️ Ajustes</h1>
-  <p>Configuración base del sistema AltivoxAI.</p>
-  <section class="servicios">
-    <div class="servicio"><span>Tema</span><span>Oscuro</span></div>
-    <div class="servicio"><span>Idioma</span><span>Español</span></div>
-    <div class="servicio"><span>Notificaciones</span><span>Activadas</span></div>
-    <div class="servicio"><span>Supabase</span><span>Conectado</span></div>
+<aside class="sidebar">
+  <div class="brand">AltivoxAI</div>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="clientes.html">Clientes</a>
+  <a href="chatbot.html">Chatbot</a>
+  <a href="jarvis.html">J.A.R.V.I.S.</a>
+  <a href="agentes.html">Agentes IA</a>
+  <a class="active" href="ajustes.html">Ajustes</a>
+</aside>
+<main class="main">
+  <header class="topbar">
+    <div><h1>Ajustes del sistema</h1><p class="sub">Sesión, conectividad, preferencias locales y checklist de producción.</p></div>
+    <div class="top-actions">
+      <div class="pill"><span class="dot"></span><span id="admin-email">Admin</span></div>
+      <button class="btn btn-primary" id="btn-check" type="button">Diagnosticar</button>
+      <button class="btn btn-ghost" id="btn-save" type="button">Guardar prefs</button>
+      <button class="btn btn-danger" id="btn-logout" type="button">Salir</button>
+    </div>
+  </header>
+  <p id="status">Cargando...</p>
+  <section class="kpis">
+    <div class="kpi"><div class="label">Supabase</div><div class="value" id="k-sb">—</div></div>
+    <div class="kpi"><div class="label">Auth</div><div class="value" id="k-auth">—</div></div>
+    <div class="kpi"><div class="label">API Chat</div><div class="value" id="k-api">—</div></div>
+    <div class="kpi"><div class="label">Tabla clientes</div><div class="value" id="k-cli">—</div></div>
   </section>
-</div>
+  <section class="layout">
+    <div class="panel">
+      <h2>Sesión & entorno</h2>
+      <div class="row"><span>Usuario</span><strong id="u-email">—</strong></div>
+      <div class="row"><span>User ID</span><strong id="u-id" style="font-size:11px">—</strong></div>
+      <div class="row"><span>Proyecto Supabase</span><strong>soeyfivsuwohuuzgfqar</strong></div>
+      <div class="row"><span>Dominio</span><strong id="u-host">—</strong></div>
+      <div class="row"><span>Último diagnóstico</span><strong id="u-diag">—</strong></div>
+      <p class="meta" style="margin-top:12px">El acceso al panel es solo para usuarios creados en Supabase Auth. No existe registro público.</p>
+    </div>
+    <div class="panel">
+      <h2>Preferencias locales</h2>
+      <div class="row"><span>Densidad UI</span><select id="pref-density"><option value="compact">Compacta</option><option value="comfortable">Cómoda</option></select></div>
+      <div class="row"><span>Auto-refresh dashboard (seg)</span><input id="pref-refresh" type="number" min="0" step="30" value="0" style="width:110px"></div>
+      <div class="row"><span>Sonido nuevos leads</span><select id="pref-sound"><option value="off">Off</option><option value="on">On</option></select></div>
+      <div class="row"><span>Idioma panel</span><select id="pref-lang"><option value="es">Español</option><option value="en">English</option></select></div>
+      <p class="meta" style="margin-top:10px">Estas preferencias se guardan en este navegador (localStorage).</p>
+    </div>
+    <div class="panel">
+      <h2>Checklist producción</h2>
+      <div class="row"><span>SQL leads/chat</span><code>supabase/sql/chat-leads.sql</code></div>
+      <div class="row"><span>SQL auth RLS</span><code>supabase/sql/auth-admin-only.sql</code></div>
+      <div class="row"><span>SQL clientes CRM</span><code>supabase/sql/clientes.sql</code></div>
+      <div class="row"><span>Vercel env</span><code>OPENROUTER_API_KEY / GEMINI_API_KEY</code></div>
+      <div class="row"><span>Auth signup público</span><strong>Desactivado (recomendado)</strong></div>
+    </div>
+    <div class="panel">
+      <h2>Log de diagnóstico</h2>
+      <pre id="log">—</pre>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <a class="btn btn-ok" href="dashboard.html">Ir a Dashboard</a>
+        <a class="btn btn-ghost" href="clientes.html">Ir a Clientes</a>
+        <button class="btn btn-ghost" id="btn-copy" type="button">Copiar log</button>
+      </div>
+    </div>
+  </section>
+</main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const sb = window.supabase.createClient(
-  "https://soeyfivsuwohuuzgfqar.supabase.co",
-  "sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2"
-);
-(async () => {
-  const { data } = await sb.auth.getSession();
-  if (!data.session) window.location.href = "login.html";
+(function(){
+  var sb=window.supabase.createClient("https://soeyfivsuwohuuzgfqar.supabase.co","sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2");
+  var prefs=JSON.parse(localStorage.getItem("altivox_admin_prefs")||"{}");
+  function setPrefUI(){
+    document.getElementById("pref-density").value=prefs.density||"compact";
+    document.getElementById("pref-refresh").value=prefs.refresh||0;
+    document.getElementById("pref-sound").value=prefs.sound||"off";
+    document.getElementById("pref-lang").value=prefs.lang||"es";
+  }
+  async function auth(){
+    var r=await sb.auth.getSession();
+    if(!r.data.session){location.href="login.html";return null;}
+    var u=r.data.session.user;
+    document.getElementById("admin-email").textContent=u.email||"Admin";
+    document.getElementById("u-email").textContent=u.email||"—";
+    document.getElementById("u-id").textContent=u.id||"—";
+    document.getElementById("u-host").textContent=location.host;
+    document.getElementById("k-auth").textContent="OK";
+    return r.data.session;
+  }
+  async function diagnose(){
+    var lines=[];
+    document.getElementById("status").textContent="Diagnosticando...";
+    try{
+      var s=await sb.from("leads").select("id",{count:"exact",head:true});
+      if(s.error){document.getElementById("k-sb").textContent="FAIL";lines.push("leads: "+s.error.message);}
+      else {document.getElementById("k-sb").textContent="OK";lines.push("leads: OK");}
+    }catch(e){document.getElementById("k-sb").textContent="FAIL";lines.push("leads exception");}
+    try{
+      var c=await sb.from("clientes").select("id",{count:"exact",head:true});
+      if(c.error){document.getElementById("k-cli").textContent="NO";lines.push("clientes: ejecutar supabase/sql/clientes.sql ("+c.error.message+")");}
+      else {document.getElementById("k-cli").textContent="OK";lines.push("clientes: OK");}
+    }catch(e){document.getElementById("k-cli").textContent="NO";}
+    try{
+      var res=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:"ping",agent:"Ajustes"})});
+      var d=await res.json();
+      document.getElementById("k-api").textContent=res.ok?"OK":"FAIL";
+      lines.push("/api/chat: "+(res.ok?"OK":(d.error||res.status)));
+    }catch(e){document.getElementById("k-api").textContent="FAIL";lines.push("/api/chat: "+e.message);}
+    var now=new Date().toLocaleString("es-ES");
+    document.getElementById("u-diag").textContent=now;
+    document.getElementById("log").textContent=lines.join("\n");
+    document.getElementById("status").textContent="Diagnóstico completado · "+now;
+  }
+  document.getElementById("btn-save").onclick=function(){
+    prefs={
+      density:document.getElementById("pref-density").value,
+      refresh:Number(document.getElementById("pref-refresh").value||0),
+      sound:document.getElementById("pref-sound").value,
+      lang:document.getElementById("pref-lang").value
+    };
+    localStorage.setItem("altivox_admin_prefs",JSON.stringify(prefs));
+    document.getElementById("status").textContent="Preferencias guardadas";
+  };
+  document.getElementById("btn-check").onclick=diagnose;
+  document.getElementById("btn-copy").onclick=async function(){
+    try{await navigator.clipboard.writeText(document.getElementById("log").textContent);document.getElementById("status").textContent="Log copiado";}catch(e){alert("No se pudo copiar");}
+  };
+  document.getElementById("btn-logout").onclick=async function(){await sb.auth.signOut();location.href="login.html";};
+  (async function(){if(!(await auth()))return;setPrefUI();await diagnose();})();
 })();
 </script>
 </body>

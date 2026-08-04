@@ -5,111 +5,307 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clientes | AltivoxAI</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
-body{display:flex;min-height:100vh;background:#0b1120;color:#fff;}
-.sidebar{width:250px;background:#111827;padding:30px 20px;display:flex;flex-direction:column;}
-.sidebar h2{margin-bottom:35px;color:#00b4ff;}
-.sidebar a{color:#d1d5db;text-decoration:none;padding:14px 0;}
-.sidebar a:hover{color:#00b4ff;padding-left:8px;}
-.contenido{flex:1;padding:30px;}
-h1{margin-bottom:8px;}
-p{color:#9ca3af;margin-bottom:20px;}
-button{background:#00bfff;color:#fff;border:none;padding:12px 20px;border-radius:10px;cursor:pointer;margin:8px 8px 8px 0;}
-input{display:block;width:100%;max-width:420px;padding:12px;margin-bottom:10px;border:none;border-radius:10px;background:#182235;color:#fff;}
-table{width:100%;border-collapse:collapse;background:#1e293b;border-radius:12px;overflow:hidden;margin-top:20px;}
-th{background:#0ea5e9;padding:15px;text-align:left;}
-td{padding:15px;border-bottom:1px solid #334155;}
-#formulario{margin:15px 0;display:none;}
-@media(max-width:800px){body{flex-direction:column;}.sidebar{width:100%;}}
+:root{--bg:#070b14;--panel:#0f172a;--panel-2:#111c33;--line:rgba(148,163,184,.14);--text:#e2e8f0;--muted:#94a3b8;--cyan:#22d3ee;--blue:#38bdf8;--hot:#fb7185;--warm:#fbbf24;--ok:#34d399;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{display:flex;min-height:100vh;background:radial-gradient(1200px 600px at 10% -10%,rgba(34,211,238,.08),transparent 50%),var(--bg);color:var(--text);font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif}
+a{color:inherit;text-decoration:none}
+.sidebar{width:220px;flex-shrink:0;background:rgba(15,23,42,.95);border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:6px}
+.brand{font-size:18px;font-weight:700;color:var(--cyan);margin:4px 8px 18px}
+.sidebar a{display:block;padding:10px 12px;border-radius:10px;color:#cbd5e1;font-size:14px}
+.sidebar a:hover,.sidebar a.active{background:rgba(34,211,238,.1);color:#fff}
+.main{flex:1;padding:18px 20px 28px;min-width:0}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:14px}
+.topbar h1{font-size:24px}.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.top-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:12px}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.btn{border:none;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:600;font-size:13px}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn-ghost{background:transparent;color:#cbd5e1;border:1px solid var(--line)}
+.btn-primary{background:linear-gradient(90deg,#0284c7,#22d3ee);color:#041018}
+.btn-danger{background:#7f1d1d;color:#fecaca;border:1px solid #991b1b}
+.btn-ok{background:#065f46;color:#a7f3d0;border:1px solid #047857}
+.btn-soft{background:rgba(56,189,248,.12);color:#7dd3fc;border:1px solid rgba(56,189,248,.25)}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;cursor:pointer}
+.kpi:hover,.kpi.active{border-color:rgba(34,211,238,.45)}
+.kpi .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.kpi .value{font-size:26px;font-weight:700;margin-top:4px}
+.kpi .hint{font-size:11px;color:#64748b;margin-top:4px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;margin-bottom:12px}
+.toolbar input,.toolbar select,textarea,input[type=text],input[type=email],input[type=tel],input[type=number]{background:#0b1324;border:1px solid var(--line);color:#e2e8f0;border-radius:10px;padding:9px 11px;font-size:13px;outline:none;width:100%}
+.toolbar input{min-width:220px;flex:1}
+.toolbar select{min-width:130px;width:auto}
+#status-msg{font-size:12px;color:#93c5fd;margin-left:auto}
+.layout{display:grid;grid-template-columns:1.2fr .95fr;gap:12px;min-height:calc(100vh - 240px)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:420px}
+.panel-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.02)}
+.panel-head h2{font-size:14px}
+.panel-head span{font-size:12px;color:var(--muted)}
+.list{overflow:auto;flex:1}
+.row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+.row:hover,.row.active{background:rgba(34,211,238,.08)}
+.row.active{box-shadow:inset 3px 0 0 var(--cyan)}
+.title{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.title strong{font-size:14px}
+.badge{font-size:10px;padding:3px 7px;border-radius:999px;border:1px solid var(--line);text-transform:uppercase}
+.badge.activo{background:rgba(52,211,153,.12);color:#6ee7b7}
+.badge.pausado{background:rgba(251,191,36,.12);color:#fde68a}
+.badge.churn{background:rgba(251,113,133,.12);color:#fda4af}
+.badge.vip{background:rgba(34,211,238,.12);color:#67e8f9}
+.meta{font-size:12px;color:var(--muted);margin-top:4px}
+.preview{font-size:12px;color:#94a3b8;margin-top:6px}
+.detail{padding:14px;overflow:auto;flex:1}
+.empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.field{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.field.full{grid-column:1/-1}
+.field label{display:block;font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+.alert{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);color:#fde68a;padding:10px 12px;border-radius:10px;font-size:12px;margin-bottom:12px}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.layout{grid-template-columns:1fr}}
+@media(max-width:800px){body{flex-direction:column}.sidebar{width:100%;flex-direction:row;flex-wrap:wrap}.brand{width:100%}.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="sidebar">
-  <h2>🤖 AltivoxAI</h2>
-  <a href="dashboard.html">🏠 Dashboard</a>
-  <a href="clientes.html">👥 Clientes</a>
-  <a href="chatbot.html">💬 Chatbot</a>
-  <a href="jarvis.html">🤖 J.A.R.V.I.S.</a>
-  <a href="agentes.html">🧠 Agentes IA</a>
-  <a href="ajustes.html">⚙️ Ajustes</a>
-</div>
+<aside class="sidebar">
+  <div class="brand">AltivoxAI</div>
+  <a href="dashboard.html">Dashboard</a>
+  <a class="active" href="clientes.html">Clientes</a>
+  <a href="chatbot.html">Chatbot</a>
+  <a href="jarvis.html">J.A.R.V.I.S.</a>
+  <a href="agentes.html">Agentes IA</a>
+  <a href="ajustes.html">Ajustes</a>
+</aside>
+<main class="main">
+  <header class="topbar">
+    <div>
+      <h1>CRM · Clientes</h1>
+      <p class="sub">Cartera, planes, valor mensual y seguimiento comercial.</p>
+    </div>
+    <div class="top-actions">
+      <div class="pill"><span class="dot"></span><span id="admin-email">Admin</span></div>
+      <button class="btn btn-primary" id="btn-new" type="button">+ Nuevo cliente</button>
+      <button class="btn btn-ghost" id="btn-refresh" type="button">Actualizar</button>
+      <button class="btn btn-danger" id="btn-logout" type="button">Salir</button>
+    </div>
+  </header>
 
-<div class="contenido">
-  <h1>👥 Clientes</h1>
-  <p>Gestiona todos los clientes de AltivoxAI.</p>
+  <div id="setup-alert" class="alert" style="display:none"></div>
 
-  <button id="nuevoCliente">➕ Nuevo Cliente</button>
+  <section class="kpis" id="kpis">
+    <div class="kpi active" data-f="all"><div class="label">Total</div><div class="value" id="k-total">0</div><div class="hint">Cartera</div></div>
+    <div class="kpi" data-f="activo"><div class="label">Activos</div><div class="value" id="k-activos">0</div><div class="hint">En curso</div></div>
+    <div class="kpi" data-f="vip"><div class="label">VIP / Pro</div><div class="value" id="k-vip">0</div><div class="hint">Planes altos</div></div>
+    <div class="kpi" data-f="pausado"><div class="label">Pausados</div><div class="value" id="k-pausados">0</div><div class="hint">Riesgo</div></div>
+    <div class="kpi" data-f="mrr"><div class="label">MRR €</div><div class="value" id="k-mrr">0</div><div class="hint">Valor mensual</div></div>
+  </section>
 
-  <div id="formulario">
-    <input id="nombre" type="text" placeholder="Nombre">
-    <input id="empresa" type="text" placeholder="Empresa">
-    <input id="email" type="email" placeholder="Correo electrónico">
-    <button id="guardarCliente">Guardar Cliente</button>
-  </div>
+  <section class="toolbar">
+    <input id="search" type="search" placeholder="Buscar nombre, empresa, email, sector...">
+    <select id="f-estado"><option value="">Estado</option><option>activo</option><option>pausado</option><option>churn</option><option>prospecto</option></select>
+    <select id="f-plan"><option value="">Plan</option><option>starter</option><option>growth</option><option>pro</option><option>vip</option></select>
+    <select id="sort"><option value="recent">Recientes</option><option value="mrr">Mayor MRR</option><option value="name">Nombre</option></select>
+    <span id="status-msg">Cargando...</span>
+  </section>
 
-  <table>
-    <thead>
-      <tr><th>Nombre</th><th>Empresa</th><th>Email</th><th>Estado</th></tr>
-    </thead>
-    <tbody id="tablaClientes"></tbody>
-  </table>
-</div>
-
+  <section class="layout">
+    <div class="panel">
+      <div class="panel-head"><h2>Cartera</h2><span id="count">0</span></div>
+      <div class="list" id="list"><div class="empty">Cargando...</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>Ficha</h2><span id="detail-title">Selecciona o crea</span></div>
+      <div class="detail" id="detail"><div class="empty">Selecciona un cliente o pulsa “Nuevo cliente”.</div></div>
+    </div>
+  </section>
+</main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = "https://soeyfivsuwohuuzgfqar.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2";
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+(function(){
+  var URL="https://soeyfivsuwohuuzgfqar.supabase.co";
+  var KEY="sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2";
+  var sb=window.supabase.createClient(URL,KEY);
+  var all=[], selected=null, quick="all", editing=null, tableOk=true;
 
-const tabla = document.getElementById("tablaClientes");
-const formulario = document.getElementById("formulario");
+  function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+  function money(n){return Number(n||0).toLocaleString("es-ES",{maximumFractionDigits:0});}
+  function setStatus(m,err){var el=document.getElementById("status-msg");el.textContent=m;el.style.color=err?"#fda4af":"#93c5fd";}
 
-(async () => {
-  const { data } = await sb.auth.getSession();
-  if (!data.session) window.location.href = "login.html";
+  async function requireAuth(){
+    var r=await sb.auth.getSession();
+    if(r.error||!r.data.session){location.href="login.html";return null;}
+    document.getElementById("admin-email").textContent=r.data.session.user.email||"Admin";
+    return r.data.session;
+  }
+
+  async function load(){
+    var r=await sb.from("clientes").select("*").order("created_at",{ascending:false});
+    if(r.error){
+      tableOk=false;
+      document.getElementById("setup-alert").style.display="block";
+      document.getElementById("setup-alert").innerHTML="Falta la tabla <b>clientes</b> en Supabase. Abre SQL Editor y ejecuta el archivo <code>supabase/sql/clientes.sql</code> del repo. Error: "+esc(r.error.message);
+      setStatus("Tabla clientes no disponible",true);
+      all=[];
+      render();
+      return;
+    }
+    tableOk=true;
+    document.getElementById("setup-alert").style.display="none";
+    all=r.data||[];
+    setStatus("CRM listo · "+all.length+" clientes");
+    render();
+  }
+
+  function filtered(){
+    var q=(document.getElementById("search").value||"").toLowerCase();
+    var est=document.getElementById("f-estado").value;
+    var plan=document.getElementById("f-plan").value;
+    var sort=document.getElementById("sort").value;
+    var rows=all.filter(function(c){
+      var e=(c.estado||"").toLowerCase();
+      var p=(c.plan||"").toLowerCase();
+      if(quick==="activo"&&e!=="activo")return false;
+      if(quick==="pausado"&&e!=="pausado")return false;
+      if(quick==="vip"&&!(p==="vip"||p==="pro"))return false;
+      if(est&&e!==est)return false;
+      if(plan&&p!==plan)return false;
+      if(q){
+        var blob=[c.nombre,c.empresa,c.email,c.telefono,c.sector,c.notas,c.plan,c.estado].join(" ").toLowerCase();
+        if(blob.indexOf(q)<0)return false;
+      }
+      return true;
+    });
+    rows.sort(function(a,b){
+      if(sort==="mrr")return Number(b.valor_mensual||0)-Number(a.valor_mensual||0);
+      if(sort==="name")return String(a.nombre||"").localeCompare(String(b.nombre||""),"es");
+      return new Date(b.created_at||0)-new Date(a.created_at||0);
+    });
+    return rows;
+  }
+
+  function kpis(){
+    document.getElementById("k-total").textContent=all.length;
+    document.getElementById("k-activos").textContent=all.filter(function(c){return (c.estado||"").toLowerCase()==="activo";}).length;
+    document.getElementById("k-vip").textContent=all.filter(function(c){var p=(c.plan||"").toLowerCase();return p==="vip"||p==="pro";}).length;
+    document.getElementById("k-pausados").textContent=all.filter(function(c){return (c.estado||"").toLowerCase()==="pausado";}).length;
+    var mrr=all.reduce(function(s,c){return s+Number(c.valor_mensual||0);},0);
+    document.getElementById("k-mrr").textContent=money(mrr);
+  }
+
+  function render(){
+    kpis();
+    var rows=filtered();
+    document.getElementById("count").textContent=rows.length+" visibles";
+    var list=document.getElementById("list");
+    if(!rows.length){list.innerHTML='<div class="empty">Sin clientes con estos filtros.</div>';}
+    else{
+      list.innerHTML=rows.map(function(c){
+        var active=selected&&String(selected)===String(c.id)?" active":"";
+        return '<article class="row'+active+'" data-id="'+esc(c.id)+'"><div><div class="title"><strong>'+esc(c.nombre||"-")+'</strong><span class="badge '+esc((c.estado||"").toLowerCase())+'">'+esc(c.estado||"-")+'</span><span class="badge vip">'+esc(c.plan||"-")+'</span></div><div class="meta">'+esc(c.empresa||"Sin empresa")+' · '+esc(c.email||"sin email")+'</div><div class="preview">'+esc(c.sector||"Sin sector")+' · MRR '+money(c.valor_mensual)+' €</div></div><div class="meta">'+esc((c.updated_at||c.created_at||"").toString().slice(0,10))+'</div></article>';
+      }).join("");
+      Array.prototype.forEach.call(list.querySelectorAll(".row"),function(el){
+        el.onclick=function(){selected=el.getAttribute("data-id");editing=null;render();showDetail();};
+      });
+    }
+    if(editing==="new") showForm(null);
+    else if(selected) showDetail();
+  }
+
+  function getSel(){return all.find(function(c){return String(c.id)===String(selected);})||null;}
+
+  function showDetail(){
+    var c=getSel();
+    if(!c){document.getElementById("detail").innerHTML='<div class="empty">Selecciona un cliente.</div>';return;}
+    document.getElementById("detail-title").textContent=c.nombre||"Cliente";
+    document.getElementById("detail").innerHTML=
+      '<div class="grid">'+
+      '<div class="field"><label>Empresa</label><div>'+esc(c.empresa||"-")+'</div></div>'+
+      '<div class="field"><label>Email</label><div>'+(c.email?'<a href="mailto:'+esc(c.email)+'" style="color:#22d3ee">'+esc(c.email)+'</a>':"-")+'</div></div>'+
+      '<div class="field"><label>Teléfono</label><div>'+esc(c.telefono||"-")+'</div></div>'+
+      '<div class="field"><label>Sector</label><div>'+esc(c.sector||"-")+'</div></div>'+
+      '<div class="field"><label>Estado / Plan</label><div>'+esc(c.estado)+" / "+esc(c.plan)+'</div></div>'+
+      '<div class="field"><label>MRR</label><div>'+money(c.valor_mensual)+' €</div></div>'+
+      '<div class="field full"><label>Notas</label><div>'+esc(c.notas||"-")+'</div></div>'+
+      '<div class="field"><label>Origen</label><div>'+esc(c.origen||"-")+'</div></div>'+
+      '<div class="field"><label>Último contacto</label><div>'+esc(c.ultimo_contacto||"-")+'</div></div>'+
+      '</div>'+
+      '<div class="actions">'+
+      '<button class="btn btn-primary" id="b-edit">Editar</button>'+
+      '<button class="btn btn-ok" id="b-touch">Registrar contacto</button>'+
+      (c.email?'<a class="btn btn-soft" href="mailto:'+esc(c.email)+'">Email</a>':'')+
+      '<button class="btn btn-danger" id="b-del">Eliminar</button>'+
+      '</div>';
+    document.getElementById("b-edit").onclick=function(){showForm(c);};
+    document.getElementById("b-touch").onclick=async function(){
+      await sb.from("clientes").update({ultimo_contacto:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",c.id);
+      await load(); selected=c.id; render();
+    };
+    document.getElementById("b-del").onclick=async function(){
+      if(!confirm("¿Eliminar cliente?"))return;
+      await sb.from("clientes").delete().eq("id",c.id);
+      selected=null; await load();
+    };
+  }
+
+  function showForm(c){
+    editing=c?"edit":"new";
+    document.getElementById("detail-title").textContent=c?"Editar cliente":"Nuevo cliente";
+    document.getElementById("detail").innerHTML=
+      '<div class="grid">'+
+      '<div class="field"><label>Nombre *</label><input id="i-nombre" value="'+esc(c&&c.nombre||"")+'"></div>'+
+      '<div class="field"><label>Empresa</label><input id="i-empresa" value="'+esc(c&&c.empresa||"")+'"></div>'+
+      '<div class="field"><label>Email</label><input id="i-email" type="email" value="'+esc(c&&c.email||"")+'"></div>'+
+      '<div class="field"><label>Teléfono</label><input id="i-tel" value="'+esc(c&&c.telefono||"")+'"></div>'+
+      '<div class="field"><label>Estado</label><select id="i-estado"><option>activo</option><option>pausado</option><option>churn</option><option>prospecto</option></select></div>'+
+      '<div class="field"><label>Plan</label><select id="i-plan"><option>starter</option><option>growth</option><option>pro</option><option>vip</option></select></div>'+
+      '<div class="field"><label>Sector</label><input id="i-sector" value="'+esc(c&&c.sector||"")+'"></div>'+
+      '<div class="field"><label>MRR €</label><input id="i-mrr" type="number" value="'+esc(c&&c.valor_mensual||0)+'"></div>'+
+      '<div class="field full"><label>Notas</label><textarea id="i-notas" rows="4">'+esc(c&&c.notas||"")+'</textarea></div>'+
+      '</div>'+
+      '<div class="actions"><button class="btn btn-primary" id="b-save">Guardar</button><button class="btn btn-ghost" id="b-cancel">Cancelar</button></div>';
+    if(c){document.getElementById("i-estado").value=c.estado||"activo";document.getElementById("i-plan").value=c.plan||"starter";}
+    document.getElementById("b-cancel").onclick=function(){editing=null; if(c){selected=c.id;showDetail();} else {document.getElementById("detail").innerHTML='<div class="empty">Cancelado.</div>';}};
+    document.getElementById("b-save").onclick=async function(){
+      if(!tableOk)return alert("Primero crea la tabla clientes en Supabase");
+      var payload={
+        nombre:document.getElementById("i-nombre").value.trim(),
+        empresa:document.getElementById("i-empresa").value.trim(),
+        email:document.getElementById("i-email").value.trim(),
+        telefono:document.getElementById("i-tel").value.trim(),
+        estado:document.getElementById("i-estado").value,
+        plan:document.getElementById("i-plan").value,
+        sector:document.getElementById("i-sector").value.trim(),
+        valor_mensual:Number(document.getElementById("i-mrr").value||0),
+        notas:document.getElementById("i-notas").value.trim(),
+        updated_at:new Date().toISOString()
+      };
+      if(!payload.nombre)return alert("Nombre obligatorio");
+      var res;
+      if(c){res=await sb.from("clientes").update(payload).eq("id",c.id).select().single(); selected=c.id;}
+      else {payload.origen="manual";payload.created_at=new Date().toISOString();res=await sb.from("clientes").insert([payload]).select().single(); if(res.data) selected=res.data.id;}
+      if(res.error)return alert(res.error.message);
+      editing=null; await load();
+    };
+  }
+
+  document.getElementById("btn-new").onclick=function(){selected=null;showForm(null);};
+  document.getElementById("btn-refresh").onclick=load;
+  document.getElementById("btn-logout").onclick=async function(){await sb.auth.signOut();location.href="login.html";};
+  document.getElementById("search").oninput=render;
+  document.getElementById("f-estado").onchange=render;
+  document.getElementById("f-plan").onchange=render;
+  document.getElementById("sort").onchange=render;
+  Array.prototype.forEach.call(document.querySelectorAll(".kpi"),function(k){
+    k.onclick=function(){
+      quick=k.getAttribute("data-f")||"all";
+      Array.prototype.forEach.call(document.querySelectorAll(".kpi"),function(x){x.classList.toggle("active",x===k);});
+      render();
+    };
+  });
+
+  (async function(){ if(!(await requireAuth()))return; await load(); })();
 })();
-
-document.getElementById("nuevoCliente").onclick = () => {
-  formulario.style.display = "block";
-};
-
-async function cargarClientes() {
-  const { data, error } = await sb.from("clientes").select("*").order("id", { ascending: false });
-  if (error) {
-    tabla.innerHTML = `<tr><td colspan="4">${error.message}</td></tr>`;
-    return;
-  }
-  if (!data || !data.length) {
-    tabla.innerHTML = `<tr><td colspan="4">No hay clientes</td></tr>`;
-    return;
-  }
-  tabla.innerHTML = data.map(c => `
-    <tr>
-      <td>${c.nombre || ""}</td>
-      <td>${c.empresa || ""}</td>
-      <td>${c.email || ""}</td>
-      <td>${c.estado || ""}</td>
-    </tr>
-  `).join("");
-}
-
-document.getElementById("guardarCliente").onclick = async () => {
-  const nombre = document.getElementById("nombre").value.trim();
-  const empresa = document.getElementById("empresa").value.trim();
-  const email = document.getElementById("email").value.trim();
-  if (!nombre || !empresa || !email) return alert("Completa todos los campos");
-
-  const { error } = await sb.from("clientes").insert([{ nombre, empresa, email, estado: "Nuevo" }]);
-  if (error) return alert(error.message);
-
-  formulario.style.display = "none";
-  document.getElementById("nombre").value = "";
-  document.getElementById("empresa").value = "";
-  document.getElementById("email").value = "";
-  cargarClientes();
-};
-
-cargarClientes();
 </script>
 </body>
 </html>

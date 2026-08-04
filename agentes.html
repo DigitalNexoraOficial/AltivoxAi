@@ -5,49 +5,151 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Agentes IA | AltivoxAI</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
-body{display:flex;min-height:100vh;background:#0b1120;color:#fff;}
-.sidebar{width:250px;background:#111827;padding:30px 20px;display:flex;flex-direction:column;}
-.sidebar h2{margin-bottom:35px;color:#00b4ff;}
-.sidebar a{color:#d1d5db;text-decoration:none;padding:14px 0;}
-.sidebar a:hover{color:#00b4ff;padding-left:8px;}
-.contenido{flex:1;padding:30px;}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;margin-top:20px;}
-.card{background:#182235;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:25px;}
-.card h3{color:#cbd5e1;margin-bottom:12px;}
-.card span{font-size:28px;font-weight:bold;color:#00b4ff;}
-p{color:#9ca3af;}
-@media(max-width:800px){body{flex-direction:column;}.sidebar{width:100%;}}
+:root{--bg:#070b14;--panel:#0f172a;--panel-2:#111c33;--line:rgba(148,163,184,.14);--text:#e2e8f0;--muted:#94a3b8;--cyan:#22d3ee;--ok:#34d399}
+*{margin:0;padding:0;box-sizing:border-box}
+body{display:flex;min-height:100vh;background:radial-gradient(1200px 600px at 10% -10%,rgba(34,211,238,.08),transparent 50%),var(--bg);color:var(--text);font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif}
+a{color:inherit;text-decoration:none}
+.sidebar{width:220px;flex-shrink:0;background:rgba(15,23,42,.95);border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:6px}
+.brand{font-size:18px;font-weight:700;color:var(--cyan);margin:4px 8px 18px}
+.sidebar a{display:block;padding:10px 12px;border-radius:10px;color:#cbd5e1;font-size:14px}
+.sidebar a:hover,.sidebar a.active{background:rgba(34,211,238,.1);color:#fff}
+.main{flex:1;padding:18px 20px 28px;min-width:0}
+.topbar{display:flex;justify-content:space-between;gap:16px;margin-bottom:14px}
+.topbar h1{font-size:24px}.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.top-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.btn{border:none;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:600;font-size:13px}
+.btn-ghost{background:transparent;color:#cbd5e1;border:1px solid var(--line)}
+.btn-primary{background:linear-gradient(90deg,#0284c7,#22d3ee);color:#041018}
+.btn-danger{background:#7f1d1d;color:#fecaca;border:1px solid #991b1b}
+.btn-ok{background:#065f46;color:#a7f3d0;border:1px solid #047857}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.kpi .label{font-size:11px;color:var(--muted);text-transform:uppercase}
+.kpi .value{font-size:24px;font-weight:700;margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;min-height:210px}
+.card h3{font-size:15px}
+.card p{font-size:12px;color:var(--muted);line-height:1.45;flex:1}
+.badge{font-size:10px;padding:3px 7px;border-radius:999px;border:1px solid var(--line);display:inline-block}
+.badge.on{background:rgba(52,211,153,.12);color:#6ee7b7}
+.badge.off{background:rgba(251,113,133,.12);color:#fda4af}
+.meta{font-size:12px;color:#94a3b8}
+.play{background:#070d1a;border:1px solid var(--line);border-radius:10px;padding:8px;font-size:11px;color:#cbd5e1;white-space:pre-wrap}
+.side{margin-top:12px;display:grid;grid-template-columns:1.2fr .8fr;gap:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+.panel h2{font-size:14px;margin-bottom:10px}
+#status{font-size:12px;color:#93c5fd;margin-bottom:10px}
+@media(max-width:1100px){.grid{grid-template-columns:1fr 1fr}.side,.kpis{grid-template-columns:1fr}}
+@media(max-width:800px){body{flex-direction:column}.sidebar{width:100%;flex-direction:row;flex-wrap:wrap}.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="sidebar">
-  <h2>🤖 AltivoxAI</h2>
-  <a href="dashboard.html">🏠 Dashboard</a>
-  <a href="clientes.html">👥 Clientes</a>
-  <a href="chatbot.html">💬 Chatbot</a>
-  <a href="jarvis.html">🤖 J.A.R.V.I.S.</a>
-  <a href="agentes.html">🧠 Agentes IA</a>
-  <a href="ajustes.html">⚙️ Ajustes</a>
-</div>
-<div class="contenido">
-  <h1>🧠 Agentes IA</h1>
-  <p>Módulos inteligentes disponibles para automatización.</p>
-  <section class="cards">
-    <div class="card"><h3>Atención</h3><span>Activo</span></div>
-    <div class="card"><h3>Soporte</h3><span>Activo</span></div>
-    <div class="card"><h3>Ventas</h3><span>Beta</span></div>
+<aside class="sidebar">
+  <div class="brand">AltivoxAI</div>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="clientes.html">Clientes</a>
+  <a href="chatbot.html">Chatbot</a>
+  <a href="jarvis.html">J.A.R.V.I.S.</a>
+  <a class="active" href="agentes.html">Agentes IA</a>
+  <a href="ajustes.html">Ajustes</a>
+</aside>
+<main class="main">
+  <header class="topbar">
+    <div><h1>Agentes IA</h1><p class="sub">Catálogo operativo, estado, playbooks y uso estimado por señales de leads.</p></div>
+    <div class="top-actions">
+      <div class="pill"><span class="dot"></span><span id="admin-email">Admin</span></div>
+      <button class="btn btn-primary" id="btn-save" type="button">Guardar estados</button>
+      <button class="btn btn-ghost" id="btn-refresh" type="button">Actualizar</button>
+      <button class="btn btn-danger" id="btn-logout" type="button">Salir</button>
+    </div>
+  </header>
+  <p id="status">Cargando...</p>
+  <section class="kpis">
+    <div class="kpi"><div class="label">Agentes</div><div class="value" id="k-total">6</div></div>
+    <div class="kpi"><div class="label">Activos</div><div class="value" id="k-on">0</div></div>
+    <div class="kpi"><div class="label">Leads relacionados</div><div class="value" id="k-leads">0</div></div>
+    <div class="kpi"><div class="label">Más usado</div><div class="value" id="k-top" style="font-size:15px">—</div></div>
   </section>
-</div>
+  <section class="grid" id="cards"></section>
+  <section class="side">
+    <div class="panel">
+      <h2>Cola de oportunidades por agente</h2>
+      <div id="queue" class="meta">—</div>
+    </div>
+    <div class="panel">
+      <h2>Notas de despliegue</h2>
+      <p class="meta">Los toggles se guardan en este navegador (localStorage). El routing real del chat usa los modos del widget en la web pública.</p>
+      <p class="meta" style="margin-top:8px">Para producción enterprise: conecta cada agente a un modelo/OpenRouter dedicado y registra métricas en Supabase.</p>
+    </div>
+  </section>
+</main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const sb = window.supabase.createClient(
-  "https://soeyfivsuwohuuzgfqar.supabase.co",
-  "sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2"
-);
-(async () => {
-  const { data } = await sb.auth.getSession();
-  if (!data.session) window.location.href = "login.html";
+(function(){
+  var sb=window.supabase.createClient("https://soeyfivsuwohuuzgfqar.supabase.co","sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2");
+  var AGENTS=[
+    {id:"normal",name:"Asistente General",model:"altivox-tech",desc:"Consultas generales, cualificación inicial y derivación comercial.",play:"1) Saludar\n2) Detectar necesidad\n3) Pedir email\n4) Resumir next step"},
+    {id:"research",name:"Investigador",model:"altivox-research",desc:"Análisis de mercado, competencia y briefing técnico.",play:"1) Definir pregunta\n2) Extraer insights\n3) Entregar bullets accionables"},
+    {id:"image",name:"Diseñador Visual",model:"altivox-image",desc:"Conceptos visuales, mocks y prompts de imagen.",play:"1) Brief creativo\n2) Prompt\n3) Variantes\n4) CTA de lead"},
+    {id:"auditor",name:"Auditor SEO/Código",model:"altivox-auditor",desc:"Revisión de rendimiento, SEO técnico y deuda.",play:"1) Inventario\n2) Hallazgos\n3) Prioridad P0-P2\n4) Plan fix"},
+    {id:"creative",name:"Creativo / Copy",model:"altivox-creative",desc:"Copies, guiones y campañas de conversión.",play:"1) Audience\n2) Ángulo\n3) Hooks\n4) CTA"},
+    {id:"tech",name:"Arquitecto Sistemas",model:"altivox-tech",desc:"Arquitectura, APIs, cloud y automatizaciones.",play:"1) Requisitos\n2) Diagrama\n3) Stack\n4) Estimación"}
+  ];
+  var state=JSON.parse(localStorage.getItem("altivox_agents_state")||"{}");
+  AGENTS.forEach(function(a){if(typeof state[a.id]==="undefined")state[a.id]=true;});
+
+  function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+  async function auth(){var r=await sb.auth.getSession();if(!r.data.session){location.href="login.html";return null;}document.getElementById("admin-email").textContent=r.data.session.user.email||"Admin";return r.data.session;}
+
+  function usageFromLead(l,agent){
+    var blob=[l.tipo_interes,l.fuente,l.mensaje,l.nombre].join(" ").toLowerCase();
+    if(agent.id==="image"&&/imagen|diseñ|foto|visual/.test(blob))return true;
+    if(agent.id==="research"&&/investiga|mercado|compet/.test(blob))return true;
+    if(agent.id==="auditor"&&/seo|codigo|auditor|web/.test(blob))return true;
+    if(agent.id==="creative"&&/copy|guion|anuncio|campaña/.test(blob))return true;
+    if(agent.id==="tech"&&/api|automat|infra|sistema|cloud/.test(blob))return true;
+    if(agent.id==="normal")return String(l.fuente||"").toLowerCase().indexOf("chat")>=0;
+    return false;
+  }
+
+  async function load(){
+    var r=await sb.from("leads").select("*").order("created_at",{ascending:false}).limit(250);
+    var leads=r.data||[];
+    var counts={}; AGENTS.forEach(function(a){counts[a.id]=0;});
+    leads.forEach(function(l){AGENTS.forEach(function(a){if(usageFromLead(l,a))counts[a.id]++;});});
+    var on=AGENTS.filter(function(a){return state[a.id];}).length;
+    document.getElementById("k-on").textContent=on;
+    document.getElementById("k-leads").textContent=leads.length;
+    var top=AGENTS.slice().sort(function(a,b){return counts[b.id]-counts[a.id];})[0];
+    document.getElementById("k-top").textContent=top?top.name:"—";
+    document.getElementById("cards").innerHTML=AGENTS.map(function(a){
+      var enabled=!!state[a.id];
+      return '<article class="card" data-id="'+a.id+'"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><h3>'+esc(a.name)+'</h3><span class="badge '+(enabled?"on":"off")+'">'+(enabled?"Activo":"Pausado")+'</span></div><p>'+esc(a.desc)+'</p><div class="meta">Modelo: '+esc(a.model)+' · Señales: '+counts[a.id]+'</div><div class="play">'+esc(a.play)+'</div><button class="btn '+(enabled?"btn-ghost":"btn-ok")+' toggle" type="button">'+(enabled?"Pausar":"Activar")+'</button></article>';
+    }).join("");
+    Array.prototype.forEach.call(document.querySelectorAll(".toggle"),function(btn){
+      btn.onclick=function(){
+        var id=btn.closest(".card").getAttribute("data-id");
+        state[id]=!state[id];
+        localStorage.setItem("altivox_agents_state",JSON.stringify(state));
+        load();
+      };
+    });
+    var ranked=AGENTS.slice().sort(function(a,b){return counts[b.id]-counts[a.id];});
+    document.getElementById("queue").innerHTML=ranked.map(function(a){
+      return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(148,163,184,.14)"><span>'+esc(a.name)+'</span><strong>'+counts[a.id]+'</strong></div>';
+    }).join("");
+    document.getElementById("status").textContent="Catálogo agentes listo";
+  }
+
+  document.getElementById("btn-save").onclick=function(){
+    localStorage.setItem("altivox_agents_state",JSON.stringify(state));
+    document.getElementById("status").textContent="Estados guardados en este dispositivo";
+  };
+  document.getElementById("btn-refresh").onclick=load;
+  document.getElementById("btn-logout").onclick=async function(){await sb.auth.signOut();location.href="login.html";};
+  (async function(){if(!(await auth()))return;await load();})();
 })();
 </script>
 </body>
