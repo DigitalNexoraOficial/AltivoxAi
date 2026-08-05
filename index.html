@@ -3322,8 +3322,6 @@ window.openServiceModal = function (key) {
   }
 
   var GUIDE_PDF_URL = "/assets/guia/Guia-Basica-Automatizacion-IA-AltivoxAi.pdf";
-  var LEAD_SUPABASE_URL = "https://soeyfivsuwohuuzgfqar.supabase.co";
-  var LEAD_SUPABASE_KEY = "sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2";
 
   function downloadGuidePdf() {
     // 1) Force file download via blob (keeps user on the page)
@@ -3352,50 +3350,49 @@ window.openServiceModal = function (key) {
   }
 
   function saveGuideLead(email) {
-    try {
-      var client =
-        window.supabaseClient ||
-        (window.supabase && window.supabase.createClient
-          ? window.supabase.createClient(LEAD_SUPABASE_URL, LEAD_SUPABASE_KEY)
-          : null);
-      if (client && !window.supabaseClient) window.supabaseClient = client;
-      if (!client) return Promise.resolve();
+    var payload = {
+      nombre: "Guía IA",
+      email: email,
+      empresa: "",
+      mensaje: "Descarga guía básica de automatización con IA desde altivoxai.es",
+      tipo_interes: "Guía Básica IA",
+      fuente: "guia",
+      score: 55,
+      clasificacion: "templado",
+      prioridad: "media",
+      estado: "nuevo",
+      ultimo_contacto: new Date().toISOString()
+    };
 
-      return client
-        .from("leads")
-        .insert([
-          {
-            nombre: "Guía IA",
-            email: email,
-            empresa: "",
-            mensaje: "Descarga guía básica de automatización con IA.",
-            tipo_interes: "Guía Básica IA",
-            fuente: "guia",
-            score: 55,
-            clasificacion: "tibio",
-            prioridad: "media",
-            estado: "nuevo",
-            ultimo_contacto: new Date().toISOString()
-          }
-        ])
-        .select()
-        .single()
-        .then(function (inserted) {
-          if (inserted && inserted.error) {
-            console.warn("lead guia insert", inserted.error);
-            return;
-          }
-          if (window.AltivoxN8n && inserted && inserted.data) {
-            window.AltivoxN8n.leadCreated(inserted.data);
-          }
-        })
-        .catch(function (err) {
-          console.warn("lead guia", err);
+    return fetch("/api/lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      keepalive: true
+    })
+      .then(function (res) {
+        return res.json().then(function (json) {
+          return { ok: res.ok, status: res.status, json: json };
         });
-    } catch (err) {
-      console.warn("lead guia", err);
-      return Promise.resolve();
-    }
+      })
+      .then(function (result) {
+        if (!result.ok) {
+          console.warn("lead guia api", result.status, result.json);
+          // Fallback: still notify n8n even if Supabase write failed
+          if (window.AltivoxN8n) {
+            window.AltivoxN8n.leadCreated(payload);
+          }
+          return result;
+        }
+        return result;
+      })
+      .catch(function (err) {
+        console.warn("lead guia", err);
+        if (window.AltivoxN8n) {
+          window.AltivoxN8n.leadCreated(payload);
+        }
+        return { ok: false, error: String(err && err.message ? err.message : err) };
+      });
   }
 
   function initLeadMagnetForm() {
