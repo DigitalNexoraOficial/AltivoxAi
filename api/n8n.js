@@ -178,6 +178,7 @@ export default async function handler(req, res) {
       ok: true,
       emitConfigured: Boolean(process.env.N8N_WEBHOOK_URL),
       inboundSecretConfigured: Boolean(process.env.N8N_SECRET),
+      supabaseWriteConfigured: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
     });
   }
 

@@ -1994,7 +1994,7 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
             <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
             <span class="font-display text-[10px] text-white tracking-widest uppercase">Altivox Neural System</span>
         </div>
-        <button type="button" onclick="toggleChat()" class="text-white hover:text-cyan-400 text-2xl leading-none">&times;</button>
+        <button type="button" onclick="toggleChat()" class="text-white hover:text-cyan-400 text-2xl leading-none" aria-label="Cerrar chat">&times;</button>
     </div>
 
     <div class="tabs-wrapper flex-shrink-0">
@@ -2034,8 +2034,8 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
 </button>
 
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/js/n8n-bridge.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/n8n-bridge.js"></script>
 <script>
 /**
  * Altivox Omniroute Chat + JARVIS lead router
@@ -3169,15 +3169,22 @@ window.openServiceModal = function (key) {
     var bar = document.getElementById("loader-bar");
     if (bar) bar.style.width = "100%";
     if (!preloader) return;
+    preloader.classList.add("hidden-loader");
     preloader.style.opacity = "0";
     preloader.style.visibility = "hidden";
     preloader.style.pointerEvents = "none";
-    setTimeout(function () { preloader.style.display = "none"; }, 600);
+    preloader.style.display = "none";
+  }
+
+  // Hide as early as this script runs (do not wait only for DOMContentLoaded)
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", forceHidePreloader, { once: true });
+  } else {
+    forceHidePreloader();
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    // Hide preloader ASAP (was delaying LCP by 800–2500ms)
-    requestAnimationFrame(forceHidePreloader);
+    forceHidePreloader();
     document.dispatchEvent(new Event("componentsLoaded"));
 
     initServiceFilters();
@@ -3205,7 +3212,7 @@ window.openServiceModal = function (key) {
     }
   });
 
-  setTimeout(forceHidePreloader, 1200);
+  setTimeout(forceHidePreloader, 800);
 
   window.openModal = function (title, desc) {
     var modal = document.getElementById("serviceModal");
