@@ -181,6 +181,9 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
     bottom: calc(1.25rem + env(safe-area-inset-bottom)) !important;
   }
 }
+/* Accesibilidad: contraste un poco más claro en textos secundarios (misma estética oscura) */
+.text-gray-500 { color: #9ca3af !important; }
+.text-gray-400 { color: #c5ced9 !important; }
 .floating { animation: float 6s ease-in-out infinite; }
 @keyframes float {
   0% { transform: translateY(0); }
@@ -411,7 +414,7 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
 
             <a href="#contact" class="nav-contact hover:text-cyan-400 transition">Sincronizar</a>
 
-            <button id="langToggle" class="text-[10px] border border-white/20 px-2 py-0.5 rounded hover:border-cyan-400 text-cyan-400">
+            <button id="langToggle" type="button" aria-label="Cambiar idioma" class="text-[10px] border border-white/20 px-2 py-0.5 rounded hover:border-cyan-400 text-cyan-400">
                 EN
             </button>
 
@@ -430,6 +433,8 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
         <div class="flex items-center gap-3 lg:hidden">
 
             <button id="langToggleMobile"
+                type="button"
+                aria-label="Cambiar idioma"
                 class="text-[10px] border border-white/20 px-2 py-1 rounded text-cyan-400">
                 EN
             </button>
@@ -440,6 +445,10 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
             </a>
 
             <button id="menu-btn"
+                type="button"
+                aria-label="Abrir menú"
+                aria-controls="mobile-menu"
+                aria-expanded="false"
                 class="text-cyan-400 focus:outline-none p-2 glass-ui rounded-lg border border-cyan-500/30">
 
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -725,6 +734,7 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
         <button
             type="button"
             onclick="closeModal()"
+            aria-label="Cerrar modal"
             class="absolute top-4 right-4 text-gray-400 hover:text-white font-mono text-2xl leading-none">
             &times;
         </button>
@@ -1883,7 +1893,9 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
     <!-- Cambiar tema -->
     <button 
         id="themeToggleBtn"
+        type="button"
         class="glass-ui p-2.5 rounded-lg border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 transition shadow-lg"
+        aria-label="Cambiar tema"
         title="Cambiar Tema">
 
         <svg 
@@ -1909,7 +1921,9 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
     <!-- Volver arriba -->
     <button 
         id="scrollTopBtn"
+        type="button"
         class="hidden glass-ui p-2.5 rounded-lg border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 transition shadow-lg"
+        aria-label="Volver arriba"
         title="Volver arriba">
 
         <svg 
@@ -2015,14 +2029,14 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
     </div>
 
     <div class="p-4 border-t border-white/10 bg-black/60 flex gap-2 items-center">
-        <button type="button" id="mic-btn" onclick="startVoiceRecognition()" class="p-2 text-gray-500 hover:text-cyan-400 transition-all flex-shrink-0" title="Usar Voz">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 1v11m0 0a4 4 0 004-4V5a4 4 0 00-8 0v2a4 4 0 004 4z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 10v1a7 7 0 01-14 0v-1m10 8a3 3 0 01-6 0"></path></svg>
+        <button type="button" id="mic-btn" onclick="startVoiceRecognition()" class="p-2 text-gray-500 hover:text-cyan-400 transition-all flex-shrink-0" aria-label="Usar voz" title="Usar Voz">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 1v11m0 0a4 4 0 004-4V5a4 4 0 00-8 0v2a4 4 0 004 4z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 10v1a7 7 0 01-14 0v-1m10 8a3 3 0 01-6 0"></path></svg>
         </button>
-        <button type="button" onclick="document.getElementById('file-upload').click()" class="p-2 text-gray-500 hover:text-cyan-400 transition-all flex-shrink-0" title="Adjuntar Archivo">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+        <button type="button" onclick="document.getElementById('file-upload').click()" class="p-2 text-gray-500 hover:text-cyan-400 transition-all flex-shrink-0" aria-label="Adjuntar archivo" title="Adjuntar Archivo">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
         </button>
         <input type="file" id="file-upload" class="hidden" accept=".pdf,.doc,.docx,.txt,.csv" onchange="procesarArchivoIA(this)">
-        <input type="text" id="chat-input" onkeydown="enviarMensajeOmniroute(event)" placeholder="Escribe una consulta general..." class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono">
+        <input type="text" id="chat-input" onkeydown="enviarMensajeOmniroute(event)" placeholder="Escribe una consulta general..." aria-label="Mensaje del chat" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono">
         <button type="button" id="chat-send" onclick="enviarMensajeOmniroute()" class="bg-cyan-500/20 text-cyan-400 p-2 rounded-lg border border-cyan-500/30 hover:bg-cyan-500/40 transition flex-shrink-0" aria-label="Enviar">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
         </button>
@@ -3310,10 +3324,15 @@ window.openServiceModal = function (key) {
     if (!menuBtn || !mobileMenu) return;
     menuBtn.addEventListener("click", function () {
       mobileMenu.classList.toggle("hidden");
+      var isHidden = mobileMenu.classList.contains("hidden");
+      menuBtn.setAttribute("aria-expanded", isHidden ? "false" : "true");
+      menuBtn.setAttribute("aria-label", isHidden ? "Abrir menú" : "Cerrar menú");
     });
     mobileMenu.querySelectorAll("a").forEach(function (link) {
       link.addEventListener("click", function () {
         mobileMenu.classList.add("hidden");
+        menuBtn.setAttribute("aria-expanded", "false");
+        menuBtn.setAttribute("aria-label", "Abrir menú");
       });
     });
   }
