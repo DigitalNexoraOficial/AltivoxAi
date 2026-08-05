@@ -1318,13 +1318,14 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
 
             <div class="w-full md:w-auto min-w-[280px]">
 
-                <form id="lead-form" class="space-y-3">
+                <form id="lead-form" class="space-y-3" method="post" action="#leadmagnet" novalidate>
 
                     <input
                         type="email"
                         name="email"
                         id="lead-email"
                         required
+                        autocomplete="email"
                         placeholder="Tu correo corporativo..."
                         class="w-full bg-black/60 border border-white/20 rounded px-4 py-3 text-sm focus:outline-none focus:border-cyan-400 text-white">
 
@@ -1339,7 +1340,8 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
                 <div id="lead-success"
                      class="hidden mt-3 p-3 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-center text-[11px] font-mono">
 
-                    // Descarga iniciada. Si no empieza, revisa el bloqueador de ventanas.
+                    <span id="lead-success-msg">// Guía lista.</span>
+                    <a id="lead-pdf-link" href="/assets/guia/Guia-Basica-Automatizacion-IA-AltivoxAi.pdf" target="_blank" rel="noopener" class="underline text-cyan-200 hover:text-white ml-1">Abrir PDF</a>
 
                 </div>
 
@@ -2644,7 +2646,7 @@ window.AltivoxI18n = (function () {
       leadDesc: "Descubre los protocolos exactos para integrar agentes inteligentes y optimizar procesos corporativos en menos de 7 días.",
       leadPlaceholder: "Tu correo corporativo...",
       leadBtn: "Descargar Guía Gratis",
-      leadSuccess: "// Descarga iniciada. Si no empieza, revisa el bloqueador de ventanas.",
+      leadSuccess: "// Guía lista.",
       simLabel: "Entorno de Prueba", simTitle: "Simulador Neural en Vivo",
       btnCode: "Generar Código", btnScript: "Crear Guion", btnEcommerce: "E-Commerce",
       simIdle: "// Selecciona una opción superior para inicializar el núcleo de procesamiento de AltivoxAi...",
@@ -2786,7 +2788,7 @@ window.AltivoxI18n = (function () {
       leadDesc: "Discover the exact protocols to integrate intelligent agents and optimize corporate processes in under 7 days.",
       leadPlaceholder: "Your corporate email...",
       leadBtn: "Download Free Guide",
-      leadSuccess: "// Download started. If it does not begin, check your popup blocker.",
+      leadSuccess: "// Guide ready.",
       simLabel: "Testing Environment", simTitle: "Live Neural Simulator",
       btnCode: "Generate Code", btnScript: "Create Script", btnEcommerce: "E-Commerce",
       simIdle: "// Select an option above to initialize the AltivoxAi processing core...",
@@ -3063,7 +3065,7 @@ window.AltivoxI18n = (function () {
     setTextOne(".lead-desc", x.leadDesc);
     setPlaceholder("#lead-email", x.leadPlaceholder);
     setTextOne(".lead-btn", x.leadBtn);
-    setTextOne("#lead-success", x.leadSuccess);
+    setTextOne("#lead-success-msg", x.leadSuccess);
 
     setTextOne(".sim-label", x.simLabel);
     setTextOne(".sim-title", x.simTitle);
@@ -3324,13 +3326,76 @@ window.openServiceModal = function (key) {
   var LEAD_SUPABASE_KEY = "sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2";
 
   function downloadGuidePdf() {
-    var a = document.createElement("a");
-    a.href = GUIDE_PDF_URL;
-    a.download = "Guia-Basica-Automatizacion-IA-AltivoxAi.pdf";
-    a.rel = "noopener";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    // 1) Force file download via blob (keeps user on the page)
+    fetch(GUIDE_PDF_URL, { credentials: "same-origin" })
+      .then(function (res) {
+        if (!res.ok) throw new Error("pdf " + res.status);
+        return res.blob();
+      })
+      .then(function (blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "Guia-Basica-Automatizacion-IA-AltivoxAi.pdf";
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () {
+          URL.revokeObjectURL(url);
+        }, 2000);
+      })
+      .catch(function () {
+        // 2) Fallback: open PDF in a new tab (never replace this page)
+        window.open(GUIDE_PDF_URL, "_blank", "noopener");
+      });
+  }
+
+  function saveGuideLead(email) {
+    try {
+      var client =
+        window.supabaseClient ||
+        (window.supabase && window.supabase.createClient
+          ? window.supabase.createClient(LEAD_SUPABASE_URL, LEAD_SUPABASE_KEY)
+          : null);
+      if (client && !window.supabaseClient) window.supabaseClient = client;
+      if (!client) return Promise.resolve();
+
+      return client
+        .from("leads")
+        .insert([
+          {
+            nombre: "Guía IA",
+            email: email,
+            empresa: "",
+            mensaje: "Descarga guía básica de automatización con IA.",
+            tipo_interes: "Guía Básica IA",
+            fuente: "guia",
+            score: 55,
+            clasificacion: "tibio",
+            prioridad: "media",
+            estado: "nuevo",
+            ultimo_contacto: new Date().toISOString()
+          }
+        ])
+        .select()
+        .single()
+        .then(function (inserted) {
+          if (inserted && inserted.error) {
+            console.warn("lead guia insert", inserted.error);
+            return;
+          }
+          if (window.AltivoxN8n && inserted && inserted.data) {
+            window.AltivoxN8n.leadCreated(inserted.data);
+          }
+        })
+        .catch(function (err) {
+          console.warn("lead guia", err);
+        });
+    } catch (err) {
+      console.warn("lead guia", err);
+      return Promise.resolve();
+    }
   }
 
   function initLeadMagnetForm() {
@@ -3338,15 +3403,17 @@ window.openServiceModal = function (key) {
     if (!form || form.dataset.bound === "1") return;
     form.dataset.bound = "1";
 
-    form.addEventListener("submit", async function (e) {
+    form.addEventListener("submit", function (e) {
       e.preventDefault();
+      e.stopPropagation();
+
       var emailInput = document.getElementById("lead-email");
       var success = document.getElementById("lead-success");
       var btn = form.querySelector("button[type='submit']");
       var email = emailInput && emailInput.value ? String(emailInput.value).trim() : "";
       if (!email || email.indexOf("@") < 1) {
         if (emailInput) emailInput.focus();
-        return;
+        return false;
       }
 
       var prevLabel = btn ? btn.textContent : "";
@@ -3355,57 +3422,17 @@ window.openServiceModal = function (key) {
         btn.textContent = "...";
       }
 
-      try {
-        var client =
-          window.supabaseClient ||
-          (window.supabase && window.supabase.createClient
-            ? window.supabase.createClient(LEAD_SUPABASE_URL, LEAD_SUPABASE_KEY)
-            : null);
-        if (client && !window.supabaseClient) window.supabaseClient = client;
+      // Deliver PDF immediately; save lead in background (do not block UX)
+      downloadGuidePdf();
+      if (success) success.classList.remove("hidden");
+      saveGuideLead(email);
 
-        if (client) {
-          var inserted = await client
-            .from("leads")
-            .insert([
-              {
-                nombre: "Guía IA",
-                email: email,
-                empresa: "",
-                mensaje: "Descarga guía básica de automatización con IA.",
-                tipo_interes: "Guía Básica IA",
-                fuente: "guia",
-                score: 55,
-                clasificacion: "tibio",
-                prioridad: "media",
-                estado: "nuevo",
-                ultimo_contacto: new Date().toISOString()
-              }
-            ])
-            .select()
-            .single();
-
-          if (inserted.error) {
-            console.warn("lead guia insert", inserted.error);
-          } else if (window.AltivoxN8n && inserted.data) {
-            window.AltivoxN8n.leadCreated(inserted.data);
-          }
-        }
-
-        downloadGuidePdf();
-        if (success) {
-          success.classList.remove("hidden");
-        }
-        form.reset();
-      } catch (err) {
-        console.warn("lead guia", err);
-        downloadGuidePdf();
-        if (success) success.classList.remove("hidden");
-      } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = prevLabel || "Descargar Guía Gratis";
-        }
+      form.reset();
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = prevLabel || "Descargar Guía Gratis";
       }
+      return false;
     });
   }
 
