@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Guía Básica · Automatización con IA · AltivoxAi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #070b12;
+      --panel: #0d1522;
+      --cyan: #22d3ee;
+      --cyan-dim: rgba(34, 211, 238, 0.14);
+      --line: rgba(255, 255, 255, 0.12);
+      --text: #e8eef6;
+      --muted: #9fb0c3;
+      --soft: #c5ced9;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Manrope", system-ui, sans-serif;
+      font-size: 11.5pt;
+      line-height: 1.55;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 18mm 18mm 22mm;
+      margin: 0 auto;
+      background:
+        radial-gradient(ellipse 80% 50% at 100% 0%, rgba(34, 211, 238, 0.12), transparent 55%),
+        radial-gradient(ellipse 60% 40% at 0% 100%, rgba(14, 165, 233, 0.08), transparent 50%),
+        var(--bg);
+      position: relative;
+      page-break-after: always;
+      break-after: page;
+    }
+    .page:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
+
+    .page-footer {
+      position: absolute;
+      left: 18mm;
+      right: 18mm;
+      bottom: 10mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 8.5pt;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      padding-top: 6px;
+    }
+    .page-footer a { color: var(--cyan); text-decoration: none; }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8mm;
+    }
+    .brand-row img {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(34, 211, 238, 0.35);
+    }
+    .brand-name {
+      font-family: "Orbitron", sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      font-size: 13pt;
+    }
+    .brand-name span { color: var(--cyan); }
+    .brand-url {
+      font-size: 9pt;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 8.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--cyan);
+      background: var(--cyan-dim);
+      border: 1px solid rgba(34, 211, 238, 0.35);
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-family: "Orbitron", sans-serif;
+      font-size: 22pt;
+      line-height: 1.25;
+      margin: 0 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    h2 {
+      font-family: "Orbitron", sans-serif;
+      font-size: 14pt;
+      margin: 0 0 12px;
+      color: #fff;
+      letter-spacing: 0.03em;
+    }
+    h3 {
+      font-size: 11.5pt;
+      margin: 14px 0 6px;
+      color: var(--cyan);
+      font-weight: 700;
+    }
+    p { margin: 0 0 10px; color: var(--soft); }
+    ul { margin: 0 0 12px; padding-left: 18px; color: var(--soft); }
+    li { margin-bottom: 6px; }
+    strong { color: #fff; font-weight: 700; }
+
+    .slogan {
+      font-size: 13pt;
+      color: var(--cyan);
+      font-weight: 600;
+      margin: 14px 0 18px;
+    }
+
+    .cover-hero {
+      margin-top: 18mm;
+      padding: 16px 18px;
+      border: 1px solid rgba(34, 211, 238, 0.28);
+      background: rgba(13, 21, 34, 0.72);
+      border-radius: 10px;
+    }
+    .cover-meta {
+      margin-top: 16mm;
+      display: grid;
+      gap: 8px;
+      font-size: 10pt;
+      color: var(--muted);
+    }
+    .cover-meta span { color: var(--text); }
+
+    .cta {
+      margin: 14px 0;
+      padding: 12px 14px;
+      border-left: 3px solid var(--cyan);
+      background: var(--cyan-dim);
+      border-radius: 0 8px 8px 0;
+    }
+    .cta p { margin: 0; color: var(--text); font-size: 10.5pt; }
+    .cta a { color: var(--cyan); font-weight: 700; text-decoration: none; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 10px 0 14px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 12px 10px;
+    }
+    .card .label {
+      font-family: "Orbitron", sans-serif;
+      font-size: 8.5pt;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 6px;
+    }
+    .card p { margin: 0; font-size: 10pt; }
+
+    .proto {
+      display: grid;
+      gap: 8px;
+      margin: 8px 0 12px;
+    }
+    .proto-item {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 10px 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .proto-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--cyan-dim);
+      border: 1px solid rgba(34, 211, 238, 0.4);
+      color: var(--cyan);
+      font-family: "Orbitron", sans-serif;
+      font-size: 9pt;
+      font-weight: 700;
+    }
+    .proto-item h4 {
+      margin: 0 0 3px;
+      font-size: 11pt;
+      color: #fff;
+    }
+    .proto-item p { margin: 0; font-size: 10pt; }
+
+    .day-list {
+      display: grid;
+      gap: 7px;
+      margin: 10px 0;
+    }
+    .day {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: rgba(13, 21, 34, 0.65);
+    }
+    .day .d {
+      font-family: "Orbitron", sans-serif;
+      font-size: 9pt;
+      color: var(--cyan);
+      letter-spacing: 0.06em;
+    }
+    .day .t { font-weight: 600; color: #fff; font-size: 10.5pt; }
+    .day .s { color: var(--muted); font-size: 9.5pt; }
+
+    .check {
+      list-style: none;
+      padding: 0;
+      margin: 8px 0 12px;
+    }
+    .check li {
+      padding: 8px 10px 8px 34px;
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      margin-bottom: 6px;
+      background: var(--panel);
+      font-size: 10.5pt;
+    }
+    .check li::before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 11px;
+      width: 14px;
+      height: 14px;
+      border: 1.5px solid var(--cyan);
+      border-radius: 3px;
+    }
+
+    .lock {
+      font-size: 9.5pt;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .offer-box {
+      margin-top: 12px;
+      padding: 14px;
+      border: 1px solid rgba(34, 211, 238, 0.35);
+      border-radius: 10px;
+      background: linear-gradient(145deg, rgba(34, 211, 238, 0.1), rgba(13, 21, 34, 0.85));
+    }
+    .offer-box h3 { margin-top: 0; }
+
+    @media print {
+      body { background: #000; }
+      .page {
+        width: auto;
+        min-height: auto;
+        height: 297mm;
+        margin: 0;
+        overflow: hidden;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. Portada -->
+  <section class="page">
+    <div class="brand-row">
+      <img src="../../favicon.png" alt="AltivoxAi" />
+      <div>
+        <div class="brand-name">ALTIVOX<span>AI</span></div>
+        <div class="brand-url">www.altivoxai.es</div>
+      </div>
+    </div>
+
+    <span class="eyebrow">Recurso exclusivo · Edición básica</span>
+    <h1>Guía de Automatización con IA para Empresas</h1>
+    <p class="slogan">Más leads. Menos trabajo manual.</p>
+
+    <div class="cover-hero">
+      <p>
+        Descubre el marco conceptual para integrar agentes inteligentes y ordenar
+        procesos comerciales en pymes — sin jerga innecesaria y con foco en resultados.
+      </p>
+      <p class="lock" style="margin-bottom:0">
+        Esta edición básica te orienta. Los protocolos exactos, plantillas y
+        despliegue paso a paso están reservados a la Guía Completa AltivoxAi
+        y a nuestros servicios de implantación.
+      </p>
+    </div>
+
+    <div class="cover-meta">
+      <div>Marca: <span>AltivoxAi</span></div>
+      <div>Web: <span>www.altivoxai.es</span></div>
+      <div>Contacto: <span>info@altivoxai.es</span></div>
+      <div>Incluye: <span>mapa conceptual · síntomas · roadmap 7 días (visión)</span></div>
+    </div>
+
+    <div class="page-footer">
+      <span>© AltivoxAi · Guía Básica</span>
+      <a href="https://www.altivoxai.es">www.altivoxai.es</a>
+    </div>
+  </section>
+
+  <!-- 2. Qué es -->
+  <section class="page">
+    <div class="brand-row">
+      <img src="../../favicon.png" alt="AltivoxAi" />
+      <div>
+        <div class="brand-name">ALTIVOX<span>AI</span></div>
+        <div class="brand-url">Más leads. Menos trabajo manual.</div>
+      </div>
+    </div>
+
+    <h2>1. Qué es automatizar con IA</h2>
+    <p>
+      Automatizar con IA no es “poner un chatbot bonito”. Es conectar
+      <strong>captura de interés</strong>, <strong>cualificación</strong>,
+      <strong>seguimiento</strong> y <strong>escalado humano</strong> para que
+      tu equipo deje de repetir las mismas tareas cada día.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="label">Agente</div>
+        <p>Un sistema que responde, clasifica o actúa según reglas y contexto de negocio — no un simple FAQ estático.</p>
+      </div>
+      <div class="card">
+        <div class="label">Lead</div>
+        <p>Una persona o empresa con intención real o potencial. Sin cualificación, es solo ruido.</p>
+      </div>
+      <div class="card">
+        <div class="label">Flujo</div>
+        <p>La secuencia de pasos entre “llegó un contacto” y “hay una oportunidad clara o un cierre”.</p>
+      </div>
+      <div class="card">
+        <div class="label">Escalado</div>
+        <p>Cuándo deja de actuar la IA y entra una persona: el punto que protege confianza y margen.</p>
+      </div>
+    </div>
+
+    <h3>Lo que esta guía básica sí te da</h3>
+    <ul>
+      <li>Un lenguaje común para hablar de automatización con tu equipo.</li>
+      <li>Un mapa de dónde se pierde tiempo y dinero en pymes.</li>
+      <li>Una visión de 7 días para ordenar prioridades (sin el playbook técnico).</li>
+    </ul>
+
+    <h3>Lo que deliberadamente no incluye</h3>
+    <ul>
+      <li>Configuraciones, prompts listos, conectores ni arquitectura de despliegue.</li>
+      <li>Credenciales, integraciones CRM/WhatsApp ni reglas de producción.</li>
+    </ul>
+
+    <div class="cta">
+      <p>
+        ¿Quieres el playbook completo? La <strong>Guía Completa AltivoxAi</strong>
+        y el <strong>piloto de 7 días</strong> están en
+        <a href="https://www.altivoxai.es">www.altivoxai.es</a>.
+      </p>
+    </div>
+
+    <div class="page-footer">
+      <span>AltivoxAi · Sección 1</span>
+      <a href="https://www.altivoxai.es">www.altivoxai.es</a>
+    </div>
+  </section>
+
+  <!-- 3. Dónde se pierde dinero -->
+  <section class="page">
+    <div class="brand-row">
+      <img src="../../favicon.png" alt="AltivoxAi" />
+      <div>
+        <div class="brand-name">ALTIVOX<span>AI</span></div>
+        <div class="brand-url">www.altivoxai.es</div>
+      </div>
+    </div>
+
+    <h2>2. Dónde se pierde dinero (sin darte cuenta)</h2>
+    <p>
+      Antes de “comprar más herramientas”, mira estos síntomas. Si reconoces dos o más,
+      tienes margen claro de mejora — el cómo exacto lo resolvemos en implantación.
+    </p>
+
+    <div class="proto">
+      <div class="proto-item">
+        <div class="proto-num">01</div>
+        <div>
+          <h4>Respuesta lenta al primer contacto</h4>
+          <p>El lead llega fuera de horario o se queda en bandeja. Cada hora fría baja la conversión.</p>
+        </div>
+      </div>
+      <div class="proto-item">
+        <div class="proto-num">02</div>
+        <div>
+          <h4>Cualificación informal</h4>
+          <p>“Parece interesante” no es un criterio. Sin score, el comercial pierde tiempo en ruido.</p>
+        </div>
+      </div>
+      <div class="proto-item">
+        <div class="proto-num">03</div>
+        <div>
+          <h4>Seguimientos que dependen de memoria</h4>
+          <p>Si el recordatorio vive en la cabeza de alguien, se escapan oportunidades calientes.</p>
+        </div>
+      </div>
+      <div class="proto-item">
+        <div class="proto-num">04</div>
+        <div>
+          <h4>Datos en silos</h4>
+          <p>Web, WhatsApp, email y CRM no se hablan. La IA no puede optimizar lo que no ve.</p>
+        </div>
+      </div>
+      <div class="proto-item">
+        <div class="proto-num">05</div>
+        <div>
+          <h4>Escalado humano caótico</h4>
+          <p>O todo lo atiende una persona, o nada escala bien. Ambos extremos cuestan margen.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <p>
+        En AltivoxAi medimos estos puntos en una <strong>llamada gratis de 15 minutos</strong>
+        y te decimos si un piloto de 7 días tiene sentido para tu caso.
+        <a href="https://www.altivoxai.es/#contact">Pedir llamada →</a>
+      </p>
+    </div>
+
+    <div class="page-footer">
+      <span>AltivoxAi · Sección 2</span>
+      <a href="https://www.altivoxai.es">www.altivoxai.es</a>
+    </div>
+  </section>
+
+  <!-- 4. Mapa de protocolos -->
+  <section class="page">
+    <div class="brand-row">
+      <img src="../../favicon.png" alt="AltivoxAi" />
+      <div>
+        <div class="brand-name">ALTIVOX<span>AI</span></div>
+        <div class="brand-url">Más leads. Menos trabajo manual.</div>
+      </div>
+    </div>
+
+    <h2>3. Mapa de protocolos Altivox</h2>
+    <p>
+      Estos son los bloques que usamos en proyectos reales. Aquí ves <strong>qué hacen</strong>.
+      La especificación operativa (reglas, umbrales, mensajes y conexiones) está en la Guía Completa.
+    </p>
+
+    <div class="proto">
+      <div class="proto-item">
+        <div class="proto-num">A</div>
+        <div>
+          <h4>Protocolo Captura</h4>
+          <p>Convierte visitas y consultas en registros accionables, con contexto mínimo útil.</p>
+          <p class="lock">Detalle de campos, canales y anti-spam → Guía Completa.</p>
+        </div>
+      </div>
+      <div class="proto-item">
+        <div class="proto-num">B</div>
+        <div>
+          <h4>Protocolo Cualificación</h4>
+          <p>Clasifica interés y urgencia para priorizar sin intuición subjetiva.</p>
+          <p class="lock">Matriz de score y preguntas clave → Guía Completa / piloto.</p>
+        </div>
+      </div>
+      <div class="proto-item">
+        <div class="proto-num">C</div>
+        <div>
+          <h4>Protocolo Nutrición</h4>
+          <p>Mantiene el hilo con leads tibios sin saturar ni perder el timing.</p>
+          <p class="lock">Secuencias y tonos por vertical → Guía Completa.</p>
+        </div>
+      </div>
+      <div class="proto-item">
+        <div class="proto-num">D</div>
+        <div>
+          <h4>Protocolo Escalado Humano</h4>
+          <p>Define cuándo y cómo entra tu equipo para no romper la experiencia.</p>
+          <p class="lock">Reglas de handoff y alertas → implantación AltivoxAi.</p>
+        </div>
+      </div>
+      <div class="proto-item">
+        <div class="proto-num">E</div>
+        <div>
+          <h4>Protocolo Cierre / Handoff Comercial</h4>
+          <p>Prepara la oportunidad para venta o demo con información limpia.</p>
+          <p class="lock">Plantillas y CRM → Guía Completa + servicios.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <p>
+        Si quieres estos protocolos ya montados en tu web y CRM,
+        mira las ofertas en <a href="https://www.altivoxai.es/#ofertas">altivoxai.es/#ofertas</a>
+        (piloto chatbot, automatización de leads, agentes).
+      </p>
+    </div>
+
+    <div class="page-footer">
+      <span>AltivoxAi · Sección 3</span>
+      <a href="https://www.altivoxai.es">www.altivoxai.es</a>
+    </div>
+  </section>
+
+  <!-- 5. Roadmap 7 días -->
+  <section class="page">
+    <div class="brand-row">
+      <img src="../../favicon.png" alt="AltivoxAi" />
+      <div>
+        <div class="brand-name">ALTIVOX<span>AI</span></div>
+        <div class="brand-url">www.altivoxai.es</div>
+      </div>
+    </div>
+
+    <h2>4. Roadmap visual · 7 días</h2>
+    <p>
+      Esta es la <strong>visión de alto nivel</strong> que seguimos en un piloto.
+      Los entregables técnicos de cada día no se publican aquí a propósito:
+      son el valor de la Guía Completa y del acompañamiento AltivoxAi.
+    </p>
+
+    <div class="day-list">
+      <div class="day">
+        <div class="d">DÍA 1</div>
+        <div><div class="t">Diagnóstico comercial</div><div class="s">Dónde entran leads y dónde se enfrían.</div></div>
+      </div>
+      <div class="day">
+        <div class="d">DÍA 2</div>
+        <div><div class="t">Diseño del flujo objetivo</div><div class="s">Qué debe pasar automáticamente vs. qué queda humano.</div></div>
+      </div>
+      <div class="day">
+        <div class="d">DÍA 3</div>
+        <div><div class="t">Definición del agente</div><div class="s">Alcance, tono y límites de actuación.</div></div>
+      </div>
+      <div class="day">
+        <div class="d">DÍA 4</div>
+        <div><div class="t">Integración de canales</div><div class="s">Web, email, alertas… (detalle reservado).</div></div>
+      </div>
+      <div class="day">
+        <div class="d">DÍA 5</div>
+        <div><div class="t">Cualificación y routing</div><div class="s">Prioridades y handoff al equipo.</div></div>
+      </div>
+      <div class="day">
+        <div class="d">DÍA 6</div>
+        <div><div class="t">Pruebas controladas</div><div class="s">Validar calidad sin abrir a todo el tráfico.</div></div>
+      </div>
+      <div class="day">
+        <div class="d">DÍA 7</div>
+        <div><div class="t">Puesta en marcha y métricas</div><div class="s">Qué mirar la primera semana en producción.</div></div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <p>
+        ¿Prefieres que lo hagamos nosotros en esos 7 días?
+        Empieza por el <strong>piloto</strong> en
+        <a href="https://www.altivoxai.es/#ofertas">www.altivoxai.es</a>.
+      </p>
+    </div>
+
+    <div class="page-footer">
+      <span>AltivoxAi · Sección 4</span>
+      <a href="https://www.altivoxai.es">www.altivoxai.es</a>
+    </div>
+  </section>
+
+  <!-- 6. Errores + checklist -->
+  <section class="page">
+    <div class="brand-row">
+      <img src="../../favicon.png" alt="AltivoxAi" />
+      <div>
+        <div class="brand-name">ALTIVOX<span>AI</span></div>
+        <div class="brand-url">Más leads. Menos trabajo manual.</div>
+      </div>
+    </div>
+
+    <h2>5. Errores típicos (visión)</h2>
+    <ul>
+      <li><strong>Empezar por la herramienta</strong> en vez de por el proceso comercial.</li>
+      <li><strong>Automatizar el caos</strong>: si el flujo es confuso, la IA lo acelera.</li>
+      <li><strong>Cero escalado humano</strong>: pierdes confianza en casos delicados.</li>
+      <li><strong>Medir vanity metrics</strong> (chats abiertos) y no leads cualificados.</li>
+      <li><strong>Copiar prompts genéricos</strong> sin adaptar tu oferta ni tu tono.</li>
+    </ul>
+    <p class="lock">
+      Cómo corregir cada error con plantillas y criterios → Guía Completa AltivoxAi.
+    </p>
+
+    <h2 style="margin-top:16px">6. Checklist · ¿estás listo?</h2>
+    <p>Marca mentalmente. No es un tutorial: es un filtro comercial.</p>
+    <ul class="check">
+      <li>Sé qué oferta quiero empujar primero (piloto, automatización o agentes).</li>
+      <li>Tengo alguien que pueda responder cuando un lead caliente escale.</li>
+      <li>Puedo dar acceso a web / email / CRM o estoy dispuesto a hacerlo.</li>
+      <li>Acepto que el valor está en el proceso, no solo en “tener un bot”.</li>
+      <li>Quiero resultados en días, no un proyecto eterno sin dueño.</li>
+    </ul>
+
+    <div class="cta">
+      <p>
+        Si marcaste 3 o más, encajas con lo que hacemos en
+        <a href="https://www.altivoxai.es">AltivoxAi</a>.
+        Si no, igual te conviene la Guía Completa para preparar el terreno.
+      </p>
+    </div>
+
+    <div class="page-footer">
+      <span>AltivoxAi · Secciones 5–6</span>
+      <a href="https://www.altivoxai.es">www.altivoxai.es</a>
+    </div>
+  </section>
+
+  <!-- 7. Cierre + publicidad -->
+  <section class="page">
+    <div class="brand-row">
+      <img src="../../favicon.png" alt="AltivoxAi" />
+      <div>
+        <div class="brand-name">ALTIVOX<span>AI</span></div>
+        <div class="brand-url">www.altivoxai.es</div>
+      </div>
+    </div>
+
+    <h2>7. Siguiente paso con AltivoxAi</h2>
+    <p class="slogan" style="margin-top:0">Más leads. Menos trabajo manual.</p>
+    <p>
+      Esta guía básica te da el marco. Para ejecutarlo de verdad tienes dos caminos
+      naturales — el que encaje con tu momento:
+    </p>
+
+    <div class="offer-box">
+      <h3>Guía Completa AltivoxAi</h3>
+      <p>
+        Protocolos detallados, criterios de cualificación, roadmap operativo y
+        material listo para implantar con tu equipo o con nosotros.
+      </p>
+      <p style="margin-bottom:0">
+        Infórmate en <a href="https://www.altivoxai.es" style="color:var(--cyan);font-weight:700;text-decoration:none">www.altivoxai.es</a>
+        · <a href="mailto:info@altivoxai.es" style="color:var(--cyan);text-decoration:none">info@altivoxai.es</a>
+      </p>
+    </div>
+
+    <div class="offer-box">
+      <h3>Servicios con precio cerrado</h3>
+      <ul style="margin-bottom:8px">
+        <li><strong>Piloto chatbot 7 días</strong> — captura y cualificación en tu web.</li>
+        <li><strong>Automatización de leads</strong> — de consulta a seguimiento sin fricción.</li>
+        <li><strong>Agentes + dashboard</strong> — operación seria para equipos que escalan.</li>
+      </ul>
+      <p style="margin-bottom:0">
+        Ver ofertas:
+        <a href="https://www.altivoxai.es/#ofertas" style="color:var(--cyan);font-weight:700;text-decoration:none">altivoxai.es/#ofertas</a>
+        · Llamada 15 min:
+        <a href="https://www.altivoxai.es/#contact" style="color:var(--cyan);font-weight:700;text-decoration:none">altivoxai.es/#contact</a>
+      </p>
+    </div>
+
+    <div class="cover-hero" style="margin-top:14px">
+      <p style="margin-bottom:6px"><strong>AltivoxAi</strong> — agencia de IA para pymes en España.</p>
+      <p style="margin:0;color:var(--muted);font-size:10pt">
+        Chatbots · Automatización · Agentes conversacionales · Precio cerrado ·
+        www.altivoxai.es · info@altivoxai.es
+      </p>
+    </div>
+
+    <p class="lock" style="margin-top:16px">
+      Documento gratuito de orientación. No sustituye la Guía Completa ni un proyecto de implantación.
+      © AltivoxAi. Todos los derechos reservados.
+    </p>
+
+    <div class="page-footer">
+      <span>AltivoxAi · Cierre</span>
+      <a href="https://www.altivoxai.es">www.altivoxai.es</a>
+    </div>
+  </section>
+
+</body>
+</html>
