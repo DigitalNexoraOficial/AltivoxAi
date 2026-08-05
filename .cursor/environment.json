@@ -1,0 +1,11 @@
+{
+  "name": "AltivoxAi",
+  "install": "node --version",
+  "terminals": [
+    {
+      "name": "dev-server",
+      "command": "node .cursor/dev-server.mjs"
+    }
+  ],
+  "ports": [3000]
+}
