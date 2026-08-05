@@ -4,12 +4,13 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="google" content="notranslate">
 
 <title>AltivoxAi | Chatbots, Automatización e IA para pymes</title>
 
 <link rel="icon" href="/favicon.png" type="image/png">
+<link rel="shortcut icon" href="/favicon.ico">
 <link rel="apple-touch-icon" href="/favicon.png">
 
 <meta name="description"
@@ -23,32 +24,22 @@ content="Agencia de IA para pymes: chatbot web en 7 días, automatización de le
 <meta property="og:title" content="AltivoxAi">
 <meta property="og:description" content="Chatbots y automatización IA para pymes. Precios claros desde 490€. Primera llamada gratis.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://altivoxai.es">
-<meta property="og:image" content="https://altivoxai.es/assets/og-cover.jpg">
+<meta property="og:url" content="https://www.altivoxai.es">
+<meta property="og:image" content="https://www.altivoxai.es/favicon.png">
 
 
-<!-- FUENTES -->
+<!-- FUENTES (subset + display swap) -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet"></noscript>
 
-<link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap"
-rel="stylesheet">
 
-
-<!-- LIBRERÍAS -->
-
-<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-
+<!-- Tailwind (necesario para utilidades). GSAP eliminado (no se usaba). -->
 <script src="https://cdn.tailwindcss.com"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/n8n-bridge.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css"></noscript>
 
 
 
@@ -167,6 +158,28 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  #ai-network { display: none !important; }
+  .floating { animation: none !important; }
+}
+@media (max-width: 1024px) {
+  .glass-ui {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(15, 15, 20, 0.94) !important;
+  }
+}
+@supports (padding: env(safe-area-inset-bottom)) {
+  #chat-widget, .chat-fab, #scrollTopBtn {
+    bottom: calc(1.25rem + env(safe-area-inset-bottom)) !important;
+  }
 }
 .floating { animation: float 6s ease-in-out infinite; }
 @keyframes float {
@@ -477,7 +490,7 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
 <!-- Hero Section -->
 <section id="home" class="min-h-[85vh] flex flex-col justify-center items-center text-center px-4 pt-32 pb-12">
 
-    <div class="gsap-hero max-w-4xl mx-auto">
+    <div class="hero-content max-w-4xl mx-auto">
 
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-6">
 
@@ -2020,7 +2033,9 @@ nav, section, footer, main, #navbar-container, #footer-container, #chatbot-conta
     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
 </button>
 
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+<script src="assets/js/n8n-bridge.js" defer></script>
 <script>
 /**
  * Altivox Omniroute Chat + JARVIS lead router
@@ -3161,11 +3176,10 @@ window.openServiceModal = function (key) {
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    if (window.AOS) AOS.init({ once: true, duration: 800 });
+    // Hide preloader ASAP (was delaying LCP by 800–2500ms)
+    requestAnimationFrame(forceHidePreloader);
     document.dispatchEvent(new Event("componentsLoaded"));
-    setTimeout(forceHidePreloader, 800);
-    initAiNetwork();
-    initCardTilt();
+
     initServiceFilters();
     initCalculatorUi();
     initMobileMenu();
@@ -3173,9 +3187,25 @@ window.openServiceModal = function (key) {
     initThemeUi();
     initLanguageUi();
     initScrollTopUi();
+
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var isCoarse = window.matchMedia && window.matchMedia("(hover: none)").matches;
+
+    var startHeavy = function () {
+      if (!reduceMotion) {
+        if (window.AOS) AOS.init({ once: true, duration: 700, disable: "mobile" });
+        initAiNetwork();
+        if (!isCoarse) initCardTilt();
+      }
+    };
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(startHeavy, { timeout: 1800 });
+    } else {
+      setTimeout(startHeavy, 400);
+    }
   });
 
-  setTimeout(forceHidePreloader, 2500);
+  setTimeout(forceHidePreloader, 1200);
 
   window.openModal = function (title, desc) {
     var modal = document.getElementById("serviceModal");
@@ -3555,11 +3585,11 @@ POST /api/orders
       ctx.fill();
     };
 
-    var count = width < 768 ? 25 : 60;
+      var count = width < 768 ? 12 : (width < 1024 ? 28 : 50);
     for (var i = 0; i < count; i++) particles.push(new Particle());
 
     function animateNetwork() {
-      if (!isCanvasVisible) {
+      if (document.hidden || !isCanvasVisible) {
         requestAnimationFrame(animateNetwork);
         return;
       }

@@ -7,25 +7,68 @@
  *   N8N_SECRET        – Shared secret for inbound calls (header x-altivox-secret)
  *   SUPABASE_URL      – Optional; defaults to project URL
  *   SUPABASE_SERVICE_ROLE_KEY – Required for inbound write actions
- *
- * POST /api/n8n
- *   { "action": "emit", "event": "lead.created", "data": {...} }
- *   { "action": "ping" }
- *   { "action": "update_lead", "id": "...", "patch": {...} }   // inbound
- *   { "action": "create_cliente", "data": {...} }              // inbound
- *   { "action": "update_cliente", "id": "...", "patch": {...} }// inbound
  */
+
+import crypto from "crypto";
 
 const SUPABASE_URL =
   process.env.SUPABASE_URL || "https://soeyfivsuwohuuzgfqar.supabase.co";
 
-function cors(res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+const ALLOWED_ORIGINS = [
+  "https://www.altivoxai.es",
+  "https://altivoxai.es",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+];
+
+const LEAD_PATCH_FIELDS = [
+  "estado",
+  "score",
+  "prioridad",
+  "notas",
+  "nombre",
+  "email",
+  "telefono",
+  "empresa",
+  "origen",
+  "contacto_at",
+  "updated_at",
+];
+
+const CLIENTE_FIELDS = [
+  "nombre",
+  "email",
+  "telefono",
+  "empresa",
+  "estado",
+  "notas",
+  "origen",
+  "plan",
+  "updated_at",
+  "created_at",
+];
+
+function pickOrigin(req) {
+  const origin = String(req.headers.origin || "");
+  if (ALLOWED_ORIGINS.includes(origin)) return origin;
+  return ALLOWED_ORIGINS[0];
+}
+
+function cors(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", pickOrigin(req));
+  res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Content-Type, x-altivox-secret, Authorization"
   );
+}
+
+function timingSafeEqual(a, b) {
+  const left = Buffer.from(String(a || ""), "utf8");
+  const right = Buffer.from(String(b || ""), "utf8");
+  if (left.length !== right.length) return false;
+  return crypto.timingSafeEqual(left, right);
 }
 
 function okSecret(req) {
@@ -34,7 +77,18 @@ function okSecret(req) {
   const got =
     req.headers["x-altivox-secret"] ||
     (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
-  return got && got === expected;
+  return timingSafeEqual(got, expected);
+}
+
+function pickAllowedFields(input, allowlist) {
+  const out = {};
+  if (!input || typeof input !== "object" || Array.isArray(input)) return out;
+  for (const key of allowlist) {
+    if (Object.prototype.hasOwnProperty.call(input, key) && input[key] !== undefined) {
+      out[key] = input[key];
+    }
+  }
+  return out;
 }
 
 async function supabaseRest(path, { method = "GET", body } = {}) {
@@ -50,9 +104,9 @@ async function supabaseRest(path, { method = "GET", body } = {}) {
       apikey: key,
       Authorization: "Bearer " + key,
       "Content-Type": "application/json",
-      Prefer: method === "POST" ? "return=representation" : "return=representation"
+      Prefer: "return=representation",
     },
-    body: body ? JSON.stringify(body) : undefined
+    body: body ? JSON.stringify(body) : undefined,
   });
   const text = await res.text();
   let data = null;
@@ -87,7 +141,7 @@ async function forwardToN8n(event, data, test) {
     source: "altivoxai",
     event: event || "unknown",
     ts: new Date().toISOString(),
-    data: data || {}
+    data: data || {},
   };
 
   const res = await fetch(url, {
@@ -97,9 +151,9 @@ async function forwardToN8n(event, data, test) {
       "X-Altivox-Event": payload.event,
       ...(process.env.N8N_SECRET
         ? { "x-altivox-secret": process.env.N8N_SECRET }
-        : {})
+        : {}),
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
   });
 
   const text = await res.text();
@@ -107,12 +161,12 @@ async function forwardToN8n(event, data, test) {
     forwarded: true,
     status: res.status,
     ok: res.ok,
-    body: text ? text.slice(0, 500) : ""
+    body: text ? text.slice(0, 500) : "",
   };
 }
 
 export default async function handler(req, res) {
-  cors(res);
+  cors(req, res);
 
   if (req.method === "OPTIONS") {
     return res.status(204).end();
@@ -124,19 +178,6 @@ export default async function handler(req, res) {
       ok: true,
       emitConfigured: Boolean(process.env.N8N_WEBHOOK_URL),
       inboundSecretConfigured: Boolean(process.env.N8N_SECRET),
-      supabaseWriteConfigured: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
-      events: [
-        "lead.created",
-        "lead.updated",
-        "lead.contacted",
-        "lead.hot",
-        "cliente.created",
-        "cliente.updated",
-        "cliente.deleted",
-        "cliente.touched",
-        "jarvis.rescored",
-        "system.ping"
-      ]
     });
   }
 
@@ -153,12 +194,20 @@ export default async function handler(req, res) {
         action === "ping" ? "system.ping" : body.event || "unknown";
       const data =
         action === "ping"
-          ? { message: "pong", from: body.from || "api" }
+          ? { message: "pong", from: String(body.from || "api").slice(0, 80) }
           : body.data || {};
 
-      // Public emit is OK (no secret) so the website can notify n8n.
-      // Optional: require secret if N8N_REQUIRE_SECRET=1
-      if (process.env.N8N_REQUIRE_SECRET === "1" && !okSecret(req)) {
+      // Website may emit lead.* without secret. Everything else needs N8N_SECRET
+      // (or N8N_REQUIRE_SECRET=1 to require secret even for public events).
+      const publicEvents = [
+        "lead.created",
+        "lead.updated",
+        "lead.hot",
+        "system.ping",
+      ];
+      const mustAuth =
+        process.env.N8N_REQUIRE_SECRET === "1" || !publicEvents.includes(event);
+      if (mustAuth && !okSecret(req)) {
         return res.status(401).json({ error: "Secret inválido" });
       }
 
@@ -170,18 +219,17 @@ export default async function handler(req, res) {
           return res.status(503).json({
             ok: false,
             error: e.message,
-            hint: "En Vercel → Settings → Environment Variables → N8N_WEBHOOK_URL"
+            hint: "En Vercel → Settings → Environment Variables → N8N_WEBHOOK_URL",
           });
         }
         throw e;
       }
     }
 
-    // --- Inbound actions from n8n ---
     if (!okSecret(req)) {
       return res.status(401).json({
         error: "Falta o es inválido x-altivox-secret",
-        hint: "Define N8N_SECRET en Vercel y el mismo valor en el nodo HTTP Request de n8n"
+        hint: "Define N8N_SECRET en Vercel y el mismo valor en el nodo HTTP Request de n8n",
       });
     }
 
@@ -189,10 +237,14 @@ export default async function handler(req, res) {
       if (!body.id || !body.patch || typeof body.patch !== "object") {
         return res.status(400).json({ error: "Requiere id y patch" });
       }
-      const data = await supabaseRest("leads?id=eq." + encodeURIComponent(body.id), {
-        method: "PATCH",
-        body: body.patch
-      });
+      const patch = pickAllowedFields(body.patch, LEAD_PATCH_FIELDS);
+      if (!Object.keys(patch).length) {
+        return res.status(400).json({ error: "Patch sin campos permitidos" });
+      }
+      const data = await supabaseRest(
+        "leads?id=eq." + encodeURIComponent(String(body.id)),
+        { method: "PATCH", body: patch }
+      );
       return res.status(200).json({ ok: true, data });
     }
 
@@ -200,9 +252,13 @@ export default async function handler(req, res) {
       if (!body.data || typeof body.data !== "object") {
         return res.status(400).json({ error: "Requiere data" });
       }
+      const payload = pickAllowedFields(body.data, CLIENTE_FIELDS);
+      if (!Object.keys(payload).length) {
+        return res.status(400).json({ error: "Data sin campos permitidos" });
+      }
       const data = await supabaseRest("clientes", {
         method: "POST",
-        body: body.data
+        body: payload,
       });
       return res.status(200).json({ ok: true, data });
     }
@@ -211,9 +267,13 @@ export default async function handler(req, res) {
       if (!body.id || !body.patch || typeof body.patch !== "object") {
         return res.status(400).json({ error: "Requiere id y patch" });
       }
+      const patch = pickAllowedFields(body.patch, CLIENTE_FIELDS);
+      if (!Object.keys(patch).length) {
+        return res.status(400).json({ error: "Patch sin campos permitidos" });
+      }
       const data = await supabaseRest(
-        "clientes?id=eq." + encodeURIComponent(body.id),
-        { method: "PATCH", body: body.patch }
+        "clientes?id=eq." + encodeURIComponent(String(body.id)),
+        { method: "PATCH", body: patch }
       );
       return res.status(200).json({ ok: true, data });
     }
@@ -225,14 +285,14 @@ export default async function handler(req, res) {
         "ping",
         "update_lead",
         "create_cliente",
-        "update_cliente"
-      ]
+        "update_cliente",
+      ],
     });
   } catch (e) {
     console.error("n8n bridge error", e);
     return res.status(500).json({
       error: e.message || "Error interno",
-      code: e.code || null
+      code: e.code || null,
     });
   }
 }

@@ -2,9 +2,10 @@
  * Brand image endpoint for Instagram publishing.
  * GET /api/ig-image?topic=chatbot|leads|agents|web
  *
- * Serves static AltivoxAI-styled creatives hosted on this domain so
- * Meta/Instagram can reliably fetch a public image URL.
+ * Always redirects to a fixed allowlisted host (no Host-header open redirect).
  */
+
+const ALLOWED_HOST = "www.altivoxai.es";
 
 const TOPIC_PATHS = {
   chatbot: "/assets/ig/chatbot.png",
@@ -14,8 +15,9 @@ const TOPIC_PATHS = {
 };
 
 module.exports = async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", "https://www.altivoxai.es");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Vary", "Origin");
 
   if (req.method === "OPTIONS") {
     res.status(204).end();
@@ -27,13 +29,10 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const host = req.headers["x-forwarded-host"] || req.headers.host || "www.altivoxai.es";
-  const proto = req.headers["x-forwarded-proto"] || "https";
   const topic = String(req.query.topic || "chatbot").toLowerCase();
   const assetPath = TOPIC_PATHS[topic] || TOPIC_PATHS.chatbot;
-  const absoluteUrl = proto + "://" + host + assetPath;
+  const absoluteUrl = "https://" + ALLOWED_HOST + assetPath;
 
-  // Redirect to the static asset (stable public URL for Instagram Graph API)
   res.writeHead(302, {
     Location: absoluteUrl,
     "Cache-Control": "public, max-age=300",

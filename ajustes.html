@@ -81,11 +81,11 @@ pre{background:#070d1a;border:1px solid var(--line);border-radius:10px;padding:1
     <div class="panel wide">
       <h2>Conexión n8n (haz esto en tu cuenta)</h2>
       <ol class="steps">
-        <li>En n8n: abre <a href="https://altivoxai.app.n8n.cloud/workflow/sQGNntDkScnbdK9o" target="_blank" rel="noopener" style="color:#22d3ee">Altivox Hub FREE</a> → <strong>Publish</strong>.</li>
-        <li>Copia la Production URL del Webhook (ya preparada): <code>https://altivoxai.app.n8n.cloud/webhook/altivox-hub</code></li>
+        <li>En n8n: abre tu workflow Hub → <strong>Publish</strong>.</li>
+        <li>Copia la Production URL del Webhook desde n8n (no la publiques en chats ni repos).</li>
         <li>En Vercel → Environment Variables:
-          <br><code>N8N_WEBHOOK_URL</code> = <code>https://altivoxai.app.n8n.cloud/webhook/altivox-hub</code>
-          <br><code>N8N_SECRET</code> = opcional (inbound)
+          <br><code>N8N_WEBHOOK_URL</code> = tu URL Production del Webhook
+          <br><code>N8N_SECRET</code> = secreto compartido (recomendado)
         </li>
         <li>Redeploy en Vercel tras guardar las variables.</li>
         <li>Conecta Gmail OAuth (gratis) en los nodos Draft del hub, o desactívalos si no los quieres aún.</li>

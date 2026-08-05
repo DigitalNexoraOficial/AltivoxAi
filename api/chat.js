@@ -1,7 +1,47 @@
-export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+const ALLOWED_ORIGINS = [
+  "https://www.altivoxai.es",
+  "https://altivoxai.es",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+];
+
+const MAX_MESSAGE_CHARS = 2000;
+const rateBucket = new Map();
+
+function pickOrigin(req) {
+  const origin = String(req.headers.origin || "");
+  if (ALLOWED_ORIGINS.includes(origin)) return origin;
+  return ALLOWED_ORIGINS[0];
+}
+
+function setCors(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", pickOrigin(req));
+  res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+}
+
+function clientIp(req) {
+  const xf = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim();
+  return xf || req.socket?.remoteAddress || "unknown";
+}
+
+function rateLimit(ip) {
+  const now = Date.now();
+  const windowMs = 60 * 1000;
+  const maxHits = 20;
+  const entry = rateBucket.get(ip) || { count: 0, start: now };
+  if (now - entry.start > windowMs) {
+    entry.count = 0;
+    entry.start = now;
+  }
+  entry.count += 1;
+  rateBucket.set(ip, entry);
+  return entry.count <= maxHits;
+}
+
+export default async function handler(req, res) {
+  setCors(req, res);
 
   if (req.method === "OPTIONS") {
     return res.status(204).end();
@@ -11,14 +51,23 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  if (!rateLimit(clientIp(req))) {
+    return res.status(429).json({ error: "Demasiadas peticiones. Espera un minuto." });
+  }
+
   try {
     const { message, model, agent, mode } = req.body || {};
 
-    if (!message) {
+    if (!message || typeof message !== "string") {
       return res.status(400).json({ error: "Falta el mensaje." });
     }
 
-    const agentName = agent || model || mode || "asistente";
+    const cleanMessage = message.trim().slice(0, MAX_MESSAGE_CHARS);
+    if (!cleanMessage) {
+      return res.status(400).json({ error: "Falta el mensaje." });
+    }
+
+    const agentName = String(agent || model || mode || "asistente").slice(0, 60);
     const systemPrompt =
       `Eres ${agentName} del ecosistema AltivoxAi. ` +
       "Responde en el idioma del usuario, de forma clara, profesional y concisa. " +
@@ -27,7 +76,6 @@ export default async function handler(req, res) {
     let reply = "";
     let lastError = "";
 
-    // 1) OpenRouter (recomendado si Gemini free tier está a 0)
     const openRouterKey = process.env.OPENROUTER_API_KEY;
     if (openRouterKey) {
       try {
@@ -37,15 +85,15 @@ export default async function handler(req, res) {
             Authorization: "Bearer " + openRouterKey,
             "Content-Type": "application/json",
             "HTTP-Referer": "https://www.altivoxai.es",
-            "X-Title": "AltivoxAi"
+            "X-Title": "AltivoxAi",
           },
           body: JSON.stringify({
             model: process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-001",
             messages: [
               { role: "system", content: systemPrompt },
-              { role: "user", content: message }
-            ]
-          })
+              { role: "user", content: cleanMessage },
+            ],
+          }),
         });
         const orData = await orRes.json();
         if (orRes.ok) {
@@ -65,7 +113,6 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2) Gemini directo (solo si OpenRouter no dio respuesta)
     if (!reply) {
       const geminiKey = process.env.GEMINI_API_KEY;
       if (geminiKey) {
@@ -73,7 +120,7 @@ export default async function handler(req, res) {
           process.env.GEMINI_MODEL || "gemini-2.5-flash",
           "gemini-2.5-flash-lite",
           "gemini-flash-latest",
-          "gemini-1.5-flash"
+          "gemini-1.5-flash",
         ];
 
         for (const modelId of modelsToTry) {
@@ -83,8 +130,12 @@ export default async function handler(req, res) {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                contents: [{ parts: [{ text: `${systemPrompt}\n\nUsuario: ${message}` }] }]
-              })
+                contents: [
+                  {
+                    parts: [{ text: `${systemPrompt}\n\nUsuario: ${cleanMessage}` }],
+                  },
+                ],
+              }),
             }
           );
           const data = await geminiRes.json();
@@ -100,8 +151,7 @@ export default async function handler(req, res) {
             if (reply) break;
           } else {
             lastError =
-              (data.error && data.error.message) ||
-              ("Error Gemini " + modelId);
+              (data.error && data.error.message) || "Error Gemini " + modelId;
           }
         }
       }
@@ -111,12 +161,12 @@ export default async function handler(req, res) {
       return res.status(500).json({
         error:
           lastError ||
-          "Sin respuesta IA. Configura OPENROUTER_API_KEY o una GEMINI_API_KEY con cuota."
+          "Sin respuesta IA. Configura OPENROUTER_API_KEY o una GEMINI_API_KEY con cuota.",
       });
     }
 
     const currentModel = String(model || agentName || "").toLowerCase();
-    const lowerMsg = String(message).toLowerCase();
+    const lowerMsg = cleanMessage.toLowerCase();
 
     if (
       currentModel.includes("image") ||
@@ -127,7 +177,7 @@ export default async function handler(req, res) {
     ) {
       reply +=
         "\n\n![Imagen Generada](https://image.pollinations.ai/prompt/" +
-        encodeURIComponent(message) +
+        encodeURIComponent(cleanMessage) +
         ")";
     }
 
