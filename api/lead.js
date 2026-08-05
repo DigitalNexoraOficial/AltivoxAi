@@ -181,6 +181,25 @@ export default async function handler(req, res) {
     return res.status(204).end();
   }
 
+  if (req.method === "GET") {
+    const serviceKey =
+      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      process.env.SUPABASE_SECRET_KEY ||
+      "";
+    const anonKey = process.env.SUPABASE_ANON_KEY || "";
+    return res.status(200).json({
+      service: "altivox-lead",
+      ok: true,
+      supabaseUrl: SUPABASE_URL,
+      hasServiceRoleKey: Boolean(String(serviceKey).trim()),
+      serviceRoleKeyLength: String(serviceKey).trim().length,
+      hasAnonKey: Boolean(String(anonKey).trim()),
+      hint: !String(serviceKey).trim()
+        ? "Falta SUPABASE_SERVICE_ROLE_KEY en Vercel Production → Redeploy tras guardarla"
+        : "Service role detectada",
+    });
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
