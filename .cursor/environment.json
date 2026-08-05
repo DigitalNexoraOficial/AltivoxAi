@@ -4,8 +4,14 @@
   "terminals": [
     {
       "name": "dev-server",
-      "command": "node .cursor/dev-server.mjs"
+      "command": "node .cursor/dev-server.mjs",
+      "description": "Static site + serverless API dev server on http://localhost:3000"
     }
   ],
-  "ports": [3000]
+  "ports": [
+    {
+      "name": "dev-server",
+      "port": 3000
+    }
+  ]
 }
