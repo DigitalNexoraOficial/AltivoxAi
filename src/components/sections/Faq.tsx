@@ -6,8 +6,8 @@ import { useI18n } from "@/components/providers/I18nProvider";
 export function Faq() {
   const { t } = useI18n();
   return (
-    <section id="faq" className="section-pad mesh-divider">
-      <div className="mx-auto max-w-4xl">
+    <section id="faq" className="section-shell">
+      <div className="content-wrap max-w-5xl">
         <Reveal className="text-center">
           <span className="eyebrow">{t.faq.eyebrow}</span>
           <h2 className="heading-display mt-5 text-3xl md:text-5xl">{t.faq.title}</h2>
@@ -15,7 +15,7 @@ export function Faq() {
         <div className="mt-12 space-y-3">
           {t.faq.items.map((item, i) => (
             <Reveal key={item.q} delay={i * 0.03}>
-              <details className="glass ui-lift group rounded-2xl px-5 py-4">
+              <details className="ref-card ui-lift group rounded-2xl px-5 py-4">
                 <summary className="cursor-pointer list-none font-display text-sm uppercase tracking-wide text-white marker:content-none">
                   <span className="flex items-center justify-between gap-4">
                     {item.q}
