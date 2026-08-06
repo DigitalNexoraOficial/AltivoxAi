@@ -6,10 +6,12 @@ const tabs = ["Discover", "Automation", "Branding", "Product", "Web", "Ops"];
 
 export function VisualRail() {
   return (
-    <section className="section-shell pt-10 md:pt-14" aria-label="showcase rail">
+    <section className="section-shell -mt-8 pt-10 md:-mt-14 md:pt-14" aria-label="showcase rail">
       <div className="content-wrap">
         <Reveal>
-          <div className="ref-card-strong ui-lift">
+          <div className="ref-card-strong ui-lift relative">
+            <div className="pointer-events-none absolute -left-24 top-1/2 h-44 w-44 -translate-y-1/2 rounded-full bg-violet/25 blur-[88px]" />
+            <div className="pointer-events-none absolute -right-14 top-10 h-40 w-40 rounded-full bg-cyan/20 blur-[82px]" />
             <div className="flex flex-wrap items-center gap-2">
               {tabs.map((tab, i) => (
                 <button

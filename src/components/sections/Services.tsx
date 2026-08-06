@@ -47,8 +47,9 @@ export function Services() {
         <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-12">
           {items.map((item, i) => {
             const wide = i === 0 || i === 3 || i === 4;
+            const cinematicOffset = i % 3 === 1 ? "xl:translate-y-6" : i % 3 === 2 ? "xl:-translate-y-4" : "";
             return (
-              <Reveal key={item.id} delay={i * 0.05} className={wide ? "xl:col-span-6" : "xl:col-span-3"}>
+              <Reveal key={item.id} delay={i * 0.05} className={`${wide ? "xl:col-span-6" : "xl:col-span-3"} ${cinematicOffset}`}>
                 <button
                   type="button"
                   onClick={() => setActive(item.id)}

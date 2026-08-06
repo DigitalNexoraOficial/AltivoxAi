@@ -147,6 +147,21 @@ body {
     @apply section-pad mesh-divider relative;
   }
 
+  .cinematic-stack {
+    @apply relative overflow-hidden;
+    isolation: isolate;
+  }
+
+  .cinematic-stack::before {
+    content: "";
+    position: absolute;
+    inset: -20% -10% auto;
+    height: 68%;
+    background: radial-gradient(circle at 50% 30%, rgba(34, 211, 238, 0.16), transparent 60%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
   .kpi-pill {
     @apply rounded-2xl border border-white/10 bg-black/30 px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-mist;
   }
@@ -159,6 +174,13 @@ body {
       inset 0 1px 0 rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
+  }
+
+  .hero-metric {
+    @apply rounded-[1.2rem] border border-white/15 bg-black/45 px-4 py-3;
+    box-shadow:
+      0 16px 36px rgba(0, 0, 0, 0.42),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
 
   .hero-lightbeam {
