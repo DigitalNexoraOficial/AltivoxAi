@@ -45,6 +45,7 @@ export function BackgroundFX() {
 
   return (
     <div ref={root} className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_12%,rgba(34,211,238,0.1),transparent_28%),radial-gradient(circle_at_88%_20%,rgba(168,85,247,0.11),transparent_34%),radial-gradient(circle_at_50%_86%,rgba(2,132,199,0.08),transparent_32%)]" />
       <div className="fx-orb absolute -left-24 top-24 h-96 w-96 rounded-full bg-cyan/20 blur-[120px]" />
       <div className="fx-orb absolute -right-20 top-16 h-[28rem] w-[28rem] rounded-full bg-violet/20 blur-[140px]" />
       <div className="fx-orb absolute bottom-0 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-cyan-deep/15 blur-[120px]" />

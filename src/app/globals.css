@@ -43,6 +43,13 @@ body {
   color: #fff;
 }
 
+.bg-hero-mesh {
+  background:
+    radial-gradient(circle at 75% 36%, rgba(34, 211, 238, 0.22), transparent 38%),
+    radial-gradient(circle at 24% 16%, rgba(168, 85, 247, 0.16), transparent 44%),
+    linear-gradient(120deg, rgba(7, 12, 22, 0.65), rgba(4, 7, 14, 0.9));
+}
+
 @layer components {
   .page-wrap {
     @apply relative z-10;
@@ -142,6 +149,41 @@ body {
 
   .kpi-pill {
     @apply rounded-2xl border border-white/10 bg-black/30 px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-mist;
+  }
+
+  .hero-dock {
+    background: linear-gradient(160deg, rgba(10, 20, 36, 0.72), rgba(7, 12, 20, 0.94));
+    border: 1px solid rgba(34, 211, 238, 0.24);
+    box-shadow:
+      0 30px 80px rgba(0, 0, 0, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .hero-lightbeam {
+    background: linear-gradient(
+      110deg,
+      rgba(34, 211, 238, 0) 0%,
+      rgba(34, 211, 238, 0.11) 38%,
+      rgba(34, 211, 238, 0.22) 52%,
+      rgba(34, 211, 238, 0) 82%
+    );
+    filter: blur(18px);
+    transform: perspective(780px) rotateY(-22deg);
+    opacity: 0.62;
+  }
+
+  .hero-lightbeam-alt {
+    background: linear-gradient(
+      86deg,
+      rgba(168, 85, 247, 0) 0%,
+      rgba(168, 85, 247, 0.15) 48%,
+      rgba(168, 85, 247, 0.24) 62%,
+      rgba(168, 85, 247, 0) 94%
+    );
+    transform: perspective(760px) rotateY(26deg);
+    opacity: 0.4;
   }
 
   .mesh-divider {
