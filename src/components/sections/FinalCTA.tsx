@@ -1,12 +1,13 @@
 "use client";
 
+import { BookingTrigger } from "@/components/experience/BookingModal";
 import { Reveal } from "@/components/ui/Reveal";
 import { useI18n } from "@/components/providers/I18nProvider";
 
 export function FinalCTA() {
   const { t } = useI18n();
   return (
-    <section className="section-shell pt-8 md:pt-10" aria-label="final call to action">
+    <section className="section-shell pt-8 md:pt-10" aria-label="final call to action" data-story>
       <div className="content-wrap">
         <Reveal>
           <div className="ref-card-strong relative overflow-hidden text-center">
@@ -22,11 +23,9 @@ export function FinalCTA() {
               Primera llamada gratis, precio cerrado y chatbot operativo en 7 días. Sin letra pequeña.
             </p>
             <div className="relative mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <a href="#contact" className="btn-primary ui-lift w-full sm:w-auto">
-                {t.hero.cta2} →
-              </a>
+              <BookingTrigger />
               <a href="#ofertas" className="btn-ghost ui-lift w-full sm:w-auto">
-                Ver paquetes
+                {t.hero.cta1}
               </a>
             </div>
           </div>

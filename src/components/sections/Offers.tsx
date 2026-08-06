@@ -7,7 +7,7 @@ export function Offers() {
   const { t } = useI18n();
 
   return (
-    <section id="ofertas" className="section-shell">
+    <section id="ofertas" className="section-shell" data-story>
       <div className="content-wrap">
         <Reveal className="text-center">
           <span className="eyebrow">

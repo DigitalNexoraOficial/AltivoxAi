@@ -6,7 +6,7 @@ import { useI18n } from "@/components/providers/I18nProvider";
 export function About() {
   const { t } = useI18n();
   return (
-    <section id="equipo" className="section-shell">
+    <section id="equipo" className="section-shell section-light" data-story>
       <div className="content-wrap grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
         <Reveal>
           <span className="eyebrow">{t.about.eyebrow}</span>

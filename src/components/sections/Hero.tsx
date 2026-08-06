@@ -1,15 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { useIndustry } from "@/components/providers/IndustryProvider";
+import { BookingModal } from "@/components/experience/BookingModal";
+import { playTone } from "@/lib/sound";
 
 export function Hero() {
   const { t } = useI18n();
+  const { industry } = useIndustry();
   const reduce = useReducedMotion();
-  const shortDesc = t.hero.desc.split(".")[0] ? `${t.hero.desc.split(".")[0]}.` : t.hero.desc;
+  const [booking, setBooking] = useState(false);
+  const shortDesc = industry.hook;
 
   return (
-    <section id="home" className="cinematic-stack relative flex min-h-[100svh] items-center overflow-hidden pt-28">
+    <section id="home" className="cinematic-stack relative flex min-h-[100svh] items-center overflow-hidden pt-28" data-story>
       <div className="content-wrap relative z-10 px-6 pb-16 md:px-10 md:pb-24">
         <motion.div
           initial={reduce ? false : { opacity: 0, y: 18 }}
@@ -19,7 +25,7 @@ export function Hero() {
         >
           <span className="eyebrow mx-auto">
             <span className="live-dot" />
-            LIVE — AGENCIA IA · AUTOMATIZACIÓN · CHATBOTS
+            LIVE — AGENCIA IA · {industry.label.toUpperCase()}
           </span>
 
           <p className="mt-8 text-xs font-semibold tracking-[0.22em] text-cyan md:text-sm">
@@ -36,18 +42,25 @@ export function Hero() {
           <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-mist-muted md:text-lg">{shortDesc}</p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a href="#ofertas" className="btn-primary ui-lift w-full sm:w-auto">
+            <a href="#ofertas" className="btn-primary ui-lift w-full sm:w-auto" onClick={() => playTone("click")}>
               {t.hero.cta1} →
             </a>
-            <a href="#contact" className="btn-ghost ui-lift w-full sm:w-auto">
-              {t.hero.cta2}
-            </a>
+            <button
+              type="button"
+              className="btn-ghost ui-lift w-full sm:w-auto"
+              onClick={() => {
+                setBooking(true);
+                playTone("click");
+              }}
+            >
+              Reservar llamada gratis
+            </button>
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-xs text-mist-muted">
             <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">Primera llamada gratis</span>
             <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">Precio cerrado</span>
-            <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">Chatbot en 7 días</span>
+            <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">{industry.proof}</span>
           </div>
 
           <p className="mt-5 text-[11px] text-mist-muted">{t.hero.risk}</p>
@@ -58,6 +71,7 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.95, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           className="mx-auto mt-14 max-w-5xl"
+          data-story
         >
           <div className="hero-dock relative overflow-hidden rounded-[2rem] p-5 md:p-7">
             <div className="pointer-events-none absolute -right-10 top-0 h-40 w-40 rounded-full bg-cyan/20 blur-[70px]" />
@@ -67,7 +81,9 @@ export function Hero() {
               <div className="rounded-2xl border border-white/10 bg-black/40 p-5 md:col-span-5">
                 <p className="step-num">01 — Control</p>
                 <p className="mt-3 text-2xl font-semibold text-white">AI Agency OS</p>
-                <p className="mt-3 text-sm leading-relaxed text-mist-muted">Captura, cualificación y seguimiento en una sola capa operativa.</p>
+                <p className="mt-3 text-sm leading-relaxed text-mist-muted">
+                  Foco {industry.label}: {industry.focus.join(" · ")}
+                </p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 md:col-span-7">
                 <div className="hero-metric">
@@ -90,6 +106,7 @@ export function Hero() {
           </div>
         </motion.div>
       </div>
+      <BookingModal open={booking} onClose={() => setBooking(false)} />
     </section>
   );
 }

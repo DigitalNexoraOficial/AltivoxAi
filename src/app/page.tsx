@@ -1,5 +1,7 @@
 import { Navbar } from "@/components/sections/Navbar";
 import { Hero } from "@/components/sections/Hero";
+import { SocialProofBar } from "@/components/sections/SocialProofBar";
+import { IndustryPicker } from "@/components/sections/IndustryPicker";
 import { VisualRail } from "@/components/sections/VisualRail";
 import { Services } from "@/components/sections/Services";
 import { Offers } from "@/components/sections/Offers";
@@ -19,6 +21,10 @@ import { ScrollTop } from "@/components/ui/ScrollTop";
 import { StickyCTA } from "@/components/ui/StickyCTA";
 import { ScrollAIBackground } from "@/components/three/ScrollAIBackground";
 import { MicroInteractions } from "@/components/effects/MicroInteractions";
+import { CustomCursor } from "@/components/effects/CustomCursor";
+import { SoundToggle } from "@/components/effects/SoundToggle";
+import { ScrollStorytelling } from "@/components/effects/ScrollStorytelling";
+import { StudioTour } from "@/components/experience/StudioTour";
 
 export default function HomePage() {
   const jsonLd = {
@@ -37,9 +43,14 @@ export default function HomePage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <ScrollAIBackground />
+      <CustomCursor />
+      <ScrollStorytelling />
       <Navbar />
+      <StudioTour />
       <main className="relative z-10">
         <Hero />
+        <SocialProofBar />
+        <IndustryPicker />
         <VisualRail />
         <Services />
         <Offers />
@@ -56,6 +67,7 @@ export default function HomePage() {
       </main>
       <Footer />
       <StickyCTA />
+      <SoundToggle />
       <ChatWidget />
       <ScrollTop />
       <MicroInteractions />

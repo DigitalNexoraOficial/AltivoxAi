@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/components/providers/I18nProvider";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
+import { IndustryProvider } from "@/components/providers/IndustryProvider";
+import { SkipLink } from "@/components/ui/SkipLink";
 
 const sans = Inter({
   subsets: ["latin"],
@@ -14,6 +16,7 @@ export const viewport: Viewport = {
   themeColor: "#050505",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
@@ -48,9 +51,12 @@ export default function RootLayout({
   return (
     <html lang="es" className={sans.variable}>
       <body className="min-h-screen bg-ink font-sans text-white antialiased">
+        <SkipLink />
         <div className="grain" aria-hidden />
         <I18nProvider>
-          <SmoothScrollProvider>{children}</SmoothScrollProvider>
+          <IndustryProvider>
+            <SmoothScrollProvider>{children}</SmoothScrollProvider>
+          </IndustryProvider>
         </I18nProvider>
       </body>
     </html>

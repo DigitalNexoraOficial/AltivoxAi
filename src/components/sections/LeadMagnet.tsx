@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { Reveal } from "@/components/ui/Reveal";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { playTone } from "@/lib/sound";
 
 const PDF = "/assets/guia/Guia-Basica-Automatizacion-IA-AltivoxAi.pdf";
 
@@ -35,6 +36,7 @@ export function LeadMagnet() {
     e.preventDefault();
     if (!email.includes("@")) return;
     setLoading(true);
+    const captured = email;
     downloadPdf();
     setOk(true);
     try {
@@ -43,7 +45,7 @@ export function LeadMagnet() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nombre: "Guía IA",
-          email,
+          email: captured,
           mensaje: "Descarga guía básica de automatización con IA desde altivoxai.es",
           tipo_interes: "Guía Básica IA",
           fuente: "guia",
@@ -55,6 +57,10 @@ export function LeadMagnet() {
         keepalive: true,
       });
       setEmail("");
+      playTone("success");
+      window.setTimeout(() => {
+        window.location.href = `/bienvenida?nombre=${encodeURIComponent("Guía IA")}&email=${encodeURIComponent(captured)}`;
+      }, 900);
     } finally {
       setLoading(false);
     }
