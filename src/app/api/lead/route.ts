@@ -44,9 +44,14 @@ type ApiError = Error & {
   details?: unknown;
 };
 
+function isAllowedOrigin(origin: string): boolean {
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  return /^https:\/\/([a-z0-9-]+\.)*altivoxai\.vercel\.app$/i.test(origin);
+}
+
 function pickOrigin(req: NextRequest): string {
   const origin = String(req.headers.get("origin") || "");
-  if (ALLOWED_ORIGINS.includes(origin)) return origin;
+  if (isAllowedOrigin(origin)) return origin;
   return ALLOWED_ORIGINS[0];
 }
 
@@ -77,7 +82,7 @@ function clientIp(req: NextRequest): string {
 function rateLimit(ip: string): boolean {
   const now = Date.now();
   const windowMs = 60 * 1000;
-  const maxHits = 30;
+  const maxHits = 20;
   const entry = rateBucket.get(ip) || { count: 0, start: now };
   if (now - entry.start > windowMs) {
     entry.count = 0;
@@ -118,21 +123,13 @@ function supabaseKey(): string {
       ""
   ).trim();
   if (service) return service;
-
-  const anon = String(process.env.SUPABASE_ANON_KEY || "").trim();
-  if (anon) return anon;
-
-  // Same publishable key already used by the public website (anon).
-  // Works when RLS policy allows insert for anon/public.
-  return "sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2";
+  return String(process.env.SUPABASE_ANON_KEY || "").trim();
 }
 
 async function insertLead(payload: Record<string, unknown>) {
   const key = supabaseKey();
   if (!key) {
-    const err: ApiError = new Error(
-      "Falta SUPABASE_SERVICE_ROLE_KEY (o SUPABASE_ANON_KEY) en Vercel"
-    );
+    const err: ApiError = new Error("Configuración de servidor incompleta");
     err.code = "NO_KEY";
     throw err;
   }
@@ -143,13 +140,13 @@ async function insertLead(payload: Record<string, unknown>) {
       apikey: key,
       Authorization: "Bearer " + key,
       "Content-Type": "application/json",
-      Prefer: "return=representation",
+      Prefer: "return=minimal",
     },
     body: JSON.stringify(payload),
   });
 
   const text = await res.text();
-  let data: any = null;
+  let data: unknown = null;
   try {
     data = text ? JSON.parse(text) : null;
   } catch {
@@ -157,21 +154,19 @@ async function insertLead(payload: Record<string, unknown>) {
   }
 
   if (!res.ok) {
-    const err: ApiError = new Error(
-      (data && data.message) || (data && data.error) || text || "Supabase error"
-    );
+    const err: ApiError = new Error("No se pudo guardar el lead");
     err.status = res.status;
     err.code = "SUPABASE";
     err.details = data;
     throw err;
   }
 
-  return Array.isArray(data) ? data[0] : data;
+  return true;
 }
 
 async function forwardToN8n(event: string, data: unknown) {
   const url = process.env.N8N_WEBHOOK_URL;
-  if (!url) return { forwarded: false, reason: "NO_WEBHOOK" };
+  if (!url) return { forwarded: false };
 
   const payload = {
     source: "altivoxai",
@@ -180,25 +175,22 @@ async function forwardToN8n(event: string, data: unknown) {
     data: data || {},
   };
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Altivox-Event": payload.event,
-      ...(process.env.N8N_SECRET
-        ? { "x-altivox-secret": process.env.N8N_SECRET }
-        : {}),
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const text = await res.text();
-  return {
-    forwarded: true,
-    status: res.status,
-    ok: res.ok,
-    body: text ? text.slice(0, 300) : "",
-  };
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Altivox-Event": payload.event,
+        ...(process.env.N8N_SECRET
+          ? { "x-altivox-secret": process.env.N8N_SECRET }
+          : {}),
+      },
+      body: JSON.stringify(payload),
+    });
+    return { forwarded: true, ok: res.ok };
+  } catch {
+    return { forwarded: false };
+  }
 }
 
 export async function OPTIONS(req: NextRequest) {
@@ -206,24 +198,9 @@ export async function OPTIONS(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const serviceKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_SECRET_KEY ||
-    "";
-  const anonKey = process.env.SUPABASE_ANON_KEY || "";
   return withCors(
     req,
-    NextResponse.json({
-      service: "altivox-lead",
-      ok: true,
-      supabaseUrl: SUPABASE_URL,
-      hasServiceRoleKey: Boolean(String(serviceKey).trim()),
-      serviceRoleKeyLength: String(serviceKey).trim().length,
-      hasAnonKey: Boolean(String(anonKey).trim()),
-      hint: !String(serviceKey).trim()
-        ? "Falta SUPABASE_SERVICE_ROLE_KEY en Vercel Production → Redeploy tras guardarla"
-        : "Service role detectada",
-    })
+    NextResponse.json({ ok: true, service: "altivox-lead" }, { status: 200 })
   );
 }
 
@@ -239,7 +216,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const body: any = await req.json().catch(() => ({}));
+    const body: Record<string, unknown> = await req.json().catch(() => ({}));
     const email = normalizeEmail(body.email);
     if (!isValidEmail(email)) {
       return withCors(
@@ -283,36 +260,29 @@ export async function POST(req: NextRequest) {
       payload.telefono = String(picked.telefono).slice(0, 40);
     }
 
-    const lead = await insertLead(payload);
+    await insertLead(payload);
     const event =
       clasificacion === "caliente" || score >= 70 ? "lead.hot" : "lead.created";
-    const n8n = await forwardToN8n(event, lead);
+    await forwardToN8n(event, {
+      email,
+      fuente: payload.fuente,
+      tipo_interes: payload.tipo_interes,
+      score,
+      clasificacion,
+    });
 
-    return withCors(
-      req,
-      NextResponse.json({
-        ok: true,
-        lead,
-        n8n,
-        event,
-      })
-    );
-  } catch (err: any) {
+    return withCors(req, NextResponse.json({ ok: true }));
+  } catch (err: unknown) {
+    const e = err as ApiError;
+    console.error("lead route error", e.code || e.message);
     const status =
-      err.status && err.status >= 400 && err.status < 600 ? err.status : 500;
+      e.status && e.status >= 400 && e.status < 600 ? e.status : 500;
     return withCors(
       req,
       NextResponse.json(
         {
           ok: false,
-          error: err.message || "Error creando lead",
-          code: err.code || "ERROR",
-          hint:
-            err.code === "NO_KEY"
-              ? "En Vercel → Settings → Environment Variables añade SUPABASE_SERVICE_ROLE_KEY"
-              : err.code === "SUPABASE"
-                ? "Revisa RLS/policies de leads o usa SUPABASE_SERVICE_ROLE_KEY"
-                : undefined,
+          error: "No se pudo procesar la solicitud",
         },
         { status }
       )

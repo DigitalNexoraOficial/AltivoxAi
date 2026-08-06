@@ -10,9 +10,14 @@ const ALLOWED_ORIGINS = [
 const MAX_MESSAGE_CHARS = 2000;
 const rateBucket = new Map<string, { count: number; start: number }>();
 
+function isAllowedOrigin(origin: string): boolean {
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  return /^https:\/\/([a-z0-9-]+\.)*altivoxai\.vercel\.app$/i.test(origin);
+}
+
 function pickOrigin(req: NextRequest): string {
   const origin = String(req.headers.get("origin") || "");
-  if (ALLOWED_ORIGINS.includes(origin)) return origin;
+  if (isAllowedOrigin(origin)) return origin;
   return ALLOWED_ORIGINS[0];
 }
 
@@ -173,12 +178,8 @@ export async function POST(req: NextRequest) {
       return withCors(
         req,
         NextResponse.json(
-          {
-            error:
-              lastError ||
-              "Sin respuesta IA. Configura OPENROUTER_API_KEY o una GEMINI_API_KEY con cuota.",
-          },
-          { status: 500 }
+          { error: "El asistente no está disponible ahora. Inténtalo más tarde." },
+          { status: 503 }
         )
       );
     }

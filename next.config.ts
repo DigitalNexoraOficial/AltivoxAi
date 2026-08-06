@@ -13,6 +13,22 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
+    const csp = [
+      "default-src 'self'",
+      "base-uri 'self'",
+      "object-src 'none'",
+      "frame-ancestors 'self'",
+      "form-action 'self'",
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' data: https://fonts.gstatic.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net",
+      "connect-src 'self' https://*.supabase.co https://openrouter.ai https://generativelanguage.googleapis.com https://*.vercel.app wss://*.supabase.co",
+      "worker-src 'self' blob:",
+      "media-src 'self' blob:",
+      "upgrade-insecure-requests",
+    ].join("; ");
+
     return [
       {
         source: "/:path*",
@@ -28,6 +44,9 @@ const nextConfig: NextConfig = {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
           },
+          { key: "Content-Security-Policy", value: csp },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          { key: "X-DNS-Prefetch-Control", value: "on" },
         ],
       },
       {

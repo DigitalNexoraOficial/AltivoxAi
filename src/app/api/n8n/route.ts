@@ -49,11 +49,18 @@ const CLIENTE_FIELDS = [
   "created_at",
 ] as const;
 
+const rateBucket = new Map<string, { count: number; start: number }>();
+
 type ApiError = Error & { code?: string; status?: number };
+
+function isAllowedOrigin(origin: string): boolean {
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  return /^https:\/\/([a-z0-9-]+\.)*altivoxai\.vercel\.app$/i.test(origin);
+}
 
 function pickOrigin(req: NextRequest): string {
   const origin = String(req.headers.get("origin") || "");
-  if (ALLOWED_ORIGINS.includes(origin)) return origin;
+  if (isAllowedOrigin(origin)) return origin;
   return ALLOWED_ORIGINS[0];
 }
 
@@ -66,6 +73,26 @@ function withCors(req: NextRequest, res: NextResponse): NextResponse {
     "Content-Type, x-altivox-secret, Authorization"
   );
   return res;
+}
+
+function clientIp(req: NextRequest): string {
+  const xf = String(req.headers.get("x-forwarded-for") || "")
+    .split(",")[0]
+    .trim();
+  return xf || "unknown";
+}
+
+function rateLimit(ip: string, maxHits = 40): boolean {
+  const now = Date.now();
+  const windowMs = 60 * 1000;
+  const entry = rateBucket.get(ip) || { count: 0, start: now };
+  if (now - entry.start > windowMs) {
+    entry.count = 0;
+    entry.start = now;
+  }
+  entry.count += 1;
+  rateBucket.set(ip, entry);
+  return entry.count <= maxHits;
 }
 
 function safeEqual(a: string, b: string): boolean {
@@ -173,7 +200,6 @@ async function forwardToN8n(event: string, data: unknown, test?: boolean) {
     forwarded: true,
     status: res.status,
     ok: res.ok,
-    body: text ? text.slice(0, 500) : "",
   };
 }
 
@@ -184,17 +210,18 @@ export async function OPTIONS(req: NextRequest) {
 export async function GET(req: NextRequest) {
   return withCors(
     req,
-    NextResponse.json({
-      service: "altivox-n8n",
-      ok: true,
-      emitConfigured: Boolean(process.env.N8N_WEBHOOK_URL),
-      inboundSecretConfigured: Boolean(process.env.N8N_SECRET),
-      supabaseWriteConfigured: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
-    })
+    NextResponse.json({ ok: true, service: "altivox-n8n" })
   );
 }
 
 export async function POST(req: NextRequest) {
+  if (!rateLimit(clientIp(req))) {
+    return withCors(
+      req,
+      NextResponse.json({ error: "Demasiadas peticiones" }, { status: 429 })
+    );
+  }
+
   try {
     const body: any = await req.json().catch(() => ({}));
     const action = body.action || "emit";
@@ -235,11 +262,7 @@ export async function POST(req: NextRequest) {
           return withCors(
             req,
             NextResponse.json(
-              {
-                ok: false,
-                error: e.message,
-                hint: "En Vercel → Settings → Environment Variables → N8N_WEBHOOK_URL",
-              },
+              { ok: false, error: "Servicio temporalmente no disponible" },
               { status: 503 }
             )
           );
@@ -252,10 +275,7 @@ export async function POST(req: NextRequest) {
       return withCors(
         req,
         NextResponse.json(
-          {
-            error: "Falta o es inválido x-altivox-secret",
-            hint: "Define N8N_SECRET en Vercel y el mismo valor en el nodo HTTP Request de n8n",
-          },
+          { error: "No autorizado" },
           { status: 401 }
         )
       );
