@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/sections/Navbar";
 import { Hero } from "@/components/sections/Hero";
+import { VisualRail } from "@/components/sections/VisualRail";
 import { Services } from "@/components/sections/Services";
 import { Offers } from "@/components/sections/Offers";
 import { About } from "@/components/sections/About";
@@ -37,6 +38,7 @@ export default function HomePage() {
       <Navbar />
       <main className="relative z-10">
         <Hero />
+        <VisualRail />
         <Services />
         <Offers />
         <About />

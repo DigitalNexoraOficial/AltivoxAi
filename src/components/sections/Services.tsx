@@ -20,10 +20,12 @@ export function Services() {
     <section id="services" className="section-pad relative mesh-divider">
       <div className="mx-auto max-w-7xl">
         <Reveal>
-          <span className="eyebrow">{t.services.eyebrow}</span>
-          <div className="mt-5 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <h2 className="heading-display max-w-3xl text-3xl md:text-5xl">{t.services.title}</h2>
-            <p className="max-w-lg text-sm text-mist md:text-base">{t.services.sub}</p>
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <span className="eyebrow">{t.services.eyebrow}</span>
+              <h2 className="heading-display mt-5 max-w-3xl text-3xl md:text-5xl">{t.services.title}</h2>
+            </div>
+            <p className="max-w-xl text-sm text-mist md:text-base">{t.services.sub}</p>
           </div>
         </Reveal>
 
@@ -42,24 +44,27 @@ export function Services() {
           ))}
         </div>
 
-        <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {items.map((item, i) => (
-            <Reveal key={item.id} delay={i * 0.05}>
-              <button
-                type="button"
-                onClick={() => setActive(item.id)}
-                className="glass ui-lift group h-full w-full rounded-3xl p-7 text-left hover:border-cyan/30 hover:shadow-glow"
-              >
-                <div className="mb-6 flex items-center justify-between">
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-cyan">{item.category}</span>
-                  <span className="h-2 w-2 rounded-full bg-cyan/80" />
-                </div>
-                <h3 className="font-display text-sm uppercase tracking-wide text-white md:text-base">{item.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-mist">{item.short}</p>
-                <span className="mt-7 inline-block text-[10px] uppercase tracking-widest text-cyan">{t.services.seeDetails}</span>
-              </button>
-            </Reveal>
-          ))}
+        <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-12">
+          {items.map((item, i) => {
+            const wide = i === 0 || i === 3;
+            return (
+              <Reveal key={item.id} delay={i * 0.05} className={wide ? "xl:col-span-6" : "xl:col-span-3"}>
+                <button
+                  type="button"
+                  onClick={() => setActive(item.id)}
+                  className="glass ui-lift group h-full w-full rounded-3xl p-7 text-left hover:border-cyan/30 hover:shadow-glow"
+                >
+                  <div className="mb-6 flex items-center justify-between">
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-cyan">{item.category}</span>
+                    <span className="h-2 w-2 rounded-full bg-cyan/80" />
+                  </div>
+                  <h3 className="font-display text-sm uppercase tracking-wide text-white md:text-base">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-mist">{item.short}</p>
+                  <span className="mt-7 inline-block text-[10px] uppercase tracking-widest text-cyan">{t.services.seeDetails}</span>
+                </button>
+              </Reveal>
+            );
+          })}
         </div>
       </div>
 
@@ -72,7 +77,7 @@ export function Services() {
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan">Servicio</p>
             <h3 className="mt-3 font-display text-xl uppercase text-white">{activeItem.title}</h3>
             <p className="mt-4 text-sm leading-relaxed text-mist">{activeItem.long}</p>
-            <a href="#contact" className="btn-primary mt-8 ui-lift" onClick={() => setActive(null)}>
+            <a href="#contact" className="btn-primary ui-lift mt-8" onClick={() => setActive(null)}>
               Contact
             </a>
           </div>
