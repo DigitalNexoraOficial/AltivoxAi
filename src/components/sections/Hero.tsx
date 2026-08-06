@@ -11,44 +11,33 @@ export function Hero() {
   const reduce = useReducedMotion();
 
   return (
-    <section id="home" className="relative flex min-h-[100svh] items-center overflow-hidden pt-28 mesh-divider">
+    <section id="home" className="mesh-divider relative flex min-h-[100svh] items-center overflow-hidden pt-28">
       <HeroAtmosphere />
 
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 pb-20 md:px-10">
-        <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+      <div className="content-wrap relative z-10 px-6 pb-20 md:px-10">
+        <div className="grid gap-10 lg:grid-cols-[1.22fr_0.78fr] lg:items-end">
           <motion.div
             initial={reduce ? false : { opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
             <span className="eyebrow">{t.hero.eyebrow}</span>
-            <p className="mt-7 font-display text-sm tracking-[0.35em] text-cyan md:text-base">
-              ALTIVOX<span className="text-white">AI</span>
-            </p>
-            <h1 className="heading-display mt-4 text-5xl leading-[0.98] md:text-7xl xl:text-[6.4rem]">
+            <p className="mt-7 font-display text-sm tracking-[0.35em] text-cyan md:text-base">ALTIVOX<span className="text-white">AI</span></p>
+            <h1 className="heading-display mt-4 text-5xl leading-[0.98] md:text-7xl xl:text-[6.5rem]">
               {t.hero.title}
               <br />
               <span className="text-gradient">{t.hero.titleAccent}</span>
             </h1>
-
-            <p className="mt-6 max-w-2xl text-sm font-light leading-relaxed text-mist md:text-base">
-              {t.hero.desc}
-            </p>
+            <p className="mt-6 max-w-2xl text-sm font-light leading-relaxed text-mist md:text-base">{t.hero.desc}</p>
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <a href="#ofertas" className="btn-primary ui-lift w-full sm:w-auto">
-                {t.hero.cta1}
-              </a>
-              <a href="#contact" className="btn-ghost ui-lift w-full sm:w-auto">
-                {t.hero.cta2}
-              </a>
+              <a href="#ofertas" className="btn-primary ui-lift w-full sm:w-auto">{t.hero.cta1}</a>
+              <a href="#contact" className="btn-ghost ui-lift w-full sm:w-auto">{t.hero.cta2}</a>
             </div>
 
             <div className="mt-8 flex flex-wrap gap-2">
               {chips.map((chip) => (
-                <span key={chip} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-widest text-mist-muted">
-                  {chip}
-                </span>
+                <span key={chip} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-widest text-mist-muted">{chip}</span>
               ))}
             </div>
 
@@ -80,9 +69,7 @@ export function Hero() {
 
             <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3">
               <p className="text-[10px] uppercase tracking-widest text-mist-muted">Pipeline</p>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
-                <span className="block h-full w-2/3 rounded-full bg-gradient-to-r from-cyan to-violet" />
-              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10"><span className="block h-full w-2/3 rounded-full bg-gradient-to-r from-cyan to-violet" /></div>
               <p className="mt-2 text-xs text-mist">Lead Ops activos · seguimiento 24/7</p>
             </div>
           </motion.aside>

@@ -13,7 +13,6 @@ const links = [
   ["calc", "calculator"],
   ["guide", "leadmagnet"],
   ["blog", "blog"],
-  ["testi", "testimonials"],
   ["faq", "faq"],
   ["contact", "contact"],
 ] as const;
@@ -32,8 +31,8 @@ export function Navbar() {
 
   return (
     <header className={`fixed inset-x-0 top-0 z-50 transition ${scrolled ? "py-3" : "py-5"}`}>
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 md:px-10">
-        <a href="#home" className={`flex items-center gap-3 rounded-full px-3 py-2 transition ${scrolled ? "glass" : ""}`}>
+      <div className="content-wrap flex items-center justify-between px-6 md:px-10">
+        <a href="#home" className={`flex items-center gap-3 rounded-full px-3 py-2 ${scrolled ? "glass" : ""}`}>
           <Image src="/favicon.png" alt="AltivoxAi" width={36} height={36} className="rounded-full border border-cyan/30" priority />
           <span className="font-display text-sm tracking-[0.14em] text-white md:text-base">
             ALTIVOX<span className="text-cyan">AI</span>
@@ -49,9 +48,7 @@ export function Navbar() {
           <button type="button" onClick={toggleLang} className="rounded-full border border-white/15 px-2.5 py-1 text-[10px] uppercase tracking-widest text-cyan" aria-label={t.common.lang}>
             {lang === "es" ? "EN" : "ES"}
           </button>
-          <Link href="/login.html" className="btn-ghost ui-lift !px-4 !py-2 text-[10px]">
-            Panel
-          </Link>
+          <Link href="/login.html" className="btn-ghost ui-lift !px-4 !py-2 text-[10px]">Panel</Link>
         </nav>
 
         <div className="flex items-center gap-2 lg:hidden">
@@ -72,9 +69,7 @@ export function Navbar() {
                 {t.nav[key]}
               </a>
             ))}
-            <Link href="/login.html" className="text-sm text-cyan" onClick={() => setOpen(false)}>
-              Panel
-            </Link>
+            <Link href="/login.html" className="text-sm text-cyan" onClick={() => setOpen(false)}>Panel</Link>
           </div>
         </div>
       ) : null}
