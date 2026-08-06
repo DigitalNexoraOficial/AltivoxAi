@@ -23,9 +23,9 @@ export function Services() {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <span className="eyebrow">{t.services.eyebrow}</span>
-              <h2 className="heading-display mt-5 max-w-3xl text-3xl md:text-5xl">{t.services.title}</h2>
+              <h2 className="section-title mt-5 max-w-3xl">{t.services.title}</h2>
             </div>
-            <p className="max-w-xl text-sm text-mist md:text-base">{t.services.sub}</p>
+            <p className="max-w-md text-base text-mist-muted md:text-lg">{t.services.sub}</p>
           </div>
         </Reveal>
 
@@ -44,28 +44,24 @@ export function Services() {
           ))}
         </div>
 
-        <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-12">
-          {items.map((item, i) => {
-            const wide = i === 0 || i === 3 || i === 4;
-            const cinematicOffset = i % 3 === 1 ? "xl:translate-y-6" : i % 3 === 2 ? "xl:-translate-y-4" : "";
-            return (
-              <Reveal key={item.id} delay={i * 0.05} className={`${wide ? "xl:col-span-6" : "xl:col-span-3"} ${cinematicOffset}`}>
-                <button
-                  type="button"
-                  onClick={() => setActive(item.id)}
-                  className="ref-card ui-lift group h-full w-full text-left hover:border-cyan/30 hover:shadow-glow"
-                >
-                  <div className="mb-8 flex items-center justify-between">
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-cyan">{item.category}</span>
-                    <span className="rounded-full border border-cyan/40 bg-cyan/20 px-2 py-1 text-[9px] uppercase tracking-widest text-cyan">AI</span>
-                  </div>
-                  <h3 className="font-display text-base uppercase tracking-wide text-white md:text-lg">{item.title}</h3>
-                  <p className="mt-4 text-sm leading-relaxed text-mist">{item.short}</p>
-                  <span className="mt-7 inline-block text-[10px] uppercase tracking-widest text-cyan">{t.services.seeDetails}</span>
-                </button>
-              </Reveal>
-            );
-          })}
+        <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {items.map((item, i) => (
+            <Reveal key={item.id} delay={i * 0.05}>
+              <button
+                type="button"
+                onClick={() => setActive(item.id)}
+                className="ref-card ui-lift group h-full w-full text-left hover:border-cyan/30"
+              >
+                <div className="mb-8 flex items-center justify-between">
+                  <span className="step-num">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="rounded-full border border-cyan/30 bg-cyan/10 px-2 py-1 text-[9px] uppercase tracking-widest text-cyan">AI</span>
+                </div>
+                <h3 className="font-serif text-2xl text-white">{item.title}</h3>
+                <p className="mt-4 text-sm leading-relaxed text-mist-muted">{item.short}</p>
+                <span className="mt-8 inline-block text-[12px] text-cyan">{t.services.seeDetails} →</span>
+              </button>
+            </Reveal>
+          ))}
         </div>
       </div>
 
@@ -75,8 +71,8 @@ export function Services() {
             <button type="button" className="float-right text-mist hover:text-white" aria-label="Close" onClick={() => setActive(null)}>
               ×
             </button>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan">Servicio</p>
-            <h3 className="mt-3 font-display text-xl uppercase text-white">{activeItem.title}</h3>
+            <p className="step-num">Servicio</p>
+            <h3 className="mt-3 font-serif text-3xl text-white">{activeItem.title}</h3>
             <p className="mt-4 text-sm leading-relaxed text-mist">{activeItem.long}</p>
             <a href="#contact" className="btn-primary ui-lift mt-8" onClick={() => setActive(null)}>
               Contact

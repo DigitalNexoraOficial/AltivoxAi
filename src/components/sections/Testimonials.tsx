@@ -10,14 +10,15 @@ export function Testimonials() {
       <div className="content-wrap">
         <Reveal className="text-center">
           <span className="eyebrow">{t.testi.eyebrow}</span>
-          <h2 className="heading-display mt-5 text-3xl md:text-5xl">{t.testi.title}</h2>
-          <p className="mx-auto mt-4 max-w-xl text-sm text-mist">{t.testi.sub}</p>
+          <h2 className="section-title mt-5">{t.testi.title}</h2>
+          <p className="mx-auto section-sub">{t.testi.sub}</p>
         </Reveal>
-        <div className="mt-12 grid gap-6 xl:grid-cols-12">
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
           {t.testi.items.map((item, i) => (
-            <Reveal key={item.role} delay={i * 0.07} className={i === 1 ? "xl:col-span-5" : "xl:col-span-3"}>
+            <Reveal key={item.role} delay={i * 0.07}>
               <blockquote className="ref-card ui-lift h-full">
-                <p className="text-sm leading-relaxed text-soft">“{item.quote}”</p>
+                <p className="step-num">0{i + 1} · Community</p>
+                <p className="mt-5 text-base leading-relaxed text-soft">“{item.quote}”</p>
                 <footer className="mt-6 font-mono text-[10px] uppercase tracking-widest text-cyan">{item.role}</footer>
               </blockquote>
             </Reveal>

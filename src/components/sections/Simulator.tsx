@@ -44,18 +44,18 @@ export function Simulator() {
 
   return (
     <section id="simulator" className="section-shell">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-5xl px-6 md:px-10">
         <Reveal>
           <div className="ref-card-strong ui-lift">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-[10px] uppercase tracking-widest text-cyan">{t.sim.eyebrow}</p>
-                <h2 className="heading-display mt-2 text-2xl md:text-3xl">{t.sim.title}</h2>
+                <p className="step-num">{t.sim.eyebrow}</p>
+                <h2 className="heading-serif mt-2 text-3xl md:text-4xl">{t.sim.title}</h2>
               </div>
               <div className="flex flex-wrap gap-2">
-                <button type="button" className="btn-ghost ui-lift !px-3 !py-2" onClick={() => setMode("code")}>{t.sim.btnCode}</button>
-                <button type="button" className="btn-ghost ui-lift !px-3 !py-2" onClick={() => setMode("script")}>{t.sim.btnScript}</button>
-                <button type="button" className="btn-ghost ui-lift !px-3 !py-2" onClick={() => setMode("ecom")}>{t.sim.btnEcom}</button>
+                <button type="button" className="btn-ghost ui-lift !px-4 !py-2" onClick={() => setMode("code")}>{t.sim.btnCode}</button>
+                <button type="button" className="btn-ghost ui-lift !px-4 !py-2" onClick={() => setMode("script")}>{t.sim.btnScript}</button>
+                <button type="button" className="btn-ghost ui-lift !px-4 !py-2" onClick={() => setMode("ecom")}>{t.sim.btnEcom}</button>
               </div>
             </div>
             <pre className="mt-8 min-h-[210px] overflow-auto rounded-[1.5rem] border border-cyan/20 bg-black/55 p-5 font-mono text-[11px] leading-relaxed text-cyan/90">

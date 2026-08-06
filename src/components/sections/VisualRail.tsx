@@ -2,50 +2,41 @@
 
 import { Reveal } from "@/components/ui/Reveal";
 
-const tabs = ["Discover", "Automation", "Branding", "Product", "Web", "Ops"];
+const steps = [
+  { id: "01", label: "Discover", title: "Diagnóstico", text: "Detectamos fricciones comerciales y oportunidades de automatización." },
+  { id: "02", label: "Build", title: "Automatiza", text: "Chatbots, capturas y routing conectados a tu pipeline real." },
+  { id: "03", label: "Scale", title: "Opera", text: "Panel, agentes y seguimiento 24/7 con criterios de agencia." },
+  { id: "04", label: "Earn", title: "Convierte", text: "Más leads cualificados y menos trabajo manual desde el día uno." },
+];
 
 export function VisualRail() {
   return (
-    <section className="section-shell -mt-8 pt-10 md:-mt-14 md:pt-14" aria-label="showcase rail">
+    <section className="section-shell -mt-4 pt-8 md:pt-12" aria-label="process rail">
       <div className="content-wrap">
         <Reveal>
-          <div className="ref-card-strong ui-lift relative">
-            <div className="pointer-events-none absolute -left-24 top-1/2 h-44 w-44 -translate-y-1/2 rounded-full bg-violet/25 blur-[88px]" />
-            <div className="pointer-events-none absolute -right-14 top-10 h-40 w-40 rounded-full bg-cyan/20 blur-[82px]" />
-            <div className="flex flex-wrap items-center gap-2">
-              {tabs.map((tab, i) => (
-                <button
-                  key={tab}
-                  type="button"
-                  className={`rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-widest transition ${
-                    i === 0 ? "border-cyan/40 bg-cyan/15 text-cyan" : "border-white/10 text-mist-muted hover:border-white/20"
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-              <span className="ml-auto text-[10px] uppercase tracking-widest text-cyan">Altivox AI / Studio Mode</span>
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="step-num">Scroll to explore</p>
+              <h2 className="heading-serif mt-3 text-3xl md:text-5xl">Learn. Build. Automate. Earn.</h2>
             </div>
-
-            <div className="mt-6 grid gap-4 md:grid-cols-12">
-              <article className="card-surface md:col-span-5">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-cyan">System 01</p>
-                <h3 className="mt-2 font-display text-lg uppercase text-white">Lead capture</h3>
-                <p className="mt-2 text-xs leading-relaxed text-mist">Formularios, chat y guía conectados al pipeline comercial en tiempo real.</p>
-              </article>
-              <article className="card-surface md:col-span-3">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-cyan">System 02</p>
-                <h3 className="mt-2 font-display text-lg uppercase text-white">Smart routing</h3>
-                <p className="mt-2 text-xs leading-relaxed text-mist">Clasificación automática y handoff humano sin pérdida de contexto.</p>
-              </article>
-              <article className="card-surface md:col-span-4">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-cyan">System 03</p>
-                <h3 className="mt-2 font-display text-lg uppercase text-white">Ops dashboard</h3>
-                <p className="mt-2 text-xs leading-relaxed text-mist">Panel y automatizaciones para operar con criterios de agencia premium.</p>
-              </article>
-            </div>
+            <span className="eyebrow">
+              <span className="live-dot" />
+              Altivox AI / Studio Mode
+            </span>
           </div>
         </Reveal>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {steps.map((step, i) => (
+            <Reveal key={step.id} delay={i * 0.06}>
+              <article className="ref-card ui-lift h-full">
+                <p className="step-num">{step.id} — {step.label}</p>
+                <h3 className="mt-4 font-serif text-2xl text-white">{step.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-mist-muted">{step.text}</p>
+              </article>
+            </Reveal>
+          ))}
+        </div>
       </div>
     </section>
   );

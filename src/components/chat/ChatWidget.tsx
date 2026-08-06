@@ -98,7 +98,7 @@ export function ChatWidget() {
       {open ? (
         <div
           id="chat-container"
-          className="ref-card fixed bottom-24 right-6 z-[100] flex h-[min(560px,70vh)] w-[min(390px,calc(100vw-2rem))] flex-col overflow-hidden border-cyan/20"
+          className="hero-dock fixed bottom-24 right-6 z-[100] flex h-[min(560px,70vh)] w-[min(390px,calc(100vw-2rem))] flex-col overflow-hidden rounded-[1.75rem] border border-cyan/20"
         >
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <div>

@@ -1,12 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Syncopate } from "next/font/google";
+import { DM_Sans, Instrument_Serif, Syncopate } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/components/providers/I18nProvider";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 
-const sans = Inter({
+const sans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
+  display: "swap",
+});
+
+const serif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-serif",
   display: "swap",
 });
 
@@ -18,7 +25,7 @@ const display = Syncopate({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#050507",
+  themeColor: "#050505",
   width: "device-width",
   initialScale: 1,
 };
@@ -53,8 +60,9 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${sans.variable} ${display.variable}`}>
+    <html lang="es" className={`${sans.variable} ${serif.variable} ${display.variable}`}>
       <body className="min-h-screen bg-ink font-sans text-white antialiased">
+        <div className="grain" aria-hidden />
         <I18nProvider>
           <SmoothScrollProvider>{children}</SmoothScrollProvider>
         </I18nProvider>
