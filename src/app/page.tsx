@@ -14,6 +14,8 @@ import { Contact } from "@/components/sections/Contact";
 import { Footer } from "@/components/sections/Footer";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 import { ScrollTop } from "@/components/ui/ScrollTop";
+import { BackgroundFX } from "@/components/effects/BackgroundFX";
+import { MicroInteractions } from "@/components/effects/MicroInteractions";
 
 export default function HomePage() {
   const jsonLd = {
@@ -30,12 +32,10 @@ export default function HomePage() {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <BackgroundFX />
       <Navbar />
-      <main>
+      <main className="relative z-10">
         <Hero />
         <Services />
         <Offers />
@@ -52,6 +52,7 @@ export default function HomePage() {
       <Footer />
       <ChatWidget />
       <ScrollTop />
+      <MicroInteractions />
     </>
   );
 }

@@ -61,31 +61,28 @@ export function LeadMagnet() {
   }
 
   return (
-    <section id="leadmagnet" className="section-pad">
-      <div className="mx-auto max-w-4xl">
+    <section id="leadmagnet" className="section-pad mesh-divider">
+      <div className="mx-auto max-w-5xl">
         <Reveal>
-          <div className="glass relative overflow-hidden rounded-[2rem] border-cyan/30 p-8 md:p-12">
+          <div className="glass-strong ui-lift relative overflow-hidden rounded-[2rem] border-cyan/30 p-8 md:p-12">
             <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-cyan/15 blur-[90px]" />
+            <div className="absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-violet/20 blur-[90px]" />
             <div className="relative grid gap-8 md:grid-cols-[1.2fr_0.8fr] md:items-center">
               <div>
                 <span className="eyebrow">{t.lead.eyebrow}</span>
-                <h2 className="heading-display mt-5 text-2xl md:text-4xl">
-                  {t.lead.title}
-                </h2>
-                <p className="mt-4 text-sm leading-relaxed text-mist">
-                  {t.lead.desc}
-                </p>
+                <h2 className="heading-display mt-5 text-2xl md:text-4xl">{t.lead.title}</h2>
+                <p className="mt-4 text-sm leading-relaxed text-mist">{t.lead.desc}</p>
               </div>
-              <form onSubmit={onSubmit} className="space-y-3">
+              <form onSubmit={onSubmit} className="space-y-3 rounded-2xl border border-white/10 bg-black/30 p-4">
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t.lead.placeholder}
-                  className="w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-cyan"
+                  className="w-full rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-cyan"
                 />
-                <button type="submit" disabled={loading} className="btn-primary w-full">
+                <button type="submit" disabled={loading} className="btn-primary ui-lift w-full">
                   {loading ? "..." : t.lead.btn}
                 </button>
                 {ok ? (

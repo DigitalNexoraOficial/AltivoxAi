@@ -45,38 +45,36 @@ export function Calculator() {
   }
 
   return (
-    <section id="calculator" className="section-pad">
-      <div className="mx-auto max-w-4xl">
+    <section id="calculator" className="section-pad mesh-divider">
+      <div className="mx-auto max-w-5xl">
         <Reveal>
-          <div className="glass rounded-[2rem] p-8 md:p-12">
-            <span className="eyebrow">{t.calc.eyebrow}</span>
-            <h2 className="heading-display mt-5 text-3xl md:text-4xl">
-              {t.calc.title}
-            </h2>
-            <p className="mt-3 text-sm text-mist">{t.calc.sub}</p>
+          <div className="glass-strong ui-lift rounded-[2rem] p-8 md:p-12">
+            <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-end">
+              <div>
+                <span className="eyebrow">{t.calc.eyebrow}</span>
+                <h2 className="heading-display mt-5 text-3xl md:text-4xl">{t.calc.title}</h2>
+                <p className="mt-3 text-sm text-mist">{t.calc.sub}</p>
 
-            <label className="mt-10 block text-[11px] uppercase tracking-widest text-mist-muted">
-              {t.calc.hours}
-            </label>
-            <div className="mt-3 flex items-center gap-4">
-              <input
-                type="range"
-                min={5}
-                max={160}
-                value={hours}
-                onChange={(e) => setHours(Number(e.target.value))}
-                className="w-full accent-cyan"
-                aria-label={t.calc.hours}
-              />
-              <span className="font-display text-xl text-cyan">{hours}h</span>
+                <label className="mt-10 block text-[11px] uppercase tracking-widest text-mist-muted">{t.calc.hours}</label>
+                <div className="mt-3 flex items-center gap-4">
+                  <input
+                    type="range"
+                    min={5}
+                    max={160}
+                    value={hours}
+                    onChange={(e) => setHours(Number(e.target.value))}
+                    className="w-full accent-cyan"
+                    aria-label={t.calc.hours}
+                  />
+                  <span className="font-display text-xl text-cyan">{hours}h</span>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/35 p-6">
+                <p className="text-[11px] uppercase tracking-widest text-mist-muted">{t.calc.savings}</p>
+                <p className="mt-2 font-display text-4xl text-white">{savings.toLocaleString("es-ES")} €</p>
+                <p className="mt-2 text-xs text-mist">Modelo conservador basado en 60€/hora.</p>
+              </div>
             </div>
-
-            <p className="mt-6 text-[11px] uppercase tracking-widest text-mist-muted">
-              {t.calc.savings}
-            </p>
-            <p className="mt-2 font-display text-4xl text-white">
-              {savings.toLocaleString("es-ES")} €
-            </p>
 
             <form onSubmit={onSubmit} className="mt-8 flex flex-col gap-3 sm:flex-row">
               <input
@@ -87,13 +85,11 @@ export function Calculator() {
                 placeholder={t.calc.placeholder}
                 className="flex-1 rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-cyan"
               />
-              <button type="submit" disabled={loading} className="btn-primary">
+              <button type="submit" disabled={loading} className="btn-primary ui-lift">
                 {loading ? "..." : t.calc.btn}
               </button>
             </form>
-            {ok ? (
-              <p className="mt-4 font-mono text-[11px] text-cyan">{t.calc.success}</p>
-            ) : null}
+            {ok ? <p className="mt-4 font-mono text-[11px] text-cyan">{t.calc.success}</p> : null}
           </div>
         </Reveal>
       </div>

@@ -44,79 +44,37 @@ export function Contact() {
 
   return (
     <section id="contact" className="section-pad">
-      <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-2">
+      <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr]">
         <Reveal>
           <span className="eyebrow">{t.contact.eyebrow}</span>
-          <h2 className="heading-display mt-5 text-3xl md:text-5xl">
-            {t.contact.title}
-          </h2>
+          <h2 className="heading-display mt-5 text-3xl md:text-5xl">{t.contact.title}</h2>
           <p className="mt-4 max-w-md text-sm text-mist">{t.contact.sub}</p>
           <div className="mt-10 space-y-6 text-sm">
-            <div>
-              <p className="text-[10px] uppercase tracking-widest text-mist-muted">
-                {t.contact.emailLbl}
-              </p>
-              <a href="mailto:info@altivoxai.es" className="text-cyan hover:underline">
-                info@altivoxai.es
-              </a>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <p className="text-[10px] uppercase tracking-widest text-mist-muted">{t.contact.emailLbl}</p>
+              <a href="mailto:info@altivoxai.es" className="mt-1 inline-block text-cyan hover:underline">info@altivoxai.es</a>
             </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-widest text-mist-muted">
-                {t.contact.waLbl}
-              </p>
-              <a
-                href="https://wa.me/34600000000"
-                className="text-white hover:text-cyan"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {t.contact.waLink}
-              </a>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <p className="text-[10px] uppercase tracking-widest text-mist-muted">{t.contact.waLbl}</p>
+              <a href="https://wa.me/34600000000" className="mt-1 inline-block text-white hover:text-cyan" target="_blank" rel="noopener noreferrer">{t.contact.waLink}</a>
             </div>
-            <div>
-              <p className="text-[10px] uppercase tracking-widest text-mist-muted">
-                {t.contact.webLbl}
-              </p>
-              <a href="https://www.altivoxai.es" className="text-white hover:text-cyan">
-                www.altivoxai.es
-              </a>
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <p className="text-[10px] uppercase tracking-widest text-mist-muted">{t.contact.webLbl}</p>
+              <a href="https://www.altivoxai.es" className="mt-1 inline-block text-white hover:text-cyan">www.altivoxai.es</a>
             </div>
           </div>
         </Reveal>
 
         <Reveal delay={0.1}>
-          <form onSubmit={onSubmit} className="glass space-y-4 rounded-[2rem] p-8">
-            <input
-              name="nombre"
-              required
-              placeholder={t.contact.phName}
-              className="w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm outline-none focus:border-cyan"
-            />
-            <input
-              name="email"
-              type="email"
-              required
-              placeholder={t.contact.phEmail}
-              className="w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm outline-none focus:border-cyan"
-            />
-            <input
-              name="empresa"
-              placeholder={t.contact.phCompany}
-              className="w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm outline-none focus:border-cyan"
-            />
-            <textarea
-              name="mensaje"
-              required
-              rows={4}
-              placeholder={t.contact.phMessage}
-              className="w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm outline-none focus:border-cyan"
-            />
-            <button type="submit" disabled={loading} className="btn-primary w-full">
+          <form onSubmit={onSubmit} className="glass-strong ui-lift space-y-4 rounded-[2rem] p-8">
+            <input name="nombre" required placeholder={t.contact.phName} className="w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm outline-none focus:border-cyan" />
+            <input name="email" type="email" required placeholder={t.contact.phEmail} className="w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm outline-none focus:border-cyan" />
+            <input name="empresa" placeholder={t.contact.phCompany} className="w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm outline-none focus:border-cyan" />
+            <textarea name="mensaje" required rows={4} placeholder={t.contact.phMessage} className="w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm outline-none focus:border-cyan" />
+            <button type="submit" disabled={loading} className="btn-primary ui-lift w-full">
               {loading ? "..." : t.contact.btn}
             </button>
-            {ok ? (
-              <p className="font-mono text-[11px] text-cyan">{t.contact.success}</p>
-            ) : null}
+            {ok ? <p className="font-mono text-[11px] text-cyan">{t.contact.success}</p> : null}
           </form>
         </Reveal>
       </div>

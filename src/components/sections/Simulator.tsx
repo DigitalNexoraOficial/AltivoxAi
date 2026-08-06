@@ -43,32 +43,22 @@ export function Simulator() {
   }, [mode, t.sim.idle]);
 
   return (
-    <section id="simulator" className="section-pad">
-      <div className="mx-auto max-w-4xl">
+    <section id="simulator" className="section-pad mesh-divider">
+      <div className="mx-auto max-w-5xl">
         <Reveal>
-          <div className="glass rounded-[2rem] p-6 md:p-10">
+          <div className="glass-strong ui-lift rounded-[2rem] p-6 md:p-10">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-[10px] uppercase tracking-widest text-cyan">
-                  {t.sim.eyebrow}
-                </p>
-                <h2 className="heading-display mt-2 text-2xl md:text-3xl">
-                  {t.sim.title}
-                </h2>
+                <p className="text-[10px] uppercase tracking-widest text-cyan">{t.sim.eyebrow}</p>
+                <h2 className="heading-display mt-2 text-2xl md:text-3xl">{t.sim.title}</h2>
               </div>
               <div className="flex flex-wrap gap-2">
-                <button type="button" className="btn-ghost !px-3 !py-2" onClick={() => setMode("code")}>
-                  {t.sim.btnCode}
-                </button>
-                <button type="button" className="btn-ghost !px-3 !py-2" onClick={() => setMode("script")}>
-                  {t.sim.btnScript}
-                </button>
-                <button type="button" className="btn-ghost !px-3 !py-2" onClick={() => setMode("ecom")}>
-                  {t.sim.btnEcom}
-                </button>
+                <button type="button" className="btn-ghost ui-lift !px-3 !py-2" onClick={() => setMode("code")}>{t.sim.btnCode}</button>
+                <button type="button" className="btn-ghost ui-lift !px-3 !py-2" onClick={() => setMode("script")}>{t.sim.btnScript}</button>
+                <button type="button" className="btn-ghost ui-lift !px-3 !py-2" onClick={() => setMode("ecom")}>{t.sim.btnEcom}</button>
               </div>
             </div>
-            <pre className="mt-8 min-h-[180px] overflow-auto rounded-2xl border border-white/10 bg-black/50 p-5 font-mono text-[11px] leading-relaxed text-cyan/90">
+            <pre className="mt-8 min-h-[210px] overflow-auto rounded-2xl border border-cyan/20 bg-black/55 p-5 font-mono text-[11px] leading-relaxed text-cyan/90">
               {text}
             </pre>
           </div>

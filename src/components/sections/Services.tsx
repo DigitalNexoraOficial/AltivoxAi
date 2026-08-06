@@ -10,26 +10,21 @@ export function Services() {
   const [active, setActive] = useState<string | null>(null);
 
   const items = useMemo(
-    () =>
-      t.services.items.filter(
-        (item) => filter === "all" || item.category === filter
-      ),
+    () => t.services.items.filter((item) => filter === "all" || item.category === filter),
     [t.services.items, filter]
   );
 
   const activeItem = t.services.items.find((i) => i.id === active);
 
   return (
-    <section id="services" className="section-pad relative">
+    <section id="services" className="section-pad relative mesh-divider">
       <div className="mx-auto max-w-7xl">
         <Reveal>
           <span className="eyebrow">{t.services.eyebrow}</span>
-          <h2 className="heading-display mt-5 max-w-3xl text-3xl md:text-5xl">
-            {t.services.title}
-          </h2>
-          <p className="mt-4 max-w-2xl text-sm text-mist md:text-base">
-            {t.services.sub}
-          </p>
+          <div className="mt-5 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <h2 className="heading-display max-w-3xl text-3xl md:text-5xl">{t.services.title}</h2>
+            <p className="max-w-lg text-sm text-mist md:text-base">{t.services.sub}</p>
+          </div>
         </Reveal>
 
         <div className="mt-10 flex flex-wrap gap-2">
@@ -39,9 +34,7 @@ export function Services() {
               type="button"
               onClick={() => setFilter(f.id)}
               className={`rounded-full border px-4 py-2 text-[11px] uppercase tracking-widest transition ${
-                filter === f.id
-                  ? "border-cyan/50 bg-cyan/15 text-cyan"
-                  : "border-white/10 text-mist-muted hover:border-white/25"
+                filter === f.id ? "border-cyan/50 bg-cyan/15 text-cyan" : "border-white/10 text-mist-muted hover:border-white/25"
               }`}
             >
               {f.label}
@@ -55,18 +48,15 @@ export function Services() {
               <button
                 type="button"
                 onClick={() => setActive(item.id)}
-                className="glass group h-full w-full rounded-3xl p-6 text-left transition hover:-translate-y-1 hover:border-cyan/30 hover:shadow-glow"
+                className="glass ui-lift group h-full w-full rounded-3xl p-7 text-left hover:border-cyan/30 hover:shadow-glow"
               >
-                <div className="mb-6 h-px w-12 bg-gradient-to-r from-cyan to-violet opacity-70 transition group-hover:w-20" />
-                <h3 className="font-display text-sm uppercase tracking-wide text-white md:text-base">
-                  {item.title}
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-mist">
-                  {item.short}
-                </p>
-                <span className="mt-6 inline-block text-[10px] uppercase tracking-widest text-cyan">
-                  {t.services.seeDetails}
-                </span>
+                <div className="mb-6 flex items-center justify-between">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-cyan">{item.category}</span>
+                  <span className="h-2 w-2 rounded-full bg-cyan/80" />
+                </div>
+                <h3 className="font-display text-sm uppercase tracking-wide text-white md:text-base">{item.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-mist">{item.short}</p>
+                <span className="mt-7 inline-block text-[10px] uppercase tracking-widest text-cyan">{t.services.seeDetails}</span>
               </button>
             </Reveal>
           ))}
@@ -74,32 +64,15 @@ export function Services() {
       </div>
 
       {activeItem ? (
-        <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm"
-          onClick={() => setActive(null)}
-          role="presentation"
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            className="glass max-h-[85vh] w-full max-w-lg overflow-auto rounded-3xl p-8"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              className="float-right text-mist hover:text-white"
-              aria-label="Close"
-              onClick={() => setActive(null)}
-            >
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm" onClick={() => setActive(null)} role="presentation">
+          <div role="dialog" aria-modal="true" className="glass-strong max-h-[85vh] w-full max-w-xl overflow-auto rounded-3xl p-8" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="float-right text-mist hover:text-white" aria-label="Close" onClick={() => setActive(null)}>
               ×
             </button>
-            <h3 className="font-display text-xl uppercase text-white">
-              {activeItem.title}
-            </h3>
-            <p className="mt-4 text-sm leading-relaxed text-mist">
-              {activeItem.long}
-            </p>
-            <a href="#contact" className="btn-primary mt-8" onClick={() => setActive(null)}>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan">Servicio</p>
+            <h3 className="mt-3 font-display text-xl uppercase text-white">{activeItem.title}</h3>
+            <p className="mt-4 text-sm leading-relaxed text-mist">{activeItem.long}</p>
+            <a href="#contact" className="btn-primary mt-8 ui-lift" onClick={() => setActive(null)}>
               Contact
             </a>
           </div>
