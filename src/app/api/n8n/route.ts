@@ -228,7 +228,7 @@ export async function POST(req: NextRequest) {
         const result = await forwardToN8n(event, data, Boolean(body.test));
         return withCors(
           req,
-          NextResponse.json({ ok: true, event, ...result })
+          NextResponse.json({ event, ...result })
         );
       } catch (e: any) {
         if (e.code === "NO_WEBHOOK") {
