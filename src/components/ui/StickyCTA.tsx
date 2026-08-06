@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { useIndustry } from "@/components/providers/IndustryProvider";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import { playTone } from "@/lib/sound";
 import { getVariant, trackEvent } from "@/lib/ab";
 
@@ -60,6 +61,7 @@ const SECTION_CTA: Record<string, { title: string; mobileTitle: string; href: st
 export function StickyCTA() {
   const { t } = useI18n();
   const { industry } = useIndustry();
+  const site = useSiteSettings();
   const [visible, setVisible] = useState(false);
   const [section, setSection] = useState("default");
   const [badge, setBadge] = useState("Chatbot en 7 días");
@@ -93,7 +95,7 @@ export function StickyCTA() {
   const cta = useMemo(() => SECTION_CTA[section] || SECTION_CTA.default, [section]);
   const primaryLabel = cta.label === "Contactar" ? t.hero.cta2 : cta.label;
 
-  if (!visible) return null;
+  if (!visible || !site.flags.stickyCtaEnabled) return null;
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-[4.75rem] z-[90] px-3 sm:bottom-4 sm:px-4 md:bottom-6">

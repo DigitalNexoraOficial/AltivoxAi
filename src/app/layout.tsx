@@ -5,6 +5,7 @@ import { I18nProvider } from "@/components/providers/I18nProvider";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { IndustryProvider } from "@/components/providers/IndustryProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { SiteSettingsProvider } from "@/components/providers/SiteSettingsProvider";
 import { SkipLink } from "@/components/ui/SkipLink";
 
 const sans = Inter({
@@ -55,11 +56,13 @@ export default function RootLayout({
         <SkipLink />
         <div className="grain" aria-hidden />
         <ThemeProvider>
-          <I18nProvider>
-            <IndustryProvider>
-              <SmoothScrollProvider>{children}</SmoothScrollProvider>
-            </IndustryProvider>
-          </I18nProvider>
+          <SiteSettingsProvider>
+            <I18nProvider>
+              <IndustryProvider>
+                <SmoothScrollProvider>{children}</SmoothScrollProvider>
+              </IndustryProvider>
+            </I18nProvider>
+          </SiteSettingsProvider>
         </ThemeProvider>
       </body>
     </html>

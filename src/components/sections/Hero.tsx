@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { useIndustry } from "@/components/providers/IndustryProvider";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import { BookingModal } from "@/components/experience/BookingModal";
 import { playTone } from "@/lib/sound";
 import { getVariant, trackEvent } from "@/lib/ab";
@@ -11,6 +12,7 @@ import { getVariant, trackEvent } from "@/lib/ab";
 export function Hero() {
   const { t } = useI18n();
   const { industry } = useIndustry();
+  const site = useSiteSettings();
   const reduce = useReducedMotion();
   const [booking, setBooking] = useState(false);
   const [ctaVariant, setCtaVariant] = useState<"A" | "B">("A");
@@ -22,9 +24,14 @@ export function Hero() {
     trackEvent("hero_view", { variant: v });
   }, []);
 
-  const primaryLabel = ctaVariant === "B" ? "Reservar llamada gratis" : `${t.hero.cta1} →`;
+  const heroTitle = site.hero.title || t.hero.title;
+  const heroAccent = site.hero.titleAccent || t.hero.titleAccent;
+  const cta1 = site.hero.cta1 || t.hero.cta1;
+  const cta2 = site.hero.cta2 || "Reservar llamada gratis";
+  const risk = site.hero.risk || t.hero.risk;
+  const primaryLabel = ctaVariant === "B" ? cta2 : `${cta1} →`;
   const primaryHref = ctaVariant === "B" ? null : "#ofertas";
-  const secondaryLabel = ctaVariant === "B" ? `${t.hero.cta1} →` : "Reservar llamada gratis";
+  const secondaryLabel = ctaVariant === "B" ? `${cta1} →` : cta2;
 
   return (
     <section id="home" className="cinematic-stack relative flex min-h-[100svh] items-center overflow-hidden pt-28" data-story>
@@ -42,13 +49,13 @@ export function Hero() {
 
           <p className="mt-8 text-xs font-semibold tracking-[0.22em] text-cyan md:text-sm">
             ALTIVOX<span className="text-white">AI</span>
-            <span className="ml-2 font-normal text-mist-muted">AI-NATIVE STUDIO</span>
+            <span className="ml-2 font-normal text-mist-muted">{site.brand.tagline || "AI-NATIVE STUDIO"}</span>
           </p>
 
           <h1 className="heading-display mt-6 text-5xl leading-[1.02] md:text-6xl lg:text-7xl">
-            {t.hero.title}
+            {heroTitle}
             <br />
-            <span className="text-gradient">{t.hero.titleAccent}</span>
+            <span className="text-gradient">{heroAccent}</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-mist-muted md:text-lg">{shortDesc}</p>
@@ -70,7 +77,7 @@ export function Hero() {
                 type="button"
                 className="btn-primary ui-lift w-full sm:w-auto"
                 onClick={() => {
-                  setBooking(true);
+                  if (site.flags.bookingEnabled) setBooking(true);
                   playTone("click");
                   trackEvent("hero_cta_click", { variant: ctaVariant, role: "primary" });
                 }}
@@ -78,7 +85,7 @@ export function Hero() {
                 {primaryLabel}
               </button>
             )}
-            {ctaVariant === "B" ? (
+            {ctaVariant === "B" || !site.flags.bookingEnabled ? (
               <a
                 href="#ofertas"
                 className="btn-ghost ui-lift w-full sm:w-auto"
@@ -87,7 +94,7 @@ export function Hero() {
                   trackEvent("hero_cta_click", { variant: ctaVariant, role: "secondary" });
                 }}
               >
-                {secondaryLabel}
+                {ctaVariant === "B" ? secondaryLabel : `${cta1} →`}
               </a>
             ) : (
               <button
@@ -110,7 +117,7 @@ export function Hero() {
             <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">{industry.proof}</span>
           </div>
 
-          <p className="mt-5 text-[11px] text-mist-muted">{t.hero.risk}</p>
+          <p className="mt-5 text-[11px] text-mist-muted">{risk}</p>
         </motion.div>
 
         <motion.div

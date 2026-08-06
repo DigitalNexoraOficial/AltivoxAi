@@ -3,20 +3,25 @@
 import { FormEvent, useState } from "react";
 import { Reveal } from "@/components/ui/Reveal";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 
 export function Contact() {
   const { t } = useI18n();
+  const site = useSiteSettings();
   const [ok, setOk] = useState(false);
   const [loading, setLoading] = useState(false);
+  const email = site.contact.email || "info@altivoxai.es";
+  const wa = site.contact.whatsapp || "34600000000";
+  const waLabel = site.contact.whatsappLabel || t.contact.waLink;
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const nombre = String(fd.get("nombre") || "").trim();
-    const email = String(fd.get("email") || "").trim();
+    const mail = String(fd.get("email") || "").trim();
     const empresa = String(fd.get("empresa") || "").trim();
     const mensaje = String(fd.get("mensaje") || "").trim();
-    if (!email.includes("@") || !nombre || !mensaje) return;
+    if (!mail.includes("@") || !nombre || !mensaje) return;
     setLoading(true);
     try {
       await fetch("/api/lead", {
@@ -24,15 +29,11 @@ export function Contact() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nombre,
-          email,
+          email: mail,
           empresa,
           mensaje,
           tipo_interes: "Contacto web",
           fuente: "contacto",
-          score: 65,
-          clasificacion: "templado",
-          prioridad: "alta",
-          estado: "nuevo",
         }),
       });
       setOk(true);
@@ -52,11 +53,11 @@ export function Contact() {
           <div className="mt-10 space-y-4 text-sm">
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
               <p className="text-[10px] uppercase tracking-widest text-mist-muted">{t.contact.emailLbl}</p>
-              <a href="mailto:info@altivoxai.es" className="mt-1 inline-block text-cyan hover:underline">info@altivoxai.es</a>
+              <a href={`mailto:${email}`} className="mt-1 inline-block text-cyan hover:underline">{email}</a>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
               <p className="text-[10px] uppercase tracking-widest text-mist-muted">{t.contact.waLbl}</p>
-              <a href="https://wa.me/34600000000" className="mt-1 inline-block text-white hover:text-cyan" target="_blank" rel="noopener noreferrer">{t.contact.waLink}</a>
+              <a href={`https://wa.me/${wa}`} className="mt-1 inline-block text-white hover:text-cyan" target="_blank" rel="noopener noreferrer">{waLabel}</a>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
               <p className="text-[10px] uppercase tracking-widest text-mist-muted">{t.contact.webLbl}</p>

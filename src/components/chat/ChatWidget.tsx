@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -17,6 +18,7 @@ const AGENTS = [
 
 export function ChatWidget() {
   const { t } = useI18n();
+  const site = useSiteSettings();
   const reduce = useReducedMotion();
   const [open, setOpen] = useState(false);
   const [nudge, setNudge] = useState(false);
@@ -56,6 +58,8 @@ export function ChatWidget() {
       window.removeEventListener("resize", onScroll);
     };
   }, [open]);
+
+  if (!site.flags.chatEnabled) return null;
 
   async function send(text: string) {
     const clean = text.trim();

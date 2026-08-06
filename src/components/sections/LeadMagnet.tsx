@@ -3,12 +3,14 @@
 import { FormEvent, useState } from "react";
 import { Reveal } from "@/components/ui/Reveal";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 import { playTone } from "@/lib/sound";
 
 const PDF = "/assets/guia/Guia-Basica-Automatizacion-IA-AltivoxAi.pdf";
 
 export function LeadMagnet() {
   const { t } = useI18n();
+  const site = useSiteSettings();
   const [email, setEmail] = useState("");
   const [ok, setOk] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -68,6 +70,7 @@ export function LeadMagnet() {
 
   return (
     <section id="leadmagnet" className="section-shell">
+      {!site.flags.leadMagnetEnabled ? null : (
       <div className="mx-auto max-w-5xl px-6 md:px-10">
         <Reveal>
           <div className="ref-card-strong ui-lift relative overflow-hidden border-cyan/30">
@@ -104,6 +107,7 @@ export function LeadMagnet() {
           </div>
         </Reveal>
       </div>
+      )}
     </section>
   );
 }

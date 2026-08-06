@@ -105,11 +105,33 @@ function safeEqual(a: string, b: string): boolean {
 function okSecret(req: NextRequest): boolean {
   const expected = process.env.N8N_SECRET;
   if (!expected) return false;
-  const auth = req.headers.get("authorization") || "";
-  const got =
-    req.headers.get("x-altivox-secret") ||
-    auth.replace(/^Bearer\s+/i, "");
+  const got = req.headers.get("x-altivox-secret") || "";
+  if (!got) return false;
   return safeEqual(got, expected);
+}
+
+async function okSupabaseUser(req: NextRequest): Promise<boolean> {
+  const auth = req.headers.get("authorization") || "";
+  const token = auth.replace(/^Bearer\s+/i, "").trim();
+  if (!token || token.length < 20) return false;
+  const anon = String(process.env.SUPABASE_ANON_KEY || "").trim();
+  if (!anon) return false;
+  try {
+    const res = await fetch(SUPABASE_URL + "/auth/v1/user", {
+      headers: {
+        Authorization: "Bearer " + token,
+        apikey: anon,
+      },
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function okAuth(req: NextRequest): Promise<boolean> {
+  if (okSecret(req)) return true;
+  return okSupabaseUser(req);
 }
 
 function pickAllowedFields(
@@ -234,8 +256,8 @@ export async function POST(req: NextRequest) {
           ? { message: "pong", from: String(body.from || "api").slice(0, 80) }
           : body.data || {};
 
-      // All bridge actions require N8N_SECRET. Website leads go via /api/lead → webhook.
-      if (!okSecret(req)) {
+      // Require N8N_SECRET or authenticated Supabase admin session.
+      if (!(await okAuth(req))) {
         return withCors(
           req,
           NextResponse.json({ error: "No autorizado" }, { status: 401 })
@@ -262,7 +284,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!okSecret(req)) {
+    if (!(await okAuth(req))) {
       return withCors(
         req,
         NextResponse.json(
