@@ -37,6 +37,7 @@ body {
   font-family: var(--font-sans), Helvetica Neue, Helvetica, Arial, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {

@@ -10,9 +10,12 @@ export function StickyCTA() {
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
+      const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+      const progress = y / max;
       const nearContact = document.getElementById("contact");
       const contactTop = nearContact?.offsetTop ?? Number.MAX_SAFE_INTEGER;
-      setVisible(y > 520 && y + window.innerHeight < contactTop + 80);
+      // Hide near bottom so it doesn't fight the chat nudge
+      setVisible(y > 520 && progress < 0.72 && y + window.innerHeight < contactTop + 80);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
