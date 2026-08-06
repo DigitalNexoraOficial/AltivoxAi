@@ -22,7 +22,7 @@ export function About() {
             <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-cyan/20 blur-3xl" />
             <div className="absolute -left-8 bottom-0 h-28 w-28 rounded-full bg-violet/25 blur-2xl" />
             <p className="step-num">Is this you?</p>
-            <p className="mt-5 font-serif text-4xl leading-[1.05] text-white md:text-5xl">
+            <p className="mt-5 font-sans font-semibold text-4xl leading-[1.05] text-white md:text-5xl">
               Más leads.
               <br />
               <span className="text-gradient">Menos trabajo manual.</span>

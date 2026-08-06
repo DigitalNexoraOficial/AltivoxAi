@@ -11,11 +11,13 @@ import { Simulator } from "@/components/sections/Simulator";
 import { Insights } from "@/components/sections/Insights";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { Faq } from "@/components/sections/Faq";
+import { FinalCTA } from "@/components/sections/FinalCTA";
 import { Contact } from "@/components/sections/Contact";
 import { Footer } from "@/components/sections/Footer";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 import { ScrollTop } from "@/components/ui/ScrollTop";
-import { BackgroundFX } from "@/components/effects/BackgroundFX";
+import { StickyCTA } from "@/components/ui/StickyCTA";
+import { ScrollAIBackground } from "@/components/three/ScrollAIBackground";
 import { MicroInteractions } from "@/components/effects/MicroInteractions";
 
 export default function HomePage() {
@@ -34,7 +36,7 @@ export default function HomePage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <BackgroundFX />
+      <ScrollAIBackground />
       <Navbar />
       <main className="relative z-10">
         <Hero />
@@ -49,9 +51,11 @@ export default function HomePage() {
         <Insights />
         <Testimonials />
         <Faq />
+        <FinalCTA />
         <Contact />
       </main>
       <Footer />
+      <StickyCTA />
       <ChatWidget />
       <ScrollTop />
       <MicroInteractions />

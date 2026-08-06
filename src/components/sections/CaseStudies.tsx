@@ -18,7 +18,7 @@ export function CaseStudies() {
             <Reveal key={c.title} delay={i * 0.08}>
               <article className="ref-card ui-lift h-full">
                 <p className="step-num">Case {String(i + 1).padStart(2, "0")}</p>
-                <h3 className="mt-4 font-serif text-2xl text-white">{c.title}</h3>
+                <h3 className="mt-4 font-sans font-semibold text-2xl text-white">{c.title}</h3>
                 <p className="mt-4 text-sm leading-relaxed text-mist-muted">{c.text}</p>
                 <div className="mt-8 grid gap-3 sm:grid-cols-2">
                   <div className="rounded-2xl border border-cyan/20 bg-cyan/10 p-4">

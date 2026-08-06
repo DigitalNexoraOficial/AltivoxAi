@@ -102,7 +102,7 @@ export function ChatWidget() {
         >
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <div>
-              <p className="font-display text-xs uppercase tracking-widest text-white">
+              <p className="font-sans font-semibold text-xs uppercase tracking-widest text-white">
                 Altivox Chat
               </p>
               <p className="text-[10px] text-mist-muted">{agent}</p>

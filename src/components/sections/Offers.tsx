@@ -28,8 +28,8 @@ export function Offers() {
                   </span>
                 ) : null}
                 <p className="step-num">Paquete {String(i + 1).padStart(2, "0")}</p>
-                <h3 className="mt-4 font-serif text-2xl text-white">{offer.title}</h3>
-                <p className="mt-4 font-serif text-4xl text-cyan">{offer.price}</p>
+                <h3 className="mt-4 font-sans font-semibold text-2xl text-white">{offer.title}</h3>
+                <p className="mt-4 font-sans font-semibold text-4xl text-cyan">{offer.price}</p>
                 <p className="mt-5 flex-1 text-sm leading-relaxed text-mist-muted">{offer.desc}</p>
                 <a href="#contact" className={`${i === 1 ? "btn-primary" : "btn-ghost"} ui-lift mt-8 w-full`}>
                   {offer.cta} →

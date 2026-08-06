@@ -17,7 +17,7 @@ export function VisualRail() {
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="step-num">Scroll to explore</p>
-              <h2 className="heading-serif mt-3 text-3xl md:text-5xl">Learn. Build. Automate. Earn.</h2>
+              <h2 className="heading-display mt-3 text-3xl md:text-5xl">Learn. Build. Automate. Earn.</h2>
             </div>
             <span className="eyebrow">
               <span className="live-dot" />
@@ -31,7 +31,7 @@ export function VisualRail() {
             <Reveal key={step.id} delay={i * 0.06}>
               <article className="ref-card ui-lift h-full">
                 <p className="step-num">{step.id} — {step.label}</p>
-                <h3 className="mt-4 font-serif text-2xl text-white">{step.title}</h3>
+                <h3 className="mt-4 font-sans font-semibold text-2xl text-white">{step.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-mist-muted">{step.text}</p>
               </article>
             </Reveal>

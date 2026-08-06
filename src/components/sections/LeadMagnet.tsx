@@ -70,7 +70,7 @@ export function LeadMagnet() {
             <div className="relative grid gap-8 md:grid-cols-[1.2fr_0.8fr] md:items-center">
               <div>
                 <span className="eyebrow">{t.lead.eyebrow}</span>
-                <h2 className="heading-serif mt-5 text-3xl md:text-5xl">{t.lead.title}</h2>
+                <h2 className="heading-display mt-5 text-3xl md:text-5xl">{t.lead.title}</h2>
                 <p className="mt-4 text-sm leading-relaxed text-mist-muted md:text-base">{t.lead.desc}</p>
               </div>
               <form onSubmit={onSubmit} className="space-y-3 rounded-[1.5rem] border border-white/10 bg-black/30 p-5">

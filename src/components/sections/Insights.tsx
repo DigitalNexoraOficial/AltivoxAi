@@ -26,7 +26,7 @@ export function Insights() {
                 className="ref-card ui-lift h-full w-full text-left hover:border-cyan/30"
               >
                 <p className="step-num">{b.meta}</p>
-                <h3 className="mt-4 font-serif text-xl text-white">{b.title}</h3>
+                <h3 className="mt-4 font-sans font-semibold text-xl text-white">{b.title}</h3>
                 <p className="mt-3 text-sm text-mist-muted">{b.short}</p>
                 <span className="mt-6 inline-block text-[12px] text-cyan">{t.blog.read} →</span>
               </button>
@@ -38,7 +38,7 @@ export function Insights() {
       {item ? (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-6" onClick={() => setOpen(null)} role="presentation">
           <div className="glass-strong max-w-lg rounded-3xl p-8" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-            <h3 className="font-serif text-2xl text-white">{item.title}</h3>
+            <h3 className="font-sans font-semibold text-2xl text-white">{item.title}</h3>
             <p className="mt-4 text-sm text-mist">{item.long}</p>
             <button type="button" className="btn-ghost ui-lift mt-6" onClick={() => setOpen(null)}>
               OK

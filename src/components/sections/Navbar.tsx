@@ -30,7 +30,7 @@ export function Navbar() {
       <div className="content-wrap flex items-center justify-between px-6 md:px-10">
         <a href="#home" className={`flex items-center gap-3 rounded-full px-3 py-2 ${scrolled ? "hero-dock" : ""}`}>
           <Image src="/favicon.png" alt="AltivoxAi" width={34} height={34} className="rounded-full border border-cyan/30" priority />
-          <span className="font-display text-xs tracking-[0.16em] text-white md:text-sm">
+          <span className="font-sans font-semibold text-xs tracking-[0.16em] text-white md:text-sm">
             ALTIVOX<span className="text-cyan">AI</span>
           </span>
         </a>

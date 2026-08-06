@@ -52,7 +52,7 @@ export function Calculator() {
             <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-end">
               <div>
                 <span className="eyebrow">{t.calc.eyebrow}</span>
-                <h2 className="heading-serif mt-5 text-3xl md:text-5xl">{t.calc.title}</h2>
+                <h2 className="heading-display mt-5 text-3xl md:text-5xl">{t.calc.title}</h2>
                 <p className="mt-3 text-sm text-mist-muted md:text-base">{t.calc.sub}</p>
 
                 <label className="mt-10 block text-[11px] uppercase tracking-widest text-mist-muted">{t.calc.hours}</label>
@@ -66,12 +66,12 @@ export function Calculator() {
                     className="w-full accent-cyan"
                     aria-label={t.calc.hours}
                   />
-                  <span className="font-serif text-2xl text-cyan">{hours}h</span>
+                  <span className="font-sans font-semibold text-2xl text-cyan">{hours}h</span>
                 </div>
               </div>
               <div className="rounded-[1.6rem] border border-white/10 bg-black/35 p-6">
                 <p className="text-[11px] uppercase tracking-widest text-mist-muted">{t.calc.savings}</p>
-                <p className="mt-2 font-serif text-5xl text-white">{savings.toLocaleString("es-ES")} €</p>
+                <p className="mt-2 font-sans font-semibold text-5xl text-white">{savings.toLocaleString("es-ES")} €</p>
                 <p className="mt-2 text-xs text-mist">Modelo conservador basado en 60€/hora.</p>
                 <div className="mt-5 flex flex-wrap gap-2">
                   <span className="kpi-pill">ROI Snapshot</span>

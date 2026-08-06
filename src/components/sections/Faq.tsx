@@ -19,7 +19,7 @@ export function Faq() {
               <details className="ref-card ui-lift group !rounded-2xl !p-0 overflow-hidden">
                 <summary className="cursor-pointer list-none px-5 py-4 marker:content-none">
                   <span className="flex items-center justify-between gap-4">
-                    <span className="font-serif text-lg text-white">{item.q}</span>
+                    <span className="font-sans font-semibold text-lg text-white">{item.q}</span>
                     <span className="text-cyan transition group-open:rotate-45">+</span>
                   </span>
                 </summary>

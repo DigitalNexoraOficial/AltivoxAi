@@ -56,7 +56,7 @@ export function Services() {
                   <span className="step-num">{String(i + 1).padStart(2, "0")}</span>
                   <span className="rounded-full border border-cyan/30 bg-cyan/10 px-2 py-1 text-[9px] uppercase tracking-widest text-cyan">AI</span>
                 </div>
-                <h3 className="font-serif text-2xl text-white">{item.title}</h3>
+                <h3 className="font-sans font-semibold text-2xl text-white">{item.title}</h3>
                 <p className="mt-4 text-sm leading-relaxed text-mist-muted">{item.short}</p>
                 <span className="mt-8 inline-block text-[12px] text-cyan">{t.services.seeDetails} →</span>
               </button>
@@ -72,7 +72,7 @@ export function Services() {
               ×
             </button>
             <p className="step-num">Servicio</p>
-            <h3 className="mt-3 font-serif text-3xl text-white">{activeItem.title}</h3>
+            <h3 className="mt-3 font-sans font-semibold text-3xl text-white">{activeItem.title}</h3>
             <p className="mt-4 text-sm leading-relaxed text-mist">{activeItem.long}</p>
             <a href="#contact" className="btn-primary ui-lift mt-8" onClick={() => setActive(null)}>
               Contact
