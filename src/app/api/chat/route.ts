@@ -1,0 +1,213 @@
+import { NextRequest, NextResponse } from "next/server";
+
+const ALLOWED_ORIGINS = [
+  "https://www.altivoxai.es",
+  "https://altivoxai.es",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+];
+
+const MAX_MESSAGE_CHARS = 2000;
+const rateBucket = new Map<string, { count: number; start: number }>();
+
+function pickOrigin(req: NextRequest): string {
+  const origin = String(req.headers.get("origin") || "");
+  if (ALLOWED_ORIGINS.includes(origin)) return origin;
+  return ALLOWED_ORIGINS[0];
+}
+
+function withCors(req: NextRequest, res: NextResponse): NextResponse {
+  res.headers.set("Access-Control-Allow-Origin", pickOrigin(req));
+  res.headers.set("Vary", "Origin");
+  res.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  return res;
+}
+
+function clientIp(req: NextRequest): string {
+  const xf = String(req.headers.get("x-forwarded-for") || "")
+    .split(",")[0]
+    .trim();
+  return xf || "unknown";
+}
+
+function rateLimit(ip: string): boolean {
+  const now = Date.now();
+  const windowMs = 60 * 1000;
+  const maxHits = 20;
+  const entry = rateBucket.get(ip) || { count: 0, start: now };
+  if (now - entry.start > windowMs) {
+    entry.count = 0;
+    entry.start = now;
+  }
+  entry.count += 1;
+  rateBucket.set(ip, entry);
+  return entry.count <= maxHits;
+}
+
+export async function OPTIONS(req: NextRequest) {
+  return withCors(req, new NextResponse(null, { status: 204 }));
+}
+
+export async function POST(req: NextRequest) {
+  if (!rateLimit(clientIp(req))) {
+    return withCors(
+      req,
+      NextResponse.json(
+        { error: "Demasiadas peticiones. Espera un minuto." },
+        { status: 429 }
+      )
+    );
+  }
+
+  try {
+    const body: any = await req.json().catch(() => ({}));
+    const { message, model, agent, mode } = body;
+
+    if (!message || typeof message !== "string") {
+      return withCors(
+        req,
+        NextResponse.json({ error: "Falta el mensaje." }, { status: 400 })
+      );
+    }
+
+    const cleanMessage = message.trim().slice(0, MAX_MESSAGE_CHARS);
+    if (!cleanMessage) {
+      return withCors(
+        req,
+        NextResponse.json({ error: "Falta el mensaje." }, { status: 400 })
+      );
+    }
+
+    const agentName = String(agent || model || mode || "asistente").slice(0, 60);
+    const systemPrompt =
+      `Eres ${agentName} del ecosistema AltivoxAi. ` +
+      "Responde en el idioma del usuario, de forma clara, profesional y concisa. " +
+      "Si detectas interés comercial, pide nombre y email de forma natural.";
+
+    let reply = "";
+    let lastError = "";
+
+    const openRouterKey = process.env.OPENROUTER_API_KEY;
+    if (openRouterKey) {
+      try {
+        const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + openRouterKey,
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://www.altivoxai.es",
+            "X-Title": "AltivoxAi",
+          },
+          body: JSON.stringify({
+            model: process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-001",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: cleanMessage },
+            ],
+          }),
+        });
+        const orData: any = await orRes.json();
+        if (orRes.ok) {
+          reply =
+            (orData.choices &&
+              orData.choices[0] &&
+              orData.choices[0].message &&
+              orData.choices[0].message.content) ||
+            "";
+        } else {
+          lastError =
+            (orData.error && (orData.error.message || orData.error)) ||
+            "Error OpenRouter";
+        }
+      } catch (e: any) {
+        lastError = e.message || "Error conectando OpenRouter";
+      }
+    }
+
+    if (!reply) {
+      const geminiKey = process.env.GEMINI_API_KEY;
+      if (geminiKey) {
+        const modelsToTry = [
+          process.env.GEMINI_MODEL || "gemini-2.5-flash",
+          "gemini-2.5-flash-lite",
+          "gemini-flash-latest",
+          "gemini-1.5-flash",
+        ];
+
+        for (const modelId of modelsToTry) {
+          const geminiRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${geminiKey}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [
+                  {
+                    parts: [{ text: `${systemPrompt}\n\nUsuario: ${cleanMessage}` }],
+                  },
+                ],
+              }),
+            }
+          );
+          const data: any = await geminiRes.json();
+          if (geminiRes.ok) {
+            reply =
+              (data.candidates &&
+                data.candidates[0] &&
+                data.candidates[0].content &&
+                data.candidates[0].content.parts &&
+                data.candidates[0].content.parts[0] &&
+                data.candidates[0].content.parts[0].text) ||
+              "";
+            if (reply) break;
+          } else {
+            lastError =
+              (data.error && data.error.message) || "Error Gemini " + modelId;
+          }
+        }
+      }
+    }
+
+    if (!reply) {
+      return withCors(
+        req,
+        NextResponse.json(
+          {
+            error:
+              lastError ||
+              "Sin respuesta IA. Configura OPENROUTER_API_KEY o una GEMINI_API_KEY con cuota.",
+          },
+          { status: 500 }
+        )
+      );
+    }
+
+    const currentModel = String(model || agentName || "").toLowerCase();
+    const lowerMsg = cleanMessage.toLowerCase();
+
+    if (
+      currentModel.includes("image") ||
+      currentModel.includes("diseñador") ||
+      lowerMsg.includes("foto") ||
+      lowerMsg.includes("imagen") ||
+      lowerMsg.includes("genera")
+    ) {
+      reply +=
+        "\n\n![Imagen Generada](https://image.pollinations.ai/prompt/" +
+        encodeURIComponent(cleanMessage) +
+        ")";
+    }
+
+    return withCors(req, NextResponse.json({ reply }));
+  } catch (err) {
+    console.error("Error en chat route:", err);
+    return withCors(
+      req,
+      NextResponse.json(
+        { error: "Error interno del servidor." },
+        { status: 500 }
+      )
+    );
+  }
+}
