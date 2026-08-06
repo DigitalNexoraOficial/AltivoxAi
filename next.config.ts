@@ -26,6 +26,7 @@ const nextConfig: NextConfig = {
       "connect-src 'self' https://*.supabase.co https://openrouter.ai https://generativelanguage.googleapis.com https://*.vercel.app wss://*.supabase.co",
       "worker-src 'self' blob:",
       "media-src 'self' blob:",
+      "frame-src 'self' https://cal.com https://*.cal.com https://calendly.com https://*.calendly.com",
       "upgrade-insecure-requests",
     ].join("; ");
 

@@ -4,6 +4,7 @@ import "./globals.css";
 import { I18nProvider } from "@/components/providers/I18nProvider";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { IndustryProvider } from "@/components/providers/IndustryProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { SkipLink } from "@/components/ui/SkipLink";
 
 const sans = Inter({
@@ -49,15 +50,17 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={sans.variable}>
-      <body className="min-h-screen bg-ink font-sans text-white antialiased">
+    <html lang="es" className={sans.variable} suppressHydrationWarning>
+      <body className="min-h-screen bg-[var(--bg)] font-sans text-[var(--text)] antialiased">
         <SkipLink />
         <div className="grain" aria-hidden />
-        <I18nProvider>
-          <IndustryProvider>
-            <SmoothScrollProvider>{children}</SmoothScrollProvider>
-          </IndustryProvider>
-        </I18nProvider>
+        <ThemeProvider>
+          <I18nProvider>
+            <IndustryProvider>
+              <SmoothScrollProvider>{children}</SmoothScrollProvider>
+            </IndustryProvider>
+          </I18nProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

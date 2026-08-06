@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const links = [
   ["services", "services"],
@@ -41,6 +42,7 @@ export function Navbar() {
               {t.nav[key]}
             </a>
           ))}
+          <ThemeToggle />
           <button type="button" onClick={toggleLang} className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] uppercase tracking-widest text-cyan" aria-label={t.common.lang}>
             {lang === "es" ? "EN" : "ES"}
           </button>
@@ -48,6 +50,7 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2 lg:hidden">
+          <ThemeToggle />
           <button type="button" onClick={toggleLang} className="rounded-full border border-white/15 px-2.5 py-1 text-[10px] text-cyan" aria-label={t.common.lang}>
             {lang === "es" ? "EN" : "ES"}
           </button>

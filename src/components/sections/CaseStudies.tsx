@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { Reveal } from "@/components/ui/Reveal";
 import { AnimatedMetric } from "@/components/ui/AnimatedMetric";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { cmsCases } from "@/content/cms";
 
 export function CaseStudies() {
   const { t } = useI18n();
@@ -15,27 +17,39 @@ export function CaseStudies() {
           <p className="mx-auto section-sub">{t.cases.sub}</p>
         </Reveal>
         <div className="mt-12 grid gap-5 lg:grid-cols-2">
-          {t.cases.items.map((c, i) => (
-            <Reveal key={c.title} delay={i * 0.08}>
-              <article className="ref-card ui-lift h-full overflow-hidden">
-                <div className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
-                  <div>
-                    <p className="step-num">Case {String(i + 1).padStart(2, "0")} · Immersive</p>
-                    <h3 className="mt-4 text-2xl font-semibold text-white">{c.title}</h3>
-                    <p className="mt-4 text-sm leading-relaxed text-mist-muted">{c.text}</p>
-                    <div className="mt-6 rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-4">
-                      <p className="text-[10px] uppercase tracking-widest text-mist-muted">Antes → Después</p>
-                      <p className="mt-2 text-sm text-soft">Proceso manual y lento → sistema IA con seguimiento automático.</p>
+          {t.cases.items.map((c, i) => {
+            const slug = cmsCases[i]?.slug;
+            return (
+              <Reveal key={c.title} delay={i * 0.08}>
+                <article className="ref-card ui-lift h-full overflow-hidden">
+                  <div className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
+                    <div>
+                      <p className="step-num">Case {String(i + 1).padStart(2, "0")} · Immersive</p>
+                      <h3 className="mt-4 text-2xl font-semibold text-white">{c.title}</h3>
+                      <p className="mt-4 text-sm leading-relaxed text-mist-muted">{c.text}</p>
+                      <div className="mt-6 rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-4">
+                        <p className="text-[10px] uppercase tracking-widest text-mist-muted">Antes → Después</p>
+                        <p className="mt-2 text-sm text-soft">
+                          {cmsCases[i]
+                            ? `${cmsCases[i].before} → ${cmsCases[i].after}`
+                            : "Proceso manual y lento → sistema IA con seguimiento automático."}
+                        </p>
+                      </div>
+                      {slug ? (
+                        <Link href={`/casos/${slug}`} className="btn-ghost ui-lift mt-5 inline-flex !px-4 !py-2 text-xs">
+                          Ver caso completo →
+                        </Link>
+                      ) : null}
+                    </div>
+                    <div className="grid gap-3 content-start">
+                      <AnimatedMetric label={c.m1} value={i === 0 ? 38 : 22} suffix="%" />
+                      <AnimatedMetric label={c.m2} value={i === 0 ? 7 : 14} suffix="d" />
                     </div>
                   </div>
-                  <div className="grid gap-3 content-start">
-                    <AnimatedMetric label={c.m1} value={i === 0 ? 38 : 22} suffix="%" />
-                    <AnimatedMetric label={c.m2} value={i === 0 ? 7 : 14} suffix="d" />
-                  </div>
-                </div>
-              </article>
-            </Reveal>
-          ))}
+                </article>
+              </Reveal>
+            );
+          })}
         </div>
       </div>
     </section>

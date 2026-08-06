@@ -296,3 +296,81 @@ html.has-custom-cursor * {
     scroll-margin-top: 5rem;
   }
 }
+
+/* Lightweight CSS showreel — no video decode cost */
+@keyframes showreelSlide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.showreel-track {
+  width: max-content;
+  animation: showreelSlide 22s linear infinite;
+  will-change: transform;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f7fb;
+  --bg-soft: #e8eef5;
+  --bg-panel: #ffffff;
+  --panel: rgba(255, 255, 255, 0.86);
+  --panel-strong: rgba(255, 255, 255, 0.94);
+  --line: rgba(15, 23, 42, 0.12);
+  --text: #0b1220;
+  --muted: #5b6472;
+  --soft: #334155;
+}
+
+html[data-theme="light"] body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+html[data-theme="light"] .grain {
+  opacity: 0.02;
+  mix-blend-mode: multiply;
+}
+
+html[data-theme="light"] .ref-card,
+html[data-theme="light"] .ref-card-strong,
+html[data-theme="light"] .hero-dock {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(15, 23, 42, 0.1);
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme="light"] .heading-display,
+html[data-theme="light"] .section-title,
+html[data-theme="light"] h1,
+html[data-theme="light"] h2,
+html[data-theme="light"] h3 {
+  color: #0b1220;
+}
+
+html[data-theme="light"] .text-mist-muted,
+html[data-theme="light"] .text-mist,
+html[data-theme="light"] .text-soft {
+  color: #5b6472 !important;
+}
+
+html[data-theme="light"] .btn-ghost {
+  color: #0b1220;
+  border-color: rgba(15, 23, 42, 0.15);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+html[data-theme="light"] .hero-metric,
+html[data-theme="light"] .section-light {
+  background: rgba(34, 211, 238, 0.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showreel-track {
+    animation: none;
+  }
+}

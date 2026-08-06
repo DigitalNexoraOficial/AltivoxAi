@@ -6,6 +6,7 @@ const SECTIONS = [
   "home",
   "services",
   "ofertas",
+  "auditoria",
   "casestudies",
   "calculator",
   "simulator",

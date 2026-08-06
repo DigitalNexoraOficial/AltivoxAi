@@ -1,18 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { useIndustry } from "@/components/providers/IndustryProvider";
 import { BookingModal } from "@/components/experience/BookingModal";
 import { playTone } from "@/lib/sound";
+import { getVariant, trackEvent } from "@/lib/ab";
 
 export function Hero() {
   const { t } = useI18n();
   const { industry } = useIndustry();
   const reduce = useReducedMotion();
   const [booking, setBooking] = useState(false);
+  const [ctaVariant, setCtaVariant] = useState<"A" | "B">("A");
   const shortDesc = industry.hook;
+
+  useEffect(() => {
+    const v = getVariant("hero_cta");
+    setCtaVariant(v);
+    trackEvent("hero_view", { variant: v });
+  }, []);
+
+  const primaryLabel = ctaVariant === "B" ? "Reservar llamada gratis" : `${t.hero.cta1} →`;
+  const primaryHref = ctaVariant === "B" ? null : "#ofertas";
+  const secondaryLabel = ctaVariant === "B" ? `${t.hero.cta1} →` : "Reservar llamada gratis";
 
   return (
     <section id="home" className="cinematic-stack relative flex min-h-[100svh] items-center overflow-hidden pt-28" data-story>
@@ -42,19 +54,54 @@ export function Hero() {
           <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-mist-muted md:text-lg">{shortDesc}</p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a href="#ofertas" className="btn-primary ui-lift w-full sm:w-auto" onClick={() => playTone("click")}>
-              {t.hero.cta1} →
-            </a>
-            <button
-              type="button"
-              className="btn-ghost ui-lift w-full sm:w-auto"
-              onClick={() => {
-                setBooking(true);
-                playTone("click");
-              }}
-            >
-              Reservar llamada gratis
-            </button>
+            {primaryHref ? (
+              <a
+                href={primaryHref}
+                className="btn-primary ui-lift w-full sm:w-auto"
+                onClick={() => {
+                  playTone("click");
+                  trackEvent("hero_cta_click", { variant: ctaVariant, role: "primary" });
+                }}
+              >
+                {primaryLabel}
+              </a>
+            ) : (
+              <button
+                type="button"
+                className="btn-primary ui-lift w-full sm:w-auto"
+                onClick={() => {
+                  setBooking(true);
+                  playTone("click");
+                  trackEvent("hero_cta_click", { variant: ctaVariant, role: "primary" });
+                }}
+              >
+                {primaryLabel}
+              </button>
+            )}
+            {ctaVariant === "B" ? (
+              <a
+                href="#ofertas"
+                className="btn-ghost ui-lift w-full sm:w-auto"
+                onClick={() => {
+                  playTone("click");
+                  trackEvent("hero_cta_click", { variant: ctaVariant, role: "secondary" });
+                }}
+              >
+                {secondaryLabel}
+              </a>
+            ) : (
+              <button
+                type="button"
+                className="btn-ghost ui-lift w-full sm:w-auto"
+                onClick={() => {
+                  setBooking(true);
+                  playTone("click");
+                  trackEvent("hero_cta_click", { variant: ctaVariant, role: "secondary" });
+                }}
+              >
+                {secondaryLabel}
+              </button>
+            )}
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-xs text-mist-muted">

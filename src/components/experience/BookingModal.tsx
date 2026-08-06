@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { playTone } from "@/lib/sound";
+import { trackEvent } from "@/lib/ab";
 
 function nextDays(count: number) {
   const out: { label: string; value: string }[] = [];
@@ -21,6 +22,7 @@ function nextDays(count: number) {
 }
 
 const SLOTS = ["10:00", "11:30", "13:00", "16:00", "17:30"];
+const CAL_URL = process.env.NEXT_PUBLIC_CAL_URL || "";
 
 export function BookingModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const reduce = useReducedMotion();
@@ -31,6 +33,11 @@ export function BookingModal({ open, onClose }: { open: boolean; onClose: () => 
   const [email, setEmail] = useState("");
   const [ok, setOk] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"form" | "cal">(CAL_URL ? "cal" : "form");
+
+  useEffect(() => {
+    if (open) trackEvent("booking_open", { mode });
+  }, [open, mode]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -54,6 +61,7 @@ export function BookingModal({ open, onClose }: { open: boolean; onClose: () => 
       });
       setOk(true);
       playTone("success");
+      trackEvent("booking_submit", { day, slot });
       if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.(12);
       window.setTimeout(() => {
         onClose();
@@ -75,8 +83,7 @@ export function BookingModal({ open, onClose }: { open: boolean; onClose: () => 
           onClick={onClose}
           role="presentation"
         >
-          <motion.form
-            onSubmit={onSubmit}
+          <motion.div
             onClick={(e) => e.stopPropagation()}
             initial={reduce ? false : { opacity: 0, y: 18, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -90,53 +97,85 @@ export function BookingModal({ open, onClose }: { open: boolean; onClose: () => 
             <h3 className="mt-2 text-2xl font-semibold text-white">Agenda tu llamada gratis</h3>
             <p className="mt-2 text-sm text-mist-muted">15 minutos. Sin compromiso. Confirmación inmediata.</p>
 
-            <div className="mt-5 flex flex-wrap gap-2">
-              {days.map((d) => (
+            {CAL_URL ? (
+              <div className="mt-4 flex gap-2">
                 <button
-                  key={d.value}
                   type="button"
-                  onClick={() => setDay(d.value)}
-                  className={`rounded-full border px-3 py-1.5 text-xs ${day === d.value ? "border-cyan/50 bg-cyan/15 text-cyan" : "border-white/10 text-mist-muted"}`}
+                  onClick={() => setMode("cal")}
+                  className={`rounded-full border px-3 py-1.5 text-xs ${mode === "cal" ? "border-cyan/50 bg-cyan/15 text-cyan" : "border-white/10 text-mist-muted"}`}
                 >
-                  {d.label}
+                  Calendario
                 </button>
-              ))}
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {SLOTS.map((s) => (
                 <button
-                  key={s}
                   type="button"
-                  onClick={() => setSlot(s)}
-                  className={`rounded-full border px-3 py-1.5 text-xs ${slot === s ? "border-cyan/50 bg-cyan/15 text-cyan" : "border-white/10 text-mist-muted"}`}
+                  onClick={() => setMode("form")}
+                  className={`rounded-full border px-3 py-1.5 text-xs ${mode === "form" ? "border-cyan/50 bg-cyan/15 text-cyan" : "border-white/10 text-mist-muted"}`}
                 >
-                  {s}
+                  Formulario rápido
                 </button>
-              ))}
-            </div>
+              </div>
+            ) : null}
 
-            <div className="mt-5 space-y-3">
-              <input
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Tu nombre"
-                className="w-full rounded-full border border-white/15 bg-black/40 px-4 py-3 text-sm outline-none focus:border-cyan"
-              />
-              <input
-                required
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Tu email"
-                className="w-full rounded-full border border-white/15 bg-black/40 px-4 py-3 text-sm outline-none focus:border-cyan"
-              />
-            </div>
+            {mode === "cal" && CAL_URL ? (
+              <div className="mt-5 overflow-hidden rounded-2xl border border-white/10">
+                <iframe
+                  title="Calendario Altivox"
+                  src={CAL_URL}
+                  className="h-[420px] w-full bg-black"
+                  loading="lazy"
+                />
+              </div>
+            ) : (
+              <form onSubmit={onSubmit}>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {days.map((d) => (
+                    <button
+                      key={d.value}
+                      type="button"
+                      onClick={() => setDay(d.value)}
+                      className={`rounded-full border px-3 py-1.5 text-xs ${day === d.value ? "border-cyan/50 bg-cyan/15 text-cyan" : "border-white/10 text-mist-muted"}`}
+                    >
+                      {d.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {SLOTS.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setSlot(s)}
+                      className={`rounded-full border px-3 py-1.5 text-xs ${slot === s ? "border-cyan/50 bg-cyan/15 text-cyan" : "border-white/10 text-mist-muted"}`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
 
-            <button type="submit" disabled={loading} className="btn-primary ui-lift mt-5 w-full">
-              {loading ? "..." : ok ? "Confirmado ✓" : "Confirmar reserva →"}
-            </button>
-          </motion.form>
+                <div className="mt-5 space-y-3">
+                  <input
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Tu nombre"
+                    className="w-full rounded-full border border-white/15 bg-black/40 px-4 py-3 text-sm outline-none focus:border-cyan"
+                  />
+                  <input
+                    required
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Tu email"
+                    className="w-full rounded-full border border-white/15 bg-black/40 px-4 py-3 text-sm outline-none focus:border-cyan"
+                  />
+                </div>
+
+                <button type="submit" disabled={loading} className="btn-primary ui-lift mt-5 w-full">
+                  {loading ? "..." : ok ? "Confirmado ✓" : "Confirmar reserva →"}
+                </button>
+              </form>
+            )}
+          </motion.div>
         </motion.div>
       ) : null}
     </AnimatePresence>

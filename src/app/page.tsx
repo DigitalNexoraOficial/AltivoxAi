@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import { Navbar } from "@/components/sections/Navbar";
 import { Hero } from "@/components/sections/Hero";
 import { SocialProofBar } from "@/components/sections/SocialProofBar";
@@ -19,12 +20,17 @@ import { Footer } from "@/components/sections/Footer";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 import { ScrollTop } from "@/components/ui/ScrollTop";
 import { StickyCTA } from "@/components/ui/StickyCTA";
-import { ScrollAIBackground } from "@/components/three/ScrollAIBackground";
-import { MicroInteractions } from "@/components/effects/MicroInteractions";
-import { CustomCursor } from "@/components/effects/CustomCursor";
-import { SoundToggle } from "@/components/effects/SoundToggle";
-import { ScrollStorytelling } from "@/components/effects/ScrollStorytelling";
-import { StudioTour } from "@/components/experience/StudioTour";
+import { DeferredExtras } from "@/components/experience/DeferredExtras";
+
+const ScrollAIBackground = dynamic(
+  () => import("@/components/three/ScrollAIBackground").then((m) => m.ScrollAIBackground),
+  { ssr: false }
+);
+
+const GrowthSuite = dynamic(
+  () => import("@/components/experience/GrowthSuite").then((m) => m.GrowthSuite),
+  { ssr: false, loading: () => null }
+);
 
 export default function HomePage() {
   const jsonLd = {
@@ -43,17 +49,15 @@ export default function HomePage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <ScrollAIBackground />
-      <CustomCursor />
-      <ScrollStorytelling />
       <Navbar />
-      <StudioTour />
-      <main className="relative z-10">
+      <main id="main" className="relative z-10">
         <Hero />
         <SocialProofBar />
         <IndustryPicker />
         <VisualRail />
         <Services />
         <Offers />
+        <GrowthSuite />
         <About />
         <CaseStudies />
         <Calculator />
@@ -67,10 +71,9 @@ export default function HomePage() {
       </main>
       <Footer />
       <StickyCTA />
-      <SoundToggle />
       <ChatWidget />
       <ScrollTop />
-      <MicroInteractions />
+      <DeferredExtras />
     </>
   );
 }
