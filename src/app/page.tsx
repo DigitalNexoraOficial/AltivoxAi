@@ -17,7 +17,6 @@ import { FinalCTA } from "@/components/sections/FinalCTA";
 import { Contact } from "@/components/sections/Contact";
 import { Footer } from "@/components/sections/Footer";
 import { ChatWidget } from "@/components/chat/ChatWidget";
-import { ScrollTop } from "@/components/ui/ScrollTop";
 import { StickyCTA } from "@/components/ui/StickyCTA";
 import { ScrollAIBackground } from "@/components/three/ScrollAIBackground";
 import { DeferredExtras } from "@/components/experience/DeferredExtras";
@@ -63,7 +62,6 @@ export default function HomePage() {
       <Footer />
       <StickyCTA />
       <ChatWidget />
-      <ScrollTop />
       <DeferredExtras />
     </>
   );

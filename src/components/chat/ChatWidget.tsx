@@ -108,7 +108,7 @@ export function ChatWidget() {
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-[100] flex items-end gap-3">
+      <div className="fixed bottom-5 right-3 z-[100] flex items-end gap-3 mobile-snap-safe sm:bottom-6 sm:right-6">
         <AnimatePresence mode="wait">
           {nudge && !open ? (
             <motion.button
@@ -165,7 +165,7 @@ export function ChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduce ? undefined : { opacity: 0, y: 12, scale: 0.97 }}
             transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
-            className="hero-dock fixed bottom-24 right-6 z-[100] flex h-[min(560px,70vh)] w-[min(390px,calc(100vw-2rem))] flex-col overflow-hidden rounded-[1.75rem] border border-cyan/20"
+            className="hero-dock fixed bottom-[5.5rem] right-3 z-[100] flex h-[min(560px,70vh)] w-[min(390px,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-[1.75rem] border border-cyan/20 sm:bottom-24 sm:right-6"
           >
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
               <div>

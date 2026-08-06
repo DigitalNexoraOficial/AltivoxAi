@@ -3,7 +3,8 @@
 type Tone = "hover" | "click" | "success" | "whoosh";
 
 let ctx: AudioContext | null = null;
-let enabled = false;
+let enabled = true;
+let unlockBound = false;
 
 function getCtx() {
   if (typeof window === "undefined") return null;
@@ -11,17 +12,42 @@ function getCtx() {
   return ctx;
 }
 
+/** Browsers block audio until a user gesture — unlock once. */
+function bindUnlock() {
+  if (typeof window === "undefined" || unlockBound) return;
+  unlockBound = true;
+  const unlock = () => {
+    void getCtx()?.resume();
+    window.removeEventListener("pointerdown", unlock);
+    window.removeEventListener("keydown", unlock);
+  };
+  window.addEventListener("pointerdown", unlock, { once: true, passive: true });
+  window.addEventListener("keydown", unlock, { once: true });
+}
+
+if (typeof window !== "undefined") bindUnlock();
+
 export function setSoundEnabled(value: boolean) {
   enabled = value;
-  if (value) void getCtx()?.resume();
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem("altivox-sound", value ? "1" : "0");
+  }
+  if (value) {
+    bindUnlock();
+    void getCtx()?.resume();
+  }
 }
 
 export function isSoundEnabled() {
+  if (typeof window === "undefined") return true;
+  const saved = window.localStorage.getItem("altivox-sound");
+  if (saved === "0") return false;
+  if (saved === "1") return true;
   return enabled;
 }
 
 export function playTone(tone: Tone = "hover") {
-  if (!enabled) return;
+  if (!isSoundEnabled()) return;
   const audio = getCtx();
   if (!audio) return;
 
