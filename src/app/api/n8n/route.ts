@@ -82,7 +82,7 @@ function clientIp(req: NextRequest): string {
   return xf || "unknown";
 }
 
-function rateLimit(ip: string, maxHits = 40): boolean {
+function rateLimit(ip: string, maxHits = 30): boolean {
   const now = Date.now();
   const windowMs = 60 * 1000;
   const entry = rateBucket.get(ip) || { count: 0, start: now };
@@ -234,20 +234,11 @@ export async function POST(req: NextRequest) {
           ? { message: "pong", from: String(body.from || "api").slice(0, 80) }
           : body.data || {};
 
-      // Website may emit lead.* without secret. Everything else needs N8N_SECRET
-      // (or N8N_REQUIRE_SECRET=1 to require secret even for public events).
-      const publicEvents = [
-        "lead.created",
-        "lead.updated",
-        "lead.hot",
-        "system.ping",
-      ];
-      const mustAuth =
-        process.env.N8N_REQUIRE_SECRET === "1" || !publicEvents.includes(event);
-      if (mustAuth && !okSecret(req)) {
+      // All bridge actions require N8N_SECRET. Website leads go via /api/lead → webhook.
+      if (!okSecret(req)) {
         return withCors(
           req,
-          NextResponse.json({ error: "Secret inválido" }, { status: 401 })
+          NextResponse.json({ error: "No autorizado" }, { status: 401 })
         );
       }
 
@@ -370,13 +361,12 @@ export async function POST(req: NextRequest) {
       )
     );
   } catch (e: any) {
-    console.error("n8n bridge error", e);
+    console.error("n8n bridge error", e?.code || e?.message);
     return withCors(
       req,
       NextResponse.json(
         {
-          error: e.message || "Error interno",
-          code: e.code || null,
+          error: "Error interno",
         },
         { status: 500 }
       )

@@ -28,15 +28,20 @@ const LEAD_FIELDS = [
   "mensaje",
   "tipo_interes",
   "fuente",
-  "score",
-  "clasificacion",
-  "prioridad",
-  "estado",
-  "auto_respuesta",
-  "ultimo_contacto",
 ] as const;
 
+/** Server-side score by source — clients cannot force hot leads. */
+const FUENTE_SCORE: Record<string, number> = {
+  booking: 75,
+  audit: 70,
+  contacto: 65,
+  guia: 55,
+  calculadora: 50,
+  web: 55,
+};
+
 const rateBucket = new Map<string, { count: number; start: number }>();
+const MAX_BODY_BYTES = 32 * 1024;
 
 type ApiError = Error & {
   code?: string;
@@ -216,7 +221,32 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const body: Record<string, unknown> = await req.json().catch(() => ({}));
+    const contentLength = Number(req.headers.get("content-length") || 0);
+    if (contentLength > MAX_BODY_BYTES) {
+      return withCors(
+        req,
+        NextResponse.json({ error: "Solicitud demasiado grande" }, { status: 413 })
+      );
+    }
+
+    const raw = await req.text();
+    if (raw.length > MAX_BODY_BYTES) {
+      return withCors(
+        req,
+        NextResponse.json({ error: "Solicitud demasiado grande" }, { status: 413 })
+      );
+    }
+
+    let body: Record<string, unknown> = {};
+    try {
+      body = raw ? JSON.parse(raw) : {};
+    } catch {
+      return withCors(
+        req,
+        NextResponse.json({ error: "JSON inválido" }, { status: 400 })
+      );
+    }
+
     const email = normalizeEmail(body.email);
     if (!isValidEmail(email)) {
       return withCors(
@@ -226,13 +256,18 @@ export async function POST(req: NextRequest) {
     }
 
     const picked = pickAllowedFields(body);
-    const score = Math.max(0, Math.min(100, Number(picked.score ?? 55) || 55));
-    const clasificacion = String(
-      picked.clasificacion ||
-        (score >= 70 ? "caliente" : score >= 30 ? "templado" : "frio")
-    )
+    const fuente = String(picked.fuente || "web")
       .toLowerCase()
-      .slice(0, 40);
+      .slice(0, 80);
+    const score = FUENTE_SCORE[fuente] ?? 55;
+    const clasificacion =
+      score >= 70 ? "caliente" : score >= 30 ? "templado" : "frio";
+    const prioridad =
+      clasificacion === "caliente"
+        ? "alta"
+        : clasificacion === "templado"
+          ? "media"
+          : "baja";
 
     const payload: Record<string, unknown> = {
       nombre: String(picked.nombre || "Lead web").slice(0, 120),
@@ -240,20 +275,12 @@ export async function POST(req: NextRequest) {
       empresa: String(picked.empresa || "").slice(0, 120),
       mensaje: String(picked.mensaje || "").slice(0, 4000),
       tipo_interes: String(picked.tipo_interes || "web").slice(0, 120),
-      fuente: String(picked.fuente || "web").slice(0, 80),
+      fuente,
       score,
       clasificacion,
-      prioridad: String(
-        picked.prioridad ||
-          (clasificacion === "caliente"
-            ? "alta"
-            : clasificacion === "templado"
-              ? "media"
-              : "baja")
-      ).slice(0, 40),
-      estado: String(picked.estado || "nuevo").slice(0, 40),
-      auto_respuesta: String(picked.auto_respuesta || "").slice(0, 2000),
-      ultimo_contacto: picked.ultimo_contacto || new Date().toISOString(),
+      prioridad,
+      estado: "nuevo",
+      ultimo_contacto: new Date().toISOString(),
     };
 
     if (picked.telefono) {

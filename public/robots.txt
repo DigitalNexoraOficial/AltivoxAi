@@ -1,4 +1,16 @@
 User-agent: *
 Allow: /
 
+Disallow: /login.html
+Disallow: /dashboard.html
+Disallow: /clientes.html
+Disallow: /agentes.html
+Disallow: /ajustes.html
+Disallow: /chatbot.html
+Disallow: /jarvis.html
+Disallow: /admin.html
+Disallow: /api/
+Disallow: /portal
+Disallow: /design-system
+
 Sitemap: https://www.altivoxai.es/sitemap.xml

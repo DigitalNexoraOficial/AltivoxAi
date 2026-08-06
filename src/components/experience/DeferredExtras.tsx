@@ -56,7 +56,10 @@ export function DeferredExtras() {
           <div className="fixed bottom-5 left-3 z-[95] flex flex-col-reverse items-start gap-2 mobile-snap-safe sm:bottom-6 sm:left-5">
             <SoundToggle />
             <ScrollTop />
-            {!stickyUp ? <WhatsAppCTA /> : null}
+            {/* Hide WhatsApp while sticky CTA is visible to avoid crowding on mobile */}
+            <div className={stickyUp ? "max-sm:hidden" : undefined}>
+              <WhatsAppCTA />
+            </div>
           </div>
         </>
       ) : null}
