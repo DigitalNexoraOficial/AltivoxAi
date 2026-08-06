@@ -10,7 +10,7 @@ export function Footer() {
 
   return (
     <footer className="mesh-divider border-t border-white/10 px-6 py-16 md:px-10">
-      <div className="mx-auto flex max-w-7xl flex-col gap-8 md:flex-row md:items-end md:justify-between">
+      <div className="content-wrap ref-card flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="flex items-center gap-3">
             <Image src="/favicon.png" alt="" width={32} height={32} className="rounded-full" />
@@ -25,7 +25,7 @@ export function Footer() {
           <button type="button" className="hover:text-cyan" onClick={() => setLegal(true)}>{t.footer.legal}</button>
         </div>
       </div>
-      <p className="mx-auto mt-10 max-w-7xl text-[11px] text-mist-muted">© {new Date().getFullYear()} AltivoxAi · www.altivoxai.es</p>
+      <p className="content-wrap mt-6 text-[11px] text-mist-muted">© {new Date().getFullYear()} AltivoxAi · www.altivoxai.es</p>
 
       {legal ? (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/75 p-6" onClick={() => setLegal(false)} role="presentation">

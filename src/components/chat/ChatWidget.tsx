@@ -98,7 +98,7 @@ export function ChatWidget() {
       {open ? (
         <div
           id="chat-container"
-          className="glass fixed bottom-24 right-6 z-[100] flex h-[min(560px,70vh)] w-[min(380px,calc(100vw-2rem))] flex-col overflow-hidden rounded-3xl border-cyan/20"
+          className="ref-card fixed bottom-24 right-6 z-[100] flex h-[min(560px,70vh)] w-[min(390px,calc(100vw-2rem))] flex-col overflow-hidden border-cyan/20"
         >
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <div>
@@ -123,7 +123,7 @@ export function ChatWidget() {
                 key={a}
                 type="button"
                 onClick={() => setAgent(a)}
-                className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] uppercase tracking-wide ${
+                className={`whitespace-nowrap rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-wide ${
                   agent === a ? "bg-cyan/20 text-cyan" : "text-mist-muted"
                 }`}
               >

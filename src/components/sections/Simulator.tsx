@@ -43,10 +43,10 @@ export function Simulator() {
   }, [mode, t.sim.idle]);
 
   return (
-    <section id="simulator" className="section-pad mesh-divider">
+    <section id="simulator" className="section-shell">
       <div className="mx-auto max-w-5xl">
         <Reveal>
-          <div className="glass-strong ui-lift rounded-[2rem] p-6 md:p-10">
+          <div className="ref-card-strong ui-lift">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-cyan">{t.sim.eyebrow}</p>
@@ -58,7 +58,7 @@ export function Simulator() {
                 <button type="button" className="btn-ghost ui-lift !px-3 !py-2" onClick={() => setMode("ecom")}>{t.sim.btnEcom}</button>
               </div>
             </div>
-            <pre className="mt-8 min-h-[210px] overflow-auto rounded-2xl border border-cyan/20 bg-black/55 p-5 font-mono text-[11px] leading-relaxed text-cyan/90">
+            <pre className="mt-8 min-h-[210px] overflow-auto rounded-[1.5rem] border border-cyan/20 bg-black/55 p-5 font-mono text-[11px] leading-relaxed text-cyan/90">
               {text}
             </pre>
           </div>

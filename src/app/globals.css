@@ -56,6 +56,10 @@ body {
     @apply mx-auto w-full max-w-7xl;
   }
 
+  .content-grid {
+    @apply mx-auto w-full max-w-7xl grid-cols-12;
+  }
+
   .glass {
     background: var(--panel);
     border: 1px solid var(--line);
@@ -74,6 +78,16 @@ body {
 
   .card-surface {
     @apply rounded-[1.75rem] border border-white/10 bg-white/[0.035] p-6 md:p-7;
+  }
+
+  .ref-card {
+    @apply rounded-[2rem] border border-white/10 bg-[linear-gradient(150deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-6 md:p-8;
+    box-shadow: 0 18px 52px rgba(0, 0, 0, 0.45);
+  }
+
+  .ref-card-strong {
+    @apply rounded-[2rem] border border-cyan/30 bg-[linear-gradient(150deg,rgba(34,211,238,0.14),rgba(15,26,46,0.75))] p-6 md:p-8;
+    box-shadow: 0 24px 76px rgba(0, 0, 0, 0.58);
   }
 
   .btn-primary {
@@ -120,6 +134,14 @@ body {
 
   .section-sub {
     @apply mt-4 max-w-2xl text-sm text-mist md:text-base;
+  }
+
+  .section-shell {
+    @apply section-pad mesh-divider relative;
+  }
+
+  .kpi-pill {
+    @apply rounded-2xl border border-white/10 bg-black/30 px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-mist;
   }
 
   .mesh-divider {

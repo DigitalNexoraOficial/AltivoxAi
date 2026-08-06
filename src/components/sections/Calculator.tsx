@@ -45,10 +45,10 @@ export function Calculator() {
   }
 
   return (
-    <section id="calculator" className="section-pad mesh-divider">
+    <section id="calculator" className="section-shell">
       <div className="mx-auto max-w-5xl">
         <Reveal>
-          <div className="glass-strong ui-lift rounded-[2rem] p-8 md:p-12">
+          <div className="ref-card-strong ui-lift">
             <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-end">
               <div>
                 <span className="eyebrow">{t.calc.eyebrow}</span>
@@ -69,10 +69,14 @@ export function Calculator() {
                   <span className="font-display text-xl text-cyan">{hours}h</span>
                 </div>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-black/35 p-6">
+              <div className="rounded-[1.6rem] border border-white/10 bg-black/35 p-6">
                 <p className="text-[11px] uppercase tracking-widest text-mist-muted">{t.calc.savings}</p>
                 <p className="mt-2 font-display text-4xl text-white">{savings.toLocaleString("es-ES")} €</p>
                 <p className="mt-2 text-xs text-mist">Modelo conservador basado en 60€/hora.</p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <span className="kpi-pill">ROI Snapshot</span>
+                  <span className="kpi-pill">Realtime</span>
+                </div>
               </div>
             </div>
 

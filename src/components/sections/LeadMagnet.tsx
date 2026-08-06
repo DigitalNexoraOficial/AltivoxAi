@@ -61,10 +61,10 @@ export function LeadMagnet() {
   }
 
   return (
-    <section id="leadmagnet" className="section-pad mesh-divider">
+    <section id="leadmagnet" className="section-shell">
       <div className="mx-auto max-w-5xl">
         <Reveal>
-          <div className="glass-strong ui-lift relative overflow-hidden rounded-[2rem] border-cyan/30 p-8 md:p-12">
+          <div className="ref-card-strong ui-lift relative overflow-hidden border-cyan/30">
             <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-cyan/15 blur-[90px]" />
             <div className="absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-violet/20 blur-[90px]" />
             <div className="relative grid gap-8 md:grid-cols-[1.2fr_0.8fr] md:items-center">
@@ -73,7 +73,7 @@ export function LeadMagnet() {
                 <h2 className="heading-display mt-5 text-2xl md:text-4xl">{t.lead.title}</h2>
                 <p className="mt-4 text-sm leading-relaxed text-mist">{t.lead.desc}</p>
               </div>
-              <form onSubmit={onSubmit} className="space-y-3 rounded-2xl border border-white/10 bg-black/30 p-4">
+              <form onSubmit={onSubmit} className="space-y-3 rounded-[1.5rem] border border-white/10 bg-black/30 p-5">
                 <input
                   type="email"
                   required
