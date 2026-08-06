@@ -1,9 +1,15 @@
 /**
  * Client bridge: AltivoxAI → /api/n8n → n8n Webhook
  * Usage: AltivoxN8n.emit("lead.created", leadObject)
+ * Auth: setAuthToken(supabaseAccessToken) from admin panel session.
  */
 (function (global) {
   var ENDPOINT = "/api/n8n";
+  var authToken = null;
+
+  function setAuthToken(token) {
+    authToken = token || null;
+  }
 
   function emit(event, data, opts) {
     opts = opts || {};
@@ -13,9 +19,11 @@
       data: data || {},
       test: Boolean(opts.test)
     };
+    var headers = { "Content-Type": "application/json" };
+    if (authToken) headers.Authorization = "Bearer " + authToken;
     return fetch(ENDPOINT, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: headers,
       body: JSON.stringify(payload),
       keepalive: true
     })
@@ -44,7 +52,6 @@
       });
   }
 
-  /** Fire-and-forget helpers used by admin pages */
   function leadCreated(lead) {
     var ev =
       lead &&
@@ -71,6 +78,7 @@
     emit: emit,
     ping: ping,
     status: status,
+    setAuthToken: setAuthToken,
     leadCreated: leadCreated,
     leadUpdated: leadUpdated,
     clienteEvent: clienteEvent

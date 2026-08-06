@@ -6,237 +6,515 @@
 <title>Ajustes | AltivoxAI</title>
 <link rel="icon" href="/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="/favicon.png">
+<link rel="stylesheet" href="assets/css/admin.css">
 <style>
-:root{--bg:#070b14;--panel:#0f172a;--line:rgba(148,163,184,.14);--text:#e2e8f0;--muted:#94a3b8;--cyan:#22d3ee;--ok:#34d399}
-*{margin:0;padding:0;box-sizing:border-box}
-body{display:flex;min-height:100vh;background:radial-gradient(1200px 600px at 10% -10%,rgba(34,211,238,.08),transparent 50%),var(--bg);color:var(--text);font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif}
-a{color:inherit;text-decoration:none}
-.sidebar{width:220px;flex-shrink:0;background:rgba(15,23,42,.95);border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:6px}
-.brand{font-size:18px;font-weight:700;color:var(--cyan);margin:4px 8px 18px}
-.sidebar a{display:block;padding:10px 12px;border-radius:10px;color:#cbd5e1;font-size:14px}
-.sidebar a:hover,.sidebar a.active{background:rgba(34,211,238,.1);color:#fff}
-.main{flex:1;padding:18px 20px 28px;min-width:0}
-.topbar{display:flex;justify-content:space-between;gap:16px;margin-bottom:14px}
-.topbar h1{font-size:24px}.sub{color:var(--muted);font-size:13px;margin-top:4px}
-.top-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.pill{display:inline-flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:12px}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
-.btn{border:none;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:600;font-size:13px}
-.btn-ghost{background:transparent;color:#cbd5e1;border:1px solid var(--line)}
-.btn-primary{background:linear-gradient(90deg,#0284c7,#22d3ee);color:#041018}
-.btn-danger{background:#7f1d1d;color:#fecaca;border:1px solid #991b1b}
-.btn-ok{background:#065f46;color:#a7f3d0;border:1px solid #047857}
-.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px}
-.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
-.kpi .label{font-size:11px;color:var(--muted);text-transform:uppercase}
-.kpi .value{font-size:18px;font-weight:700;margin-top:6px}
-.layout{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
-.panel.wide{grid-column:1/-1}
-.panel h2{font-size:14px;margin-bottom:12px}
-.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;align-items:flex-start}
-.row:last-child{border:none}
-.meta{color:var(--muted);font-size:12px;line-height:1.45}
-.steps{margin:0;padding-left:18px;color:#cbd5e1;font-size:13px;line-height:1.55}
-.steps li{margin-bottom:8px}
-input,select{background:#0b1324;border:1px solid var(--line);color:#e2e8f0;border-radius:10px;padding:8px 10px;font-size:13px}
-code{background:#0b1324;padding:2px 6px;border-radius:6px;font-size:12px}
-#status{font-size:12px;color:#93c5fd;margin-bottom:10px}
-pre{background:#070d1a;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12px;white-space:pre-wrap;color:#cbd5e1}
-@media(max-width:1100px){.kpis{grid-template-columns:1fr 1fr 1fr}}
-@media(max-width:900px){.layout,.kpis{grid-template-columns:1fr}}
-@media(max-width:800px){body{flex-direction:column}.sidebar{width:100%;flex-direction:row;flex-wrap:wrap}}
+  .settings-kpis {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .settings-kpis .kpi { cursor: default; }
+  .check-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 18px;
+    padding: 10px 0 4px;
+  }
+  .check-row label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--soft);
+    text-transform: none;
+    letter-spacing: 0;
+    cursor: pointer;
+  }
+  .check-row input { width: auto; accent-color: var(--cyan); }
+  .diag-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+    align-items: flex-start;
+  }
+  .diag-row:last-child { border: none; }
+  @media (max-width: 1100px) {
+    .settings-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  @media (max-width: 700px) {
+    .settings-kpis { grid-template-columns: 1fr 1fr; }
+  }
 </style>
 </head>
-<body>
-<aside class="sidebar">
-  <div class="brand">AltivoxAI</div>
-  <a href="dashboard.html">Dashboard</a>
-  <a href="clientes.html">Clientes</a>
-  <a href="chatbot.html">Chatbot</a>
-  <a href="jarvis.html">J.A.R.V.I.S.</a>
-  <a href="agentes.html">Agentes IA</a>
-  <a class="active" href="ajustes.html">Ajustes</a>
-</aside>
-<main class="main">
-  <header class="topbar">
-    <div><h1>Ajustes del sistema</h1><p class="sub">Sesión, n8n, conectividad y checklist de producción.</p></div>
-    <div class="top-actions">
-      <div class="pill"><span class="dot"></span><span id="admin-email">Admin</span></div>
-      <button class="btn btn-primary" id="btn-check" type="button">Diagnosticar</button>
-      <button class="btn btn-ok" id="btn-n8n-ping" type="button">Probar n8n</button>
-      <button class="btn btn-ghost" id="btn-save" type="button">Guardar prefs</button>
-      <button class="btn btn-danger" id="btn-logout" type="button">Salir</button>
-    </div>
-  </header>
-  <p id="status">Cargando...</p>
-  <section class="kpis">
-    <div class="kpi"><div class="label">Supabase</div><div class="value" id="k-sb">—</div></div>
-    <div class="kpi"><div class="label">Auth</div><div class="value" id="k-auth">—</div></div>
-    <div class="kpi"><div class="label">API Chat</div><div class="value" id="k-api">—</div></div>
-    <div class="kpi"><div class="label">Tabla clientes</div><div class="value" id="k-cli">—</div></div>
-    <div class="kpi"><div class="label">n8n emit</div><div class="value" id="k-n8n">—</div></div>
-  </section>
-  <section class="layout">
-    <div class="panel wide">
-      <h2>Conexión n8n (haz esto en tu cuenta)</h2>
-      <ol class="steps">
-        <li>En n8n: abre tu workflow Hub → <strong>Publish</strong>.</li>
-        <li>Copia la Production URL del Webhook desde n8n (no la publiques en chats ni repos).</li>
-        <li>En Vercel → Environment Variables:
-          <br><code>N8N_WEBHOOK_URL</code> = tu URL Production del Webhook
-          <br><code>N8N_SECRET</code> = secreto compartido (recomendado)
-        </li>
-        <li>Redeploy en Vercel tras guardar las variables.</li>
-        <li>Conecta Gmail OAuth (gratis) en los nodos Draft del hub, o desactívalos si no los quieres aún.</li>
-        <li>Vuelve aquí y pulsa <strong>Probar n8n</strong>. En Data Tables verás filas en <code>Altivox_Event_Inbox</code>.</li>
-      </ol>
-      <p class="meta" style="margin-top:10px">Endpoint bridge: <code id="n8n-endpoint">/api/n8n</code> · Eventos: lead.created, lead.hot, lead.contacted, lead.updated, cliente.*, jarvis.rescored, system.ping</p>
-      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-primary" id="btn-n8n-status" type="button">Ver estado bridge</button>
-        <button class="btn btn-ghost" id="btn-n8n-hot" type="button">Emitir lead.hot de prueba</button>
-        <a class="btn btn-ghost" href="https://www.altivoxai.es/api/n8n" target="_blank" rel="noopener">Abrir /api/n8n</a>
+<body class="admin-body">
+  <div class="admin-grain" aria-hidden="true"></div>
+  <aside class="sidebar" id="admin-sidebar"></aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1>Ajustes del sistema</h1>
+        <p class="sub">Web pública, diagnóstico, preferencias y puente n8n.</p>
       </div>
-      <pre id="n8n-log" style="margin-top:12px">—</pre>
-    </div>
-    <div class="panel">
-      <h2>Sesión & entorno</h2>
-      <div class="row"><span>Usuario</span><strong id="u-email">—</strong></div>
-      <div class="row"><span>User ID</span><strong id="u-id" style="font-size:11px">—</strong></div>
-      <div class="row"><span>Proyecto Supabase</span><strong>soeyfivsuwohuuzgfqar</strong></div>
-      <div class="row"><span>Dominio</span><strong id="u-host">—</strong></div>
-      <div class="row"><span>Último diagnóstico</span><strong id="u-diag">—</strong></div>
-      <p class="meta" style="margin-top:12px">El acceso al panel es solo para usuarios creados en Supabase Auth.</p>
-    </div>
-    <div class="panel">
-      <h2>Preferencias locales</h2>
-      <div class="row"><span>Densidad UI</span><select id="pref-density"><option value="compact">Compacta</option><option value="comfortable">Cómoda</option></select></div>
-      <div class="row"><span>Auto-refresh dashboard (seg)</span><input id="pref-refresh" type="number" min="0" step="30" value="0" style="width:110px"></div>
-      <div class="row"><span>Sonido nuevos leads</span><select id="pref-sound"><option value="off">Off</option><option value="on">On</option></select></div>
-      <div class="row"><span>Idioma panel</span><select id="pref-lang"><option value="es">Español</option><option value="en">English</option></select></div>
-      <p class="meta" style="margin-top:10px">Preferencias en localStorage de este navegador.</p>
-    </div>
-    <div class="panel">
-      <h2>Checklist producción</h2>
-      <div class="row"><span>SQL leads/chat</span><code>chat-leads.sql / auth-admin-only.sql</code></div>
-      <div class="row"><span>SQL clientes CRM</span><code>supabase/sql/clientes.sql</code></div>
-      <div class="row"><span>SQL n8n (opcional)</span><code>supabase/sql/n8n.sql</code></div>
-      <div class="row"><span>Vercel chat</span><code>OPENROUTER_API_KEY / GEMINI_API_KEY</code></div>
-      <div class="row"><span>Vercel n8n</span><code>N8N_WEBHOOK_URL / N8N_SECRET</code></div>
-      <div class="row"><span>Workflows</span><code>n8n/workflows/*.json</code></div>
-    </div>
-    <div class="panel">
-      <h2>Log de diagnóstico</h2>
-      <pre id="log">—</pre>
-      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-        <a class="btn btn-ok" href="dashboard.html">Ir a Dashboard</a>
-        <a class="btn btn-ghost" href="clientes.html">Ir a Clientes</a>
-        <button class="btn btn-ghost" id="btn-copy" type="button">Copiar log</button>
+      <div class="top-actions">
+        <div class="pill"><span class="dot"></span><span id="admin-email">Admin</span></div>
+        <button class="btn btn-danger" id="btn-logout" type="button">Salir</button>
       </div>
+    </header>
+
+    <p id="status" class="status-line" style="margin-bottom:12px">Cargando...</p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" type="button" data-tab="web">Web pública</button>
+      <button class="tab" type="button" data-tab="diag">Diagnóstico</button>
+      <button class="tab" type="button" data-tab="prefs">Preferencias</button>
+      <button class="tab" type="button" data-tab="n8n">n8n</button>
     </div>
-  </section>
-</main>
+
+    <!-- WEB PÚBLICA -->
+    <section class="tab-panel active" id="tab-web">
+      <div id="site-alert" class="alert" style="display:none"></div>
+      <div class="cards-2">
+        <div class="panel" style="min-height:auto;padding:14px">
+          <div class="panel-head" style="margin:-14px -14px 12px;border-radius:var(--radius) var(--radius) 0 0">
+            <h2>Marca</h2>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label>Nombre</label><input id="brand-name" type="text"></div>
+            <div class="field"><label>Email</label><input id="brand-email" type="email"></div>
+            <div class="field"><label>WhatsApp</label><input id="brand-whatsapp" type="text" placeholder="34600000000"></div>
+            <div class="field"><label>Tagline</label><input id="brand-tagline" type="text"></div>
+          </div>
+        </div>
+
+        <div class="panel" style="min-height:auto;padding:14px">
+          <div class="panel-head" style="margin:-14px -14px 12px;border-radius:var(--radius) var(--radius) 0 0">
+            <h2>Hero</h2>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label>Título</label><input id="hero-title" type="text"></div>
+            <div class="field"><label>Acento título</label><input id="hero-accent" type="text"></div>
+            <div class="field"><label>CTA 1</label><input id="hero-cta1" type="text"></div>
+            <div class="field"><label>CTA 2</label><input id="hero-cta2" type="text"></div>
+            <div class="field full"><label>Riesgo / confianza</label><input id="hero-risk" type="text"></div>
+          </div>
+        </div>
+
+        <div class="panel" style="min-height:auto;padding:14px">
+          <div class="panel-head" style="margin:-14px -14px 12px;border-radius:var(--radius) var(--radius) 0 0">
+            <h2>Contacto</h2>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label>Email contacto</label><input id="contact-email" type="email"></div>
+            <div class="field"><label>WhatsApp</label><input id="contact-whatsapp" type="text"></div>
+            <div class="field full"><label>Etiqueta WhatsApp</label><input id="contact-wa-label" type="text"></div>
+          </div>
+        </div>
+
+        <div class="panel" style="min-height:auto;padding:14px">
+          <div class="panel-head" style="margin:-14px -14px 12px;border-radius:var(--radius) var(--radius) 0 0">
+            <h2>Flags & redes</h2>
+          </div>
+          <div class="check-row">
+            <label><input type="checkbox" id="flag-chat"> Chat</label>
+            <label><input type="checkbox" id="flag-booking"> Booking</label>
+            <label><input type="checkbox" id="flag-magnet"> Lead magnet</label>
+            <label><input type="checkbox" id="flag-sticky"> Sticky CTA</label>
+          </div>
+          <div class="form-grid" style="margin-top:10px">
+            <div class="field"><label>LinkedIn</label><input id="social-linkedin" type="url" placeholder="https://"></div>
+            <div class="field"><label>Instagram</label><input id="social-instagram" type="url" placeholder="https://"></div>
+            <div class="field full"><label>X / Twitter</label><input id="social-x" type="url" placeholder="https://"></div>
+          </div>
+        </div>
+
+        <div class="wide" style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="btn-save-site" type="button">Guardar web pública</button>
+          <button class="btn btn-ghost" id="btn-reload-site" type="button">Recargar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIAGNÓSTICO -->
+    <section class="tab-panel" id="tab-diag">
+      <div class="settings-kpis">
+        <div class="kpi"><div class="label">Supabase</div><div class="value" id="k-sb" style="font-size:1.1rem">—</div></div>
+        <div class="kpi"><div class="label">Auth</div><div class="value" id="k-auth" style="font-size:1.1rem">—</div></div>
+        <div class="kpi"><div class="label">API Chat</div><div class="value" id="k-api" style="font-size:1.1rem">—</div></div>
+        <div class="kpi"><div class="label">Tabla clientes</div><div class="value" id="k-cli" style="font-size:1.1rem">—</div></div>
+        <div class="kpi"><div class="label">n8n emit</div><div class="value" id="k-n8n" style="font-size:1.1rem">—</div></div>
+      </div>
+      <div class="cards-2">
+        <div class="panel" style="min-height:auto;padding:14px">
+          <div class="panel-head" style="margin:-14px -14px 12px;border-radius:var(--radius) var(--radius) 0 0">
+            <h2>Sesión & entorno</h2>
+            <button class="btn btn-primary" id="btn-check" type="button">Diagnosticar</button>
+          </div>
+          <div class="diag-row"><span>Usuario</span><strong id="u-email">—</strong></div>
+          <div class="diag-row"><span>User ID</span><strong id="u-id" style="font-size:11px">—</strong></div>
+          <div class="diag-row"><span>Proyecto Supabase</span><strong>soeyfivsuwohuuzgfqar</strong></div>
+          <div class="diag-row"><span>Dominio</span><strong id="u-host">—</strong></div>
+          <div class="diag-row"><span>Último diagnóstico</span><strong id="u-diag">—</strong></div>
+          <p class="meta" style="margin-top:12px">El emit a n8n usa el token de sesión (requireAuth). Sin auth, /api/n8n rechaza.</p>
+        </div>
+        <div class="panel" style="min-height:auto;padding:14px">
+          <div class="panel-head" style="margin:-14px -14px 12px;border-radius:var(--radius) var(--radius) 0 0">
+            <h2>Checklist producción</h2>
+          </div>
+          <div class="diag-row"><span>SQL leads/chat</span><code>chat-leads.sql / auth-admin-only.sql</code></div>
+          <div class="diag-row"><span>SQL clientes CRM</span><code>supabase/sql/clientes.sql</code></div>
+          <div class="diag-row"><span>SQL site settings</span><code>supabase/sql/site-settings.sql</code></div>
+          <div class="diag-row"><span>SQL n8n (opcional)</span><code>supabase/sql/n8n.sql</code></div>
+          <div class="diag-row"><span>Vercel chat</span><code>OPENROUTER_API_KEY / GEMINI_API_KEY</code></div>
+          <div class="diag-row"><span>Vercel n8n</span><code>N8N_WEBHOOK_URL / N8N_SECRET</code></div>
+        </div>
+        <div class="panel wide" style="min-height:auto;padding:14px">
+          <div class="panel-head" style="margin:-14px -14px 12px;border-radius:var(--radius) var(--radius) 0 0">
+            <h2>Log de diagnóstico</h2>
+            <button class="btn btn-ghost" id="btn-copy" type="button">Copiar log</button>
+          </div>
+          <pre class="log" id="log">—</pre>
+          <div class="actions" style="margin-top:10px">
+            <a class="btn btn-ok" href="dashboard.html">Ir a Dashboard</a>
+            <a class="btn btn-ghost" href="clientes.html">Ir a Clientes</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PREFERENCIAS -->
+    <section class="tab-panel" id="tab-prefs">
+      <div class="panel" style="min-height:auto;padding:14px;max-width:560px">
+        <div class="panel-head" style="margin:-14px -14px 12px;border-radius:var(--radius) var(--radius) 0 0">
+          <h2>Preferencias locales</h2>
+        </div>
+        <div class="diag-row">
+          <span>Densidad UI</span>
+          <select id="pref-density">
+            <option value="compact">Compacta</option>
+            <option value="comfortable">Cómoda</option>
+          </select>
+        </div>
+        <div class="diag-row">
+          <span>Auto-refresh dashboard (seg)</span>
+          <input id="pref-refresh" type="number" min="0" step="30" value="0" style="width:110px;border-radius:999px">
+        </div>
+        <div class="diag-row">
+          <span>Sonido nuevos leads</span>
+          <select id="pref-sound">
+            <option value="off">Off</option>
+            <option value="on">On</option>
+          </select>
+        </div>
+        <div class="diag-row">
+          <span>Idioma panel</span>
+          <select id="pref-lang">
+            <option value="es">Español</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <p class="meta" style="margin:12px 0">Preferencias en localStorage de este navegador.</p>
+        <button class="btn btn-primary" id="btn-save-prefs" type="button">Guardar prefs</button>
+      </div>
+    </section>
+
+    <!-- N8N -->
+    <section class="tab-panel" id="tab-n8n">
+      <div class="cards-2">
+        <div class="panel wide" style="min-height:auto;padding:14px">
+          <div class="panel-head" style="margin:-14px -14px 12px;border-radius:var(--radius) var(--radius) 0 0">
+            <h2>Conexión n8n</h2>
+          </div>
+          <ol class="steps">
+            <li>En n8n: abre tu workflow Hub → <strong>Publish</strong>.</li>
+            <li>Copia la Production URL del Webhook desde n8n (no la publiques en chats ni repos).</li>
+            <li>En Vercel → Environment Variables:
+              <br><code>N8N_WEBHOOK_URL</code> = tu URL Production del Webhook
+              <br><code>N8N_SECRET</code> = secreto compartido (recomendado)
+            </li>
+            <li>Redeploy en Vercel tras guardar las variables.</li>
+            <li>Conecta Gmail OAuth (gratis) en los nodos Draft del hub, o desactívalos si no los quieres aún.</li>
+            <li>Vuelve aquí y pulsa <strong>Probar n8n</strong>. En Data Tables verás filas en <code>Altivox_Event_Inbox</code>.</li>
+          </ol>
+          <p class="meta" style="margin-top:10px">Endpoint bridge: <code id="n8n-endpoint">/api/n8n</code> · Eventos: lead.created, lead.hot, lead.contacted, lead.updated, cliente.*, jarvis.rescored, system.ping</p>
+          <div class="actions">
+            <button class="btn btn-ok" id="btn-n8n-ping" type="button">Probar n8n (ping)</button>
+            <button class="btn btn-primary" id="btn-n8n-status" type="button">Ver estado bridge</button>
+            <button class="btn btn-ghost" id="btn-n8n-hot" type="button">Emitir lead.hot de prueba</button>
+            <a class="btn btn-ghost" href="https://www.altivoxai.es/api/n8n" target="_blank" rel="noopener">Abrir /api/n8n</a>
+          </div>
+          <pre class="log" id="n8n-log" style="margin-top:12px">—</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/admin-core.js"></script>
 <script src="assets/js/n8n-bridge.js"></script>
 <script>
-(function(){
-  var sb=window.supabase.createClient("https://soeyfivsuwohuuzgfqar.supabase.co","sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2");
-  var prefs=JSON.parse(localStorage.getItem("altivox_admin_prefs")||"{}");
-  function setPrefUI(){
-    document.getElementById("pref-density").value=prefs.density||"compact";
-    document.getElementById("pref-refresh").value=prefs.refresh||0;
-    document.getElementById("pref-sound").value=prefs.sound||"off";
-    document.getElementById("pref-lang").value=prefs.lang||"es";
+(function () {
+  var esc = AltivoxAdmin.esc;
+  var sb = AltivoxAdmin.createClient();
+  AltivoxAdmin.renderShell("ajustes");
+
+  var prefs = JSON.parse(localStorage.getItem("altivox_admin_prefs") || "{}");
+  var siteOk = true;
+
+  function setStatus(msg) {
+    document.getElementById("status").textContent = msg;
   }
-  function n8nLog(obj){
-    document.getElementById("n8n-log").textContent=typeof obj==="string"?obj:JSON.stringify(obj,null,2);
+
+  function n8nLog(obj) {
+    document.getElementById("n8n-log").textContent =
+      typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
   }
-  async function auth(){
-    var r=await sb.auth.getSession();
-    if(!r.data.session){location.href="login.html";return null;}
-    var u=r.data.session.user;
-    document.getElementById("admin-email").textContent=u.email||"Admin";
-    document.getElementById("u-email").textContent=u.email||"—";
-    document.getElementById("u-id").textContent=u.id||"—";
-    document.getElementById("u-host").textContent=location.host;
-    document.getElementById("n8n-endpoint").textContent=location.origin+"/api/n8n";
-    document.getElementById("k-auth").textContent="OK";
-    return r.data.session;
+
+  function setPrefUI() {
+    document.getElementById("pref-density").value = prefs.density || "compact";
+    document.getElementById("pref-refresh").value = prefs.refresh || 0;
+    document.getElementById("pref-sound").value = prefs.sound || "off";
+    document.getElementById("pref-lang").value = prefs.lang || "es";
   }
-  async function diagnose(){
-    var lines=[];
-    document.getElementById("status").textContent="Diagnosticando...";
-    try{
-      var s=await sb.from("leads").select("id",{count:"exact",head:true});
-      if(s.error){document.getElementById("k-sb").textContent="FAIL";lines.push("leads: "+s.error.message);}
-      else {document.getElementById("k-sb").textContent="OK";lines.push("leads: OK");}
-    }catch(e){document.getElementById("k-sb").textContent="FAIL";lines.push("leads exception");}
-    try{
-      var c=await sb.from("clientes").select("id",{count:"exact",head:true});
-      if(c.error){document.getElementById("k-cli").textContent="NO";lines.push("clientes: "+c.error.message);}
-      else {document.getElementById("k-cli").textContent="OK";lines.push("clientes: OK");}
-    }catch(e){document.getElementById("k-cli").textContent="NO";}
-    try{
-      var res=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:"ping",agent:"Ajustes"})});
-      var d=await res.json();
-      document.getElementById("k-api").textContent=res.ok?"OK":"FAIL";
-      lines.push("/api/chat: "+(res.ok?"OK":(d.error||res.status)));
-    }catch(e){document.getElementById("k-api").textContent="FAIL";lines.push("/api/chat: "+e.message);}
-    try{
-      var st=await window.AltivoxN8n.status();
-      document.getElementById("k-n8n").textContent=st.emitConfigured?"OK":"NO URL";
-      lines.push("n8n bridge: emitConfigured="+!!st.emitConfigured+" inboundSecret="+!!st.inboundSecretConfigured+" supabaseWrite="+!!st.supabaseWriteConfigured);
-      n8nLog(st);
-    }catch(e){
-      document.getElementById("k-n8n").textContent="FAIL";
-      lines.push("n8n: "+e.message);
-    }
-    var now=new Date().toLocaleString("es-ES");
-    document.getElementById("u-diag").textContent=now;
-    document.getElementById("log").textContent=lines.join("\n");
-    document.getElementById("status").textContent="Diagnóstico completado · "+now;
+
+  function fillSite(data) {
+    document.getElementById("brand-name").value = data.brand.name || "";
+    document.getElementById("brand-email").value = data.brand.email || "";
+    document.getElementById("brand-whatsapp").value = data.brand.whatsapp || "";
+    document.getElementById("brand-tagline").value = data.brand.tagline || "";
+    document.getElementById("hero-title").value = data.hero.title || "";
+    document.getElementById("hero-accent").value = data.hero.titleAccent || "";
+    document.getElementById("hero-cta1").value = data.hero.cta1 || "";
+    document.getElementById("hero-cta2").value = data.hero.cta2 || "";
+    document.getElementById("hero-risk").value = data.hero.risk || "";
+    document.getElementById("contact-email").value = data.contact.email || "";
+    document.getElementById("contact-whatsapp").value = data.contact.whatsapp || "";
+    document.getElementById("contact-wa-label").value = data.contact.whatsappLabel || "";
+    document.getElementById("flag-chat").checked = !!data.flags.chatEnabled;
+    document.getElementById("flag-booking").checked = !!data.flags.bookingEnabled;
+    document.getElementById("flag-magnet").checked = !!data.flags.leadMagnetEnabled;
+    document.getElementById("flag-sticky").checked = !!data.flags.stickyCtaEnabled;
+    document.getElementById("social-linkedin").value = data.social.linkedin || "";
+    document.getElementById("social-instagram").value = data.social.instagram || "";
+    document.getElementById("social-x").value = data.social.x || "";
   }
-  document.getElementById("btn-save").onclick=function(){
-    prefs={
-      density:document.getElementById("pref-density").value,
-      refresh:Number(document.getElementById("pref-refresh").value||0),
-      sound:document.getElementById("pref-sound").value,
-      lang:document.getElementById("pref-lang").value
+
+  function readSite() {
+    return {
+      brand: {
+        name: document.getElementById("brand-name").value.trim(),
+        email: document.getElementById("brand-email").value.trim(),
+        whatsapp: document.getElementById("brand-whatsapp").value.trim(),
+        tagline: document.getElementById("brand-tagline").value.trim(),
+        mark: "ALTIVOXAI"
+      },
+      hero: {
+        title: document.getElementById("hero-title").value.trim(),
+        titleAccent: document.getElementById("hero-accent").value.trim(),
+        cta1: document.getElementById("hero-cta1").value.trim(),
+        cta2: document.getElementById("hero-cta2").value.trim(),
+        risk: document.getElementById("hero-risk").value.trim()
+      },
+      contact: {
+        email: document.getElementById("contact-email").value.trim(),
+        whatsapp: document.getElementById("contact-whatsapp").value.trim(),
+        whatsappLabel: document.getElementById("contact-wa-label").value.trim()
+      },
+      flags: {
+        chatEnabled: document.getElementById("flag-chat").checked,
+        bookingEnabled: document.getElementById("flag-booking").checked,
+        leadMagnetEnabled: document.getElementById("flag-magnet").checked,
+        stickyCtaEnabled: document.getElementById("flag-sticky").checked
+      },
+      social: {
+        linkedin: document.getElementById("social-linkedin").value.trim(),
+        instagram: document.getElementById("social-instagram").value.trim(),
+        x: document.getElementById("social-x").value.trim()
+      }
     };
-    localStorage.setItem("altivox_admin_prefs",JSON.stringify(prefs));
-    document.getElementById("status").textContent="Preferencias guardadas";
+  }
+
+  async function loadSite() {
+    var res = await AltivoxAdmin.loadSiteSettings(sb);
+    fillSite(res.data);
+    var alertEl = document.getElementById("site-alert");
+    if (!res.ok) {
+      siteOk = false;
+      alertEl.style.display = "block";
+      alertEl.innerHTML =
+        'Falta o no es accesible la tabla <b>site_settings</b>. Ejecuta <code>supabase/sql/site-settings.sql</code> en el SQL Editor. Error: ' +
+        esc(res.error || "desconocido") +
+        ". Se muestran valores por defecto.";
+      setStatus("Web pública: tabla no disponible (defaults)");
+    } else {
+      siteOk = true;
+      alertEl.style.display = "none";
+      setStatus("Web pública cargada");
+    }
+  }
+
+  async function diagnose() {
+    var lines = [];
+    setStatus("Diagnosticando...");
+    try {
+      var s = await sb.from("leads").select("id", { count: "exact", head: true });
+      if (s.error) {
+        document.getElementById("k-sb").textContent = "FAIL";
+        lines.push("leads: " + s.error.message);
+      } else {
+        document.getElementById("k-sb").textContent = "OK";
+        lines.push("leads: OK");
+      }
+    } catch (e) {
+      document.getElementById("k-sb").textContent = "FAIL";
+      lines.push("leads exception");
+    }
+    try {
+      var c = await sb.from("clientes").select("id", { count: "exact", head: true });
+      if (c.error) {
+        document.getElementById("k-cli").textContent = "NO";
+        lines.push("clientes: " + c.error.message);
+      } else {
+        document.getElementById("k-cli").textContent = "OK";
+        lines.push("clientes: OK");
+      }
+    } catch (e) {
+      document.getElementById("k-cli").textContent = "NO";
+    }
+    try {
+      var res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: "ping", agent: "Ajustes" })
+      });
+      var d = await res.json();
+      document.getElementById("k-api").textContent = res.ok ? "OK" : "FAIL";
+      lines.push("/api/chat: " + (res.ok ? "OK" : (d.error || res.status)));
+    } catch (e) {
+      document.getElementById("k-api").textContent = "FAIL";
+      lines.push("/api/chat: " + e.message);
+    }
+    try {
+      var st = await window.AltivoxN8n.status();
+      document.getElementById("k-n8n").textContent = st.emitConfigured ? "OK" : "NO URL";
+      lines.push(
+        "n8n bridge: emitConfigured=" + !!st.emitConfigured +
+        " inboundSecret=" + !!st.inboundSecretConfigured +
+        " supabaseWrite=" + !!st.supabaseWriteConfigured
+      );
+      n8nLog(st);
+    } catch (e) {
+      document.getElementById("k-n8n").textContent = "FAIL";
+      lines.push("n8n: " + e.message);
+    }
+    var now = new Date().toLocaleString("es-ES");
+    document.getElementById("u-diag").textContent = now;
+    document.getElementById("log").textContent = lines.join("\n");
+    setStatus("Diagnóstico completado · " + now);
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (tab) {
+    tab.onclick = function () {
+      var id = tab.getAttribute("data-tab");
+      Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (t) {
+        t.classList.toggle("active", t === tab);
+      });
+      Array.prototype.forEach.call(document.querySelectorAll(".tab-panel"), function (p) {
+        p.classList.toggle("active", p.id === "tab-" + id);
+      });
+    };
+  });
+
+  document.getElementById("btn-save-site").onclick = async function () {
+    try {
+      await AltivoxAdmin.saveSiteSettings(sb, readSite());
+      siteOk = true;
+      document.getElementById("site-alert").style.display = "none";
+      setStatus("Web pública guardada");
+    } catch (err) {
+      document.getElementById("site-alert").style.display = "block";
+      document.getElementById("site-alert").innerHTML =
+        'No se pudo guardar. Ejecuta <code>supabase/sql/site-settings.sql</code>. Error: ' +
+        esc(err.message || err);
+      setStatus("Error guardando web pública");
+    }
   };
-  document.getElementById("btn-check").onclick=diagnose;
-  document.getElementById("btn-n8n-status").onclick=async function(){
-    var st=await window.AltivoxN8n.status();
+
+  document.getElementById("btn-reload-site").onclick = loadSite;
+
+  document.getElementById("btn-save-prefs").onclick = function () {
+    prefs = {
+      density: document.getElementById("pref-density").value,
+      refresh: Number(document.getElementById("pref-refresh").value || 0),
+      sound: document.getElementById("pref-sound").value,
+      lang: document.getElementById("pref-lang").value
+    };
+    localStorage.setItem("altivox_admin_prefs", JSON.stringify(prefs));
+    setStatus("Preferencias guardadas");
+  };
+
+  document.getElementById("btn-check").onclick = diagnose;
+
+  document.getElementById("btn-n8n-status").onclick = async function () {
+    var st = await window.AltivoxN8n.status();
     n8nLog(st);
-    document.getElementById("k-n8n").textContent=st.emitConfigured?"OK":"NO URL";
-    document.getElementById("status").textContent="Estado n8n actualizado";
+    document.getElementById("k-n8n").textContent = st.emitConfigured ? "OK" : "NO URL";
+    setStatus("Estado n8n actualizado");
   };
-  document.getElementById("btn-n8n-ping").onclick=async function(){
-    document.getElementById("status").textContent="Enviando ping a n8n...";
-    var r=await window.AltivoxN8n.ping("ajustes");
+
+  document.getElementById("btn-n8n-ping").onclick = async function () {
+    setStatus("Enviando ping a n8n...");
+    var r = await window.AltivoxN8n.ping("ajustes");
     n8nLog(r);
-    document.getElementById("k-n8n").textContent=r.ok&&r.json&&r.json.ok?"OK":"FAIL";
-    document.getElementById("status").textContent=r.ok&&r.json&&r.json.ok?"Ping n8n OK — revisa Executions en n8n":("Ping falló: "+((r.json&&r.json.error)||r.error||r.status));
+    document.getElementById("k-n8n").textContent = r.ok && r.json && r.json.ok ? "OK" : "FAIL";
+    setStatus(
+      r.ok && r.json && r.json.ok
+        ? "Ping n8n OK — revisa Executions en n8n"
+        : ("Ping falló: " + ((r.json && r.json.error) || r.error || r.status))
+    );
   };
-  document.getElementById("btn-n8n-hot").onclick=async function(){
-    var r=await window.AltivoxN8n.emit("lead.hot",{
-      nombre:"Prueba Altivox",
-      email:"test@altivoxai.es",
-      score:95,
-      clasificacion:"caliente",
-      fuente:"n8n_test",
-      mensaje:"Lead de prueba desde Ajustes"
+
+  document.getElementById("btn-n8n-hot").onclick = async function () {
+    var r = await window.AltivoxN8n.emit("lead.hot", {
+      nombre: "Prueba Altivox",
+      email: "test@altivoxai.es",
+      score: 95,
+      clasificacion: "caliente",
+      fuente: "n8n_test",
+      mensaje: "Lead de prueba desde Ajustes"
     });
     n8nLog(r);
-    document.getElementById("status").textContent=r.ok?"lead.hot de prueba enviado":"Error emitiendo lead.hot";
+    setStatus(r.ok ? "lead.hot de prueba enviado" : "Error emitiendo lead.hot");
   };
-  document.getElementById("btn-copy").onclick=async function(){
-    try{await navigator.clipboard.writeText(document.getElementById("log").textContent);document.getElementById("status").textContent="Log copiado";}catch(e){alert("No se pudo copiar");}
+
+  document.getElementById("btn-copy").onclick = async function () {
+    try {
+      await navigator.clipboard.writeText(document.getElementById("log").textContent);
+      setStatus("Log copiado");
+    } catch (e) {
+      alert("No se pudo copiar");
+    }
   };
-  document.getElementById("btn-logout").onclick=async function(){await sb.auth.signOut();location.href="login.html";};
-  (async function(){if(!(await auth()))return;setPrefUI();await diagnose();})();
+
+  document.getElementById("btn-logout").onclick = function () { AltivoxAdmin.logout(sb); };
+
+  (async function () {
+    var session = await AltivoxAdmin.requireAuth(sb, document.getElementById("admin-email"));
+    if (!session) return;
+    var u = session.user;
+    document.getElementById("u-email").textContent = u.email || "—";
+    document.getElementById("u-id").textContent = u.id || "—";
+    document.getElementById("u-host").textContent = location.host;
+    document.getElementById("n8n-endpoint").textContent = location.origin + "/api/n8n";
+    document.getElementById("k-auth").textContent = "OK";
+    setPrefUI();
+    await loadSite();
+    await diagnose();
+  })();
 })();
 </script>
 </body>
