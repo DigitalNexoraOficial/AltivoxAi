@@ -1,4 +1,3 @@
-import dynamic from "next/dynamic";
 import { Navbar } from "@/components/sections/Navbar";
 import { Hero } from "@/components/sections/Hero";
 import { SocialProofBar } from "@/components/sections/SocialProofBar";
@@ -20,17 +19,9 @@ import { Footer } from "@/components/sections/Footer";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 import { ScrollTop } from "@/components/ui/ScrollTop";
 import { StickyCTA } from "@/components/ui/StickyCTA";
+import { ScrollAIBackground } from "@/components/three/ScrollAIBackground";
 import { DeferredExtras } from "@/components/experience/DeferredExtras";
-
-const ScrollAIBackground = dynamic(
-  () => import("@/components/three/ScrollAIBackground").then((m) => m.ScrollAIBackground),
-  { ssr: false }
-);
-
-const GrowthSuite = dynamic(
-  () => import("@/components/experience/GrowthSuite").then((m) => m.GrowthSuite),
-  { ssr: false, loading: () => null }
-);
+import { GrowthSuite } from "@/components/experience/GrowthSuite";
 
 export default function HomePage() {
   const jsonLd = {

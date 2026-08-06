@@ -3,11 +3,18 @@
 import { useState } from "react";
 import { Reveal } from "@/components/ui/Reveal";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { cmsPosts } from "@/content/cms";
 
 export function Insights() {
   const { t } = useI18n();
   const [open, setOpen] = useState<number | null>(null);
-  const item = open !== null ? t.blog.items[open] : null;
+  const items = t.blog.items.map((b, i) => ({
+    ...b,
+    long: cmsPosts[i]?.body || b.long,
+    title: cmsPosts[i]?.title || b.title,
+    short: cmsPosts[i]?.excerpt || b.short,
+  }));
+  const item = open !== null ? items[open] : null;
 
   return (
     <section id="blog" className="section-shell">
@@ -18,7 +25,7 @@ export function Insights() {
           <p className="mx-auto section-sub">{t.blog.sub}</p>
         </Reveal>
         <div className="mt-12 grid gap-5 md:grid-cols-3">
-          {t.blog.items.map((b, i) => (
+          {items.map((b, i) => (
             <Reveal key={b.title} delay={i * 0.06}>
               <button
                 type="button"
