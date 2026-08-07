@@ -80,6 +80,8 @@ Aplicar `supabase/sql/deploy.sql` en el entorno.
 
 ## Antes de producción
 
+Detalle go-live: [`docs/production/FINAL-RELEASE-REPORT.md`](./production/FINAL-RELEASE-REPORT.md).
+
 - [ ] Ejecutar migraciones SQL B1-B7  
 - [ ] Revisar variables entorno  
 - [ ] Ejecutar tests  
@@ -88,6 +90,8 @@ Aplicar `supabase/sql/deploy.sql` en el entorno.
 - [ ] Verificar permisos `can()`  
 - [ ] Backup Supabase  
 - [ ] Rollback disponible  
+- [ ] **Merge cadena B5–B7 + hardening + P0 a `main`**  
+- [ ] Tag release + deploy Vercel  
 
 Detalle SQL típico: `rbac.sql` · `audit-events.sql` · `project-engine.sql` · `agent-runtime.sql` · `review.sql` · `deploy.sql` (+ `assign-superadmin.sql`).
 

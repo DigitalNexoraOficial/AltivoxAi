@@ -3,6 +3,19 @@
 Documentación de **preparación para lanzamiento real**.  
 **No** es B8. **No** añade motores ni features.
 
+## Go-live (fase final)
+
+| Documento | Contenido |
+|-----------|-----------|
+| [`FINAL-RELEASE-REPORT.md`](./FINAL-RELEASE-REPORT.md) | **Informe final** GO/NO-GO |
+| [`go-live-env-check.md`](./go-live-env-check.md) | Variables · Upstash · stores |
+| [`go-live-sql-check.md`](./go-live-sql-check.md) | Migraciones · RLS · separación motores |
+| [`go-live-security.md`](./go-live-security.md) | Security final check |
+| [`go-live-smoke-test.md`](./go-live-smoke-test.md) | Smoke código + HTTP ops |
+| [`go-live-release.md`](./go-live-release.md) | Backup · git · rollback |
+
+## P0 readiness
+
 | Documento | Contenido |
 |-----------|-----------|
 | [`sql-checklist.md`](./sql-checklist.md) | Migraciones SQL B1–B7 · orden · rollback |
@@ -15,4 +28,4 @@ Documentación de **preparación para lanzamiento real**.
 
 Visión operativa general: [`../deployment.md`](../deployment.md).
 
-**Veredicto código (auditoría P0):** GO condicionado a checklist ops en el entorno.
+**Veredicto go-live (2026-08-07):** código **GO** · producción real **NO-GO** hasta merge a `main` + checklist ops — ver [`FINAL-RELEASE-REPORT.md`](./FINAL-RELEASE-REPORT.md).
