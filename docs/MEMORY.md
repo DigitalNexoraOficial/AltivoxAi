@@ -13,7 +13,7 @@
 | Marca comercial | AltivoxAi / Altivox AI |
 | URL pública | https://www.altivoxai.es |
 | OS | `/ops` (**implementado** · Bloque 3) |
-| Review (objetivo) | `/r/[token]` (futuro · Bloque 6) |
+| Review (objetivo) | `/r/[token]` (**contrato** ADR-016 · **no** implementado · Bloque 6) |
 | Repo | DigitalNexoraOficial/AltivoxAi |
 | Owner | Xabier |
 | Hosting | Vercel · Supabase · n8n |
@@ -30,7 +30,8 @@
 5. Agentes = privados; I/O solo Tool Registry; memoria solo Memory Engine.  
 6. Capabilities antes que agent IDs (Capability Registry).  
 7. Extensión por módulos/plugins e interfaces.  
-8. Documentar → aprobar → implementar (por bloques).
+8. Documentar → aprobar → implementar (por bloques).  
+9. Fase PE `review` ≠ portal `/r/[token]` (ADR-016).
 
 ---
 
@@ -51,6 +52,7 @@
 | **ADR-013** | **Project Engine B2 (recorte)** | **Aceptado · implementado** — [`adr/ADR-013-project-engine.md`](./adr/ADR-013-project-engine.md) |
 | **ADR-014** | **Bloque 4 — JARVIS + motores (interfaces)** | **Aceptado · implementado** — [`adr/ADR-014-bloque-4-jarvis-motores-interfaces.md`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) |
 | **ADR-015** | **Bloque 5 — Agent Runtime + service modules (recorte)** | **Aceptado · implementado** — [`adr/ADR-015-bloque-5-agent-runtime.md`](./adr/ADR-015-bloque-5-agent-runtime.md) |
+| **ADR-016** | **Bloque 6 — Review Engine + `/r/[token]` (recorte)** | **Aceptado · solo docs (B6-A)** — [`adr/ADR-016-bloque-6-review-engine.md`](./adr/ADR-016-bloque-6-review-engine.md) |
 
 ### ADR-005 (enmienda 2026-08-07)
 
@@ -63,7 +65,7 @@ El chat público permanece como MVP de captación con allowlist de tonos.
 
 1. Web pública  
 2. Altivox OS `/ops`  
-3. Portal revisión `/r/[token]`  
+3. Portal revisión `/r/[token]` — **contrato ADR-016; código pendiente**
 
 ---
 
@@ -80,7 +82,8 @@ Visión: cinco motores.
 **Bloque 4 (cerrado · ADR-014):** JARVIS Core (`src/core/jarvis`) = orquestador/caller interno → use-cases PE.  
 Motores Workflow / Tool Registry / Memory / Capability (+ Agent Manager boundary) = interfaces TypeScript en B4.  
 **Bloque 5 (cerrado · ADR-015):** Agent Runtime + Agent Manager runtime + módulo `web` + Tool/Memory/Capability **mínimos** + APIs ops agentes/runs.  
-**Bloque 6–7:** Review, Deploy.  
+**Bloque 6 (contrato · ADR-016 · B6-A):** Review Engine + `/r/[token]` — **no implementado**.  
+**Bloque 7:** Deploy / ZIP — **después de B6**.  
 Spec: [`core-engines.md`](./core-engines.md).
 
 ---
@@ -91,7 +94,7 @@ Spec: [`core-engines.md`](./core-engines.md).
 |------|------------------------|-------|
 | Pública | `src/app/(public)`, sections | Marketing + Frontend |
 | OS | `src/app/ops` | OS + Frontend |
-| Review | `src/app/r` (futuro) | Delivery |
+| Review | `src/app/r` (futuro · ADR-016) | Delivery |
 | Core | `src/core/security`, `src/core/project-engine`, `src/core/jarvis`, `src/core/agent-runtime`, … | Arquitectura |
 | Módulos | `src/modules/web` (B5) | Por servicio |
 | Admin legacy | `public/*.html` | Temporal |
@@ -116,14 +119,16 @@ Spec: [`core-engines.md`](./core-engines.md).
 | 2026-08 | **Bloque 4:** JARVIS Core caller + fronteras motores (ADR-014) | cerrado |
 | 2026-08-07 | Prebloque B5-A: sync docs + ADR-015 (corte B5) | ADR-015 |
 | 2026-08 | **Bloque 5:** Agent Runtime + módulo web (ADR-015) | cerrado |
+| 2026-08-07 | **Prebloque B6-A:** sync docs + ADR-016 (corte Review Engine) | ADR-016 |
 
 ---
 
 ## 8. Pendiente de implementación (no docs)
 
 Ver [`todo.md`](./todo.md) y [`roadmap.md`](./roadmap.md).  
-**Bloques 0–5 cerrados.**  
-**Próximo bloque oficial de código:** Bloque 6 — Review Engine + `/r/[token]` (requiere OK explícito).  
+**Bloques 0–5 cerrados.** Prebloque **B6-A cerrado** (ADR-016).  
+**Próximo bloque oficial de código:** Bloque 6 — Review Engine + `/r/[token]` — requiere **«OK implementar Bloque 6»**.  
+**No** existe Review Engine implementado. Deploy = B7. Agent Runtime permanece interno.  
 Ops entorno: aplicar SQL B1/B2 + `agent-runtime.sql` + Upstash en producción.  
 Migración CRM UI = backlog UI aparte.
 

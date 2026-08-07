@@ -3,7 +3,8 @@
 **Nombre interno:** Altivox OS  
 **Marca comercial:** AltivoxAi / Altivox AI  
 **Dominio público:** https://www.altivoxai.es  
-**Documento oficial de visión:** este archivo (Bloque 0 · 2026-08-07)
+**Documento oficial de visión:** este archivo (Bloque 0 · 2026-08-07)  
+**Actualizado:** 2026-08-07 · Prebloque B6-A (ADR-016)
 
 ---
 
@@ -24,6 +25,7 @@ Toda la inteligencia operativa vive **dentro** de Altivox OS.
 - Los clientes **nunca** interactúan directamente con agentes, prompts ni herramientas internas.
 - JARVIS **no** es un chatbot: es el **Director de Proyectos** (orquestador).
 - El chat de la web pública es solo **comercial / captación**, no el runtime de agentes.
+- La fase de proyecto `review` **no** es el portal cliente (ADR-016).
 
 ---
 
@@ -33,7 +35,7 @@ Toda la inteligencia operativa vive **dentro** de Altivox OS.
 |---|------------|------|-----------|-----------|
 | 1 | **Web pública** | `/`, `/casos/*`, etc. | Visitantes / leads | Marketing, captación, información, chat comercial, formularios |
 | 2 | **Altivox OS** | `/ops` | Equipo interno (RBAC) | Centro de operaciones: CRM, clientes, proyectos, JARVIS, agentes, automatizaciones, docs, analítica, despliegues |
-| 3 | **Portal de revisión** | `/r/[token]` | Cliente del proyecto | Solo entregables: ver, comentar, pedir cambios, aprobar/rechazar — **sin** datos internos, agentes ni prompts |
+| 3 | **Portal de revisión** | `/r/[token]` | Cliente del proyecto | Solo entregables: ver, comentar, pedir cambios, aprobar/rechazar — **sin** datos internos, agentes ni prompts · **contrato ADR-016 · no implementado** |
 
 Cualquier UI futura debe clasificarse en una de estas tres superficies.
 
@@ -64,22 +66,28 @@ Lead → Cliente → Proyecto → Planificación → Capabilities → Agentes
 
 Estados en dominio: `draft|planning|in_progress|qa|review|approved|delivered|maintenance|cancelled|archived`.
 
-- Transiciones **manuales vía OPS** hasta Workflow/JARVIS operativos con runtimes.  
-- `review` = fase; sin portal/tokens aún (portal = Bloque 6).  
+- Transiciones **manuales vía OPS** (PE) hasta Workflow runtime pleno.  
+- `review` = fase; portal/tokens = **Bloque 6** (ADR-016).  
 - Sin deploy ni capabilities en el proyecto.
 
-### Fase Bloque 4 (interfaces) — contrato ADR-014
+### Fases B4–B5 — cerradas
 
-- JARVIS + resto de motores del núcleo = **fronteras de orquestación / responsabilidad**.  
-- **No** Agent Runtime, **no** runtimes de motores, **no** Review, **no** Deploy, **no** service modules.
+- **B4 (ADR-014):** JARVIS Core caller + fronteras de motores.  
+- **B5 (ADR-015):** Agent Runtime + módulo `web` + Tool/Memory/Capability mínimos — **agentes internos**.
 
-| Bloque | Producto |
-|--------|----------|
-| 5 | Agent runtime + service modules |
-| 6 | Review Engine + `/r/[token]` |
-| 7 | Entrega ZIP + Deployment Engine |
+### Fase Bloque 6 — contrato ADR-016 (B6-A)
 
-Detalle: [`flow.md`](./flow.md), [`core-engines.md`](./core-engines.md), [`ADR-013`](./adr/ADR-013-project-engine.md), [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md).
+- Review Engine independiente + `/r/[token]`.  
+- **No** Deploy, ZIP, hosting, agentes al cliente, chat público, marketplace.  
+- **Código pendiente** hasta «OK implementar Bloque 6».
+
+| Bloque | Producto | Estado |
+|--------|----------|--------|
+| 5 | Agent runtime + service modules | **Cerrado** |
+| 6 | Review Engine + `/r/[token]` | Contrato ADR-016 · código pendiente |
+| 7 | Entrega ZIP + Deployment Engine | Pendiente (después de B6) |
+
+Detalle: [`flow.md`](./flow.md), [`core-engines.md`](./core-engines.md), [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md).
 
 ---
 
@@ -92,6 +100,7 @@ Mínimo funcional a medio plazo:
 - JARVIS · Agentes · Herramientas · Workflows · Automatizaciones  
 - Conversaciones · Memoria · Logs · Analíticas  
 - Configuración · Despliegues  
+- Emisión/revocación de review (B6)  
 - Facturación (**preparado**, no necesariamente cobrando en v1)
 
 ---
@@ -136,9 +145,9 @@ Mínimo funcional a medio plazo:
 
 ## 8. Relación con el código actual (honestidad)
 
-Hoy existen: landing Next.js, admin HTML (`public/*.html`, temporal ADR-001), APIs lead/chat/n8n, CRM ligero Supabase, **Security (B1)**, **Project Engine (B2)** y **shell `/ops` App Router (B3)** con UI de proyectos.
+Hoy existen: landing Next.js, admin HTML (`public/*.html`, temporal ADR-001), APIs lead/chat/n8n, CRM ligero Supabase, **Security (B1)**, **Project Engine (B2)**, **shell `/ops` (B3)**, **JARVIS Core + fronteras (B4)**, **Agent Runtime + módulo web (B5)**.
 
-**Aún no:** portal `/r/[token]`, JARVIS operativo, runtimes de Workflow/Tool/Memory/Capability, Agent Runtime, CRM App Router.  
-**Contrato B4 (docs):** [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) — fronteras; sin runtimes ni código hasta OK explícito.
+**Aún no:** portal `/r/[token]` / Review Engine (contrato [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md)), Deploy/ZIP (B7), Workflow runtime pleno, CRM App Router, Memory KB corporativa.
 
-Esta visión es la **fuente oficial de verdad** para el diseño; la implementación sigue el [`roadmap.md`](./roadmap.md) bloque a bloque.
+Esta visión es la **fuente oficial de verdad** para el diseño; la implementación sigue el [`roadmap.md`](./roadmap.md) bloque a bloque.  
+**No escribir código de B6** hasta «OK implementar Bloque 6».

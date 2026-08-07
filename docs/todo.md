@@ -4,7 +4,7 @@ Leyenda: **P0** bloqueante · **P1** alto · **P2** medio · **P3** mejora
 Regla: no código sin aprobación del bloque.
 
 Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](./roadmap.md)  
-B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md)
+B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md) · B6: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md)
 
 ---
 
@@ -17,6 +17,7 @@ B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`AD
 | T-000c | Prebloque B2-A sync docs + ADR-013 | **done** |
 | T-000d | Prebloque B4-A sync docs + ADR-014 | **done** |
 | T-000e | Prebloque B5-A sync docs + ADR-015 | **done** |
+| T-000f | Prebloque B6-A sync docs + ADR-016 | **done** |
 
 ---
 
@@ -51,7 +52,7 @@ B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`AD
 
 | ID | Tarea | Notas |
 |----|-------|-------|
-| T-201 | Migrar leads/clientes desde HTML | gradual; **no** B4 ni B5 |
+| T-201 | Migrar leads/clientes desde HTML | gradual; **no** B4–B6 |
 
 ---
 
@@ -84,9 +85,18 @@ Contrato: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md).
 
 ## P1 — Bloque 6 — Review Engine
 
-| ID | Tarea | Notas |
-|----|-------|-------|
-| T-400 | `/r/[token]` + Review Engine | **No** B5 |
+Contrato: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md). Prebloque **B6-A done**.  
+**Código:** bloqueado hasta «OK implementar Bloque 6».
+
+| ID | Tarea | Estado |
+|----|-------|--------|
+| T-400 | Review Engine + sesiones (proyecto/versión/deliverables) | pendiente (ADR-016) |
+| T-400b | `review_tokens` + emisión/revocación Ops (`review.create` / `review.revoke`) | pendiente |
+| T-400c | Portal `/r/[token]` + acciones cliente | pendiente |
+| T-400d | APIs review + persistencia propia | pendiente |
+| T-400e | JARVIS caller create/revoke (sin exponer agentes) | pendiente |
+
+**Fuera de B6:** Deploy · ZIP · hosting · vendors · Workflow runtime · CRM · chat · agentes al cliente · marketplace · reabrir PE/Security/Ops · agente revisor.
 
 ---
 
@@ -94,8 +104,8 @@ Contrato: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md).
 
 | ID | Tarea | Notas |
 |----|-------|-------|
-| T-401 | ZIP delivery pipeline | **No** B5 |
-| T-402 | Deploy adapters + confirmación | **No** B5 |
+| T-401 | ZIP delivery pipeline | **No** B6 · solo tras B6 |
+| T-402 | Deploy adapters + confirmación | **No** B6 · solo tras B6 |
 
 ---
 
@@ -129,7 +139,9 @@ Contrato: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md).
 | Runtime completo de todos los motores en B5 | ADR-015 = recorte |
 | Plataforma agentes pública | ADR-010 |
 | JARVIS respuesta unificada al visitante | ADR-010 |
-| Portal demo como producto cliente IA | `/r/[token]` = B6 |
+| Portal demo como producto cliente IA | `/r/[token]` = B6 (sin agentes) |
+| Review Engine dentro de PE o Agent Runtime | ADR-016 = motor/superficie independientes |
+| Deploy dentro de B6 | ADR-016 → B7 |
 
 ---
 
@@ -139,4 +151,5 @@ Contrato: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md).
 |------|-----|
 | Bloque 4 JARVIS + fronteras | ADR-014 · cerrado |
 | Prebloque B5-A | ADR-015 · sync docs |
-| **Bloque 5** Agent Runtime + módulo web | ADR-015 · **cerrado** |
+| Bloque 5 Agent Runtime + módulo web | ADR-015 · cerrado |
+| **Prebloque B6-A** | **ADR-016 · sync docs** |
