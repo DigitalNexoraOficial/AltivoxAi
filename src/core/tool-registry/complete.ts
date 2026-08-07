@@ -28,6 +28,78 @@ export function setLlmCompleterForTests(fn: Completer | null): void {
   testCompleter = fn;
 }
 
+async function tryOpenRouter(
+  input: LlmCompleteInput,
+  key: string
+): Promise<LlmCompleteResult> {
+  const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://www.altivoxai.es",
+      "X-Title": "Altivox OS",
+    },
+    body: JSON.stringify({
+      model: process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-001",
+      messages: [
+        ...(input.system ? [{ role: "system", content: input.system }] : []),
+        { role: "user", content: input.prompt },
+      ],
+    }),
+  });
+  if (!orRes.ok) {
+    const detail = (await orRes.text().catch(() => "")).slice(0, 180);
+    throw new AgentError(
+      "execution_error",
+      `llm_openrouter_${orRes.status}:${detail || "error"}`
+    );
+  }
+  const data = (await orRes.json()) as {
+    choices?: { message?: { content?: string } }[];
+  };
+  const text = data.choices?.[0]?.message?.content || "";
+  return { text, provider: "openrouter" };
+}
+
+async function tryGemini(
+  input: LlmCompleteInput,
+  key: string
+): Promise<LlmCompleteResult> {
+  const modelId = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${key}`;
+  const gemRes = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: input.system
+                ? `${input.system}\n\n${input.prompt}`
+                : input.prompt,
+            },
+          ],
+        },
+      ],
+    }),
+  });
+  if (!gemRes.ok) {
+    const detail = (await gemRes.text().catch(() => "")).slice(0, 180);
+    throw new AgentError(
+      "execution_error",
+      `llm_gemini_${gemRes.status}:${detail || "error"}`
+    );
+  }
+  const data = (await gemRes.json()) as {
+    candidates?: { content?: { parts?: { text?: string }[] } }[];
+  };
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  return { text, provider: "gemini" };
+}
+
 async function defaultComplete(
   input: LlmCompleteInput
 ): Promise<LlmCompleteResult> {
@@ -39,67 +111,34 @@ async function defaultComplete(
     };
   }
 
-  const openRouterKey = process.env.OPENROUTER_API_KEY;
+  const openRouterKey = String(process.env.OPENROUTER_API_KEY || "").trim();
+  const geminiKey = String(process.env.GEMINI_API_KEY || "").trim();
+  const errors: string[] = [];
+
   if (openRouterKey) {
-    const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${openRouterKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-001",
-        messages: [
-          ...(input.system
-            ? [{ role: "system", content: input.system }]
-            : []),
-          { role: "user", content: input.prompt },
-        ],
-      }),
-    });
-    if (!orRes.ok) {
-      throw new AgentError("execution_error", "llm_provider_error");
+    try {
+      return await tryOpenRouter(input, openRouterKey);
+    } catch (err) {
+      errors.push(err instanceof Error ? err.message : "openrouter_failed");
     }
-    const data = (await orRes.json()) as {
-      choices?: { message?: { content?: string } }[];
-    };
-    const text = data.choices?.[0]?.message?.content || "";
-    return { text, provider: "openrouter" };
   }
 
-  const geminiKey = process.env.GEMINI_API_KEY;
   if (geminiKey) {
-    const modelId = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${geminiKey}`;
-    const gemRes = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: input.system
-                  ? `${input.system}\n\n${input.prompt}`
-                  : input.prompt,
-              },
-            ],
-          },
-        ],
-      }),
-    });
-    if (!gemRes.ok) {
-      throw new AgentError("execution_error", "llm_provider_error");
+    try {
+      return await tryGemini(input, geminiKey);
+    } catch (err) {
+      errors.push(err instanceof Error ? err.message : "gemini_failed");
     }
-    const data = (await gemRes.json()) as {
-      candidates?: { content?: { parts?: { text?: string }[] } }[];
-    };
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    return { text, provider: "gemini" };
   }
 
-  throw new AgentError("execution_error", "llm_not_configured");
+  if (!openRouterKey && !geminiKey) {
+    throw new AgentError("execution_error", "llm_not_configured");
+  }
+
+  throw new AgentError(
+    "execution_error",
+    `llm_provider_error:${errors.join("|").slice(0, 240)}`
+  );
 }
 
 /**
