@@ -3,9 +3,9 @@
 **Producto:** Altivox OS — Sistema Operativo interno de Altivox AI  
 **Escaparate:** web pública https://www.altivoxai.es  
 **Visión oficial:** [`product-vision.md`](./product-vision.md)  
-**ADRs:** [`ADR-010`](./adr/ADR-010-altivox-os-pivot.md) · [`ADR-011`](./adr/ADR-011-core-engines.md) · [`ADR-012`](./adr/ADR-012-security-foundation.md) · [`ADR-013`](./adr/ADR-013-project-engine.md) · [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md)  
+**ADRs:** [`ADR-010`](./adr/ADR-010-altivox-os-pivot.md) · [`ADR-011`](./adr/ADR-011-core-engines.md) · [`ADR-012`](./adr/ADR-012-security-foundation.md) · [`ADR-013`](./adr/ADR-013-project-engine.md) · [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md)  
 **Motores del núcleo:** [`core-engines.md`](./core-engines.md)  
-**Actualizado:** 2026-08-07 · Prebloque B4-A (sync docs; sin cambio de arquitectura)
+**Actualizado:** 2026-08-07 · Prebloque B5-A (sync docs; sin cambio de arquitectura de producto)
 
 ---
 
@@ -102,11 +102,11 @@ Descubrimiento por manifest; cero `if/else` de servicio en el core.
 | Supabase leads/clientes/site_settings + audit + PE | Producción / entorno (SQL B1–B2) |
 | Project Engine (B2) | **Implementado** (ADR-013) |
 | Shell `/ops` + UI Proyectos (B3) | **Implementado** |
-| JARVIS + resto de motores (interfaces) | Contrato ADR-014 · **código pendiente de OK** |
-| Agent runtime · service modules | Bloque **5** — no B4 |
-| `/r/[token]` · Review Engine | Bloque **6** — no B4 |
-| Deploy / ZIP | Bloque **7** — no B4 |
-| Extensión modular formal | **No implementado** (B5+) |
+| JARVIS Core + fronteras motores (B4) | **Implementado** (ADR-014 · caller + interfaces) |
+| Agent runtime · service modules | Bloque **5** — contrato ADR-015 · **código pendiente de OK** |
+| `/r/[token]` · Review Engine | Bloque **6** — no B5 |
+| Deploy / ZIP | Bloque **7** — no B5 |
+| Extensión modular formal | **No implementado** (B5 · ADR-015) |
 
 La auditoría histórica de la landing permanece como contexto en el historial git; el **norte de diseño** es este documento + product-vision.
 
@@ -157,3 +157,4 @@ Ver [`security.md`](./security.md).
 | [`api.md`](./api.md) | Contratos HTTP |
 | [`MEMORY.md`](./MEMORY.md) | Memoria humana + ADRs |
 | [`adr/ADR-014-bloque-4-jarvis-motores-interfaces.md`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) | Corte documental Bloque 4 |
+| [`adr/ADR-015-bloque-5-agent-runtime.md`](./adr/ADR-015-bloque-5-agent-runtime.md) | Corte documental Bloque 5 |
