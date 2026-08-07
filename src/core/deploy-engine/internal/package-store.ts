@@ -24,10 +24,9 @@ function useMemory(): boolean {
 }
 
 function packageRoot(): string {
-  return (
-    String(process.env.ALTIVOX_DEPLOY_PACKAGE_DIR || "").trim() ||
-    join(process.cwd(), ".altivox-packages")
-  );
+  const override = String(process.env.ALTIVOX_DEPLOY_PACKAGE_DIR || "").trim();
+  // Statically scoped under cwd so Turbopack does not trace the whole project.
+  return override || join(/*turbopackIgnore: true*/ process.cwd(), ".altivox-packages");
 }
 
 export function storePackageBlob(
@@ -43,11 +42,15 @@ export function storePackageBlob(
 
   try {
     const root = packageRoot();
-    if (!existsSync(root)) mkdirSync(root, { recursive: true });
-    const dir = join(root, deploymentId);
-    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-    const file = join(dir, `${sha256}.zip`);
-    writeFileSync(file, buffer);
+    if (!existsSync(/*turbopackIgnore: true*/ root)) {
+      mkdirSync(/*turbopackIgnore: true*/ root, { recursive: true });
+    }
+    const dir = join(/*turbopackIgnore: true*/ root, deploymentId);
+    if (!existsSync(/*turbopackIgnore: true*/ dir)) {
+      mkdirSync(/*turbopackIgnore: true*/ dir, { recursive: true });
+    }
+    const file = join(/*turbopackIgnore: true*/ dir, `${sha256}.zip`);
+    writeFileSync(/*turbopackIgnore: true*/ file, buffer);
     return {
       uri: `file://${file}`,
       sha256,

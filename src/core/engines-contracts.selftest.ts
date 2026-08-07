@@ -8,7 +8,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { WorkflowEngine } from "@/core/workflow-engine";
 
-function assert(cond: boolean, msg: string) {
+function assert(cond: unknown, msg: string) {
   if (!cond) throw new Error(msg);
 }
 

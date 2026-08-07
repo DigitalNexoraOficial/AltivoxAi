@@ -16,7 +16,7 @@ import {
   JarvisError,
 } from "./index";
 
-function assert(cond: boolean, msg: string) {
+function assert(cond: unknown, msg: string) {
   if (!cond) throw new Error(msg);
 }
 

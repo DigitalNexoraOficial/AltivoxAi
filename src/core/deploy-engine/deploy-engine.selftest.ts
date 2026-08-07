@@ -20,7 +20,7 @@ import {
 } from "./index";
 import { buildDeploymentZip } from "./internal/zip-builder";
 
-function assert(cond: boolean, msg: string) {
+function assert(cond: unknown, msg: string) {
   if (!cond) throw new Error(msg);
 }
 
