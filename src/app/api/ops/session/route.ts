@@ -54,7 +54,14 @@ export async function POST(req: NextRequest) {
       result: "rate_limited",
       ip,
     });
-    return NextResponse.json({ error: "Demasiadas peticiones" }, { status: 429 });
+    return NextResponse.json(
+      {
+        error: "rate_limited",
+        message:
+          "Demasiados intentos de sesión. Espera unos minutos e inténtalo de nuevo.",
+      },
+      { status: 429 }
+    );
   }
 
   const auth = req.headers.get("authorization") || "";

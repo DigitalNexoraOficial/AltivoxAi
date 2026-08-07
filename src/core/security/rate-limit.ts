@@ -53,9 +53,9 @@ const LIMITS: Record<
 > = {
   lead: { max: 5, windowMs: 10 * 60 * 1000, prefix: "rl:lead" },
   chat: { max: 10, windowMs: 60 * 1000, prefix: "rl:chat" },
-  login: { max: 10, windowMs: 15 * 60 * 1000, prefix: "rl:login" },
+  login: { max: 40, windowMs: 15 * 60 * 1000, prefix: "rl:login" },
   n8n: { max: 60, windowMs: 60 * 1000, prefix: "rl:n8n" },
-  ops: { max: 120, windowMs: 60 * 1000, prefix: "rl:ops" },
+  ops: { max: 180, windowMs: 60 * 1000, prefix: "rl:ops" },
   review: { max: 60, windowMs: 60 * 1000, prefix: "rl:review" },
 };
 
