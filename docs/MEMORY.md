@@ -130,18 +130,17 @@ Spec: [`core-engines.md`](./core-engines.md).
 | 2026-08 | **Go-live execution:** checklists + FINAL-RELEASE-REPORT (NO-GO hasta merge/ops) | go-live |
 | 2026-08 | **Release v0.7.0-b7:** merge release → `main` + tag oficial | release |
 | 2026-08 | **Production activation docs:** ENV/SQL/security/backup/smoke checklists (ops PENDING) | activation |
+| 2026-08 | **Final activation check:** PENDING (sin env/SQL/smoke live) — no ACTIVE inventado | activation |
 
 ---
 
 ## 8. Pendiente de implementación (no docs)
 
 Ver [`todo.md`](./todo.md) y [`roadmap.md`](./roadmap.md).  
-**Bloques 0–7 cerrados.** Código en **`main`** · tag **`v0.7.0-b7`**.  
-**Producción:** código READY · entorno **PENDING** — [`production/PRODUCTION-ACTIVATION-REPORT.md`](./production/PRODUCTION-ACTIVATION-REPORT.md).  
-**Próximo tras ops ACTIVE:** fases 8–9 (perf/SEO · analítica/facturación) — **sin B8 de motores**.  
-Deploy Engine **implementado** (ZIP interno; sin providers). Review = B6. Agent Runtime interno.  
-Ops entorno: SQL B1/B2/B5 + `review.sql` + `deploy.sql` + Upstash.  
-Migración CRM UI = backlog UI aparte.
+**Bloques 0–7 cerrados.** Código **`v0.7.0-b7`**.  
+**Producción:** **PENDING** — [`production/PRODUCTION-ACTIVATION-REPORT.md`](./production/PRODUCTION-ACTIVATION-REPORT.md).  
+**Próximo tras ACTIVE ops:** fases 8–9 — **sin B8**.  
+Ops: env · SQL · Upstash · backup · smoke HTTP.
 
 ---
 

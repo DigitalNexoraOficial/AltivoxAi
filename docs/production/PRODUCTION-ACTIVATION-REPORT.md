@@ -1,77 +1,80 @@
-# AltivoxAI OS v0.7.0-b7 Production Activation
+# AltivoxAI OS v0.7.0-b7
 
-**Fecha informe:** 2026-08-07  
-**Tag:** `v0.7.0-b7` · **Main:** RELEASED (código)  
-**Alcance:** activación operativa · **sin B8** · sin cambios de motores/ADR
-
----
-
-## Estado código
-
-**READY**
-
-- B0–B7 + hardening en `main`
-- `npm run test:core` → **PASS** (activation run)
-- ADR-010…017 intactos
+**Informe:** Production Activation Final Check  
+**Fecha:** 2026-08-07  
+**Main tip (docs):** ver commit de este archivo · **Tag código:** `v0.7.0-b7`
 
 ---
 
-## Estado producción
+## Estado
 
 **PENDING**
 
-Código released; entorno live (env · SQL · Upstash · backup · smoke HTTP) **no** confirmado desde este agente.
+No **ACTIVE**: faltan pruebas reales de entorno (env · SQL · Upstash · backup · smoke HTTP).  
+No **BLOCKED** por defecto de código: el release es sano; el bloqueo es **operacional / acceso**.
 
-Para pasar a **ACTIVE**, el owner debe completar el checklist abajo y firmar.
-
----
-
-## Checklist
-
-- [ ] Variables entorno ([`ENV-ACTIVATION-CHECK.md`](./ENV-ACTIVATION-CHECK.md))  
-- [ ] SQL aplicado ([`SUPABASE-ACTIVATION.md`](./SUPABASE-ACTIVATION.md)) — **manual**  
-- [ ] Upstash activo  
-- [ ] Backup realizado ([`BACKUP-EXECUTION.md`](./BACKUP-EXECUTION.md))  
-- [ ] Smoke test HTTP completado ([`SMOKE-TEST-RESULT.md`](./SMOKE-TEST-RESULT.md))  
-
-Código / docs activation:
-
-- [x] Entorno revisado (plantilla + reglas)  
-- [x] SQL checklist creado  
-- [x] Seguridad producción validada (código)  
-- [x] Backup documentado  
-- [x] Smoke test documentado (capa A PASS · capa B pending)  
-- [x] `test:core` verde  
-- [x] Informe final creado  
+Criterio respetado: **no inventar verificaciones** · **no marcar ACTIVE sin pruebas reales**.
 
 ---
 
-## Seguridad
+## Checklist final
 
-| Control | Resumen |
-|---------|---------|
-| Auth | `can()` OK · roles bags explícitas |
-| RLS | Scripts OK · apply ops pendiente |
-| Review aislado | Token-only · sin Ops |
-| Agents privados | Solo ops · techo machine |
-| Deploy protegido | Solo `/api/ops/deployments*` |
-| Lead | Anon + RLS · sin service_role público |
+| Ítem | Estado |
+|------|--------|
+| Env | **PENDING** — [`FINAL-ENV-VALIDATION.md`](./FINAL-ENV-VALIDATION.md) |
+| SQL | **PENDING** — [`FINAL-SQL-VALIDATION.md`](./FINAL-SQL-VALIDATION.md) |
+| Upstash | **PENDING** — no variables en agente |
+| Backup | **PENDING** — [`BACKUP-EXECUTION.md`](./BACKUP-EXECUTION.md) |
+| Smoke test | Código **PASS** · HTTP **BLOCKED** — [`SMOKE-TEST-RESULT.md`](./SMOKE-TEST-RESULT.md) |
 
-Detalle: [`SECURITY-PRODUCTION-CHECK.md`](./SECURITY-PRODUCTION-CHECK.md)
+---
+
+## Tests
+
+```text
+npm run test:core
+```
+
+**Resultado: PASS** (todas las suites OK)
+
+---
+
+## Seguridad (código)
+
+| Área | |
+|------|--|
+| Auth | OK |
+| RLS scripts | OK |
+| Review aislado | OK |
+| Agents privados | OK |
+| Deploy protegido | OK |
+| Lead anon + RLS | OK |
+
+Live: PENDING — [`SECURITY-PRODUCTION-CHECK.md`](./SECURITY-PRODUCTION-CHECK.md)
 
 ---
 
 ## Riesgos restantes
 
-Problemas **reales** (no hipotéticos):
+Solo problemas reales:
 
-1. **Env prod no verificado** en este run (agente sin secretos Vercel).  
-2. **SQL B1–B7 no aplicado** automáticamente (por diseño) — pendiente ops.  
-3. **Upstash** no confirmado — rate limit fail-close en prod sin Redis.  
-4. **Smoke HTTP** no ejecutado contra dominio real.  
-5. Si se copia `.env.example` tal cual → `ALTIVOX_*_STORE=memory` (incorrecto en prod).
+1. Sin acceso a secretos Vercel/Supabase en este agente → env/SQL/Upstash no auditables en vivo.  
+2. Backup real no demostrado.  
+3. Smoke HTTP no ejecutado (BLOCKED).  
+4. Riesgo ops: desplegar con `ALTIVOX_*_STORE=memory` si se copia `.env.example`.
 
-Ningún fallo de arquitectura o tests en el release.
+Sin fallos de arquitectura, tests o ADRs.
+
+---
+
+## Cómo pasar a ACTIVE
+
+Owner (con acceso prod):
+
+1. Completar casillas en `FINAL-ENV-VALIDATION.md` y `FINAL-SQL-VALIDATION.md`.  
+2. Confirmar Upstash + backup.  
+3. Ejecutar smoke HTTP y registrar PASS en `SMOKE-TEST-RESULT.md`.  
+4. Cambiar este documento: **Estado → ACTIVE** + fecha/operador.
 
 ---
 
@@ -80,14 +83,4 @@ Ningún fallo de arquitectura o tests en el release.
 | Dimensión | Nota |
 |-----------|------|
 | Arquitectura | **9/10** |
-| Producción (servicio live) | **5.5/10** — docs+código listos; activación ops pendiente |
-
----
-
-## Cómo marcar ACTIVE
-
-Cuando el checklist ops esté completo:
-
-1. Marcar casillas en este archivo.  
-2. Cambiar **Estado producción** → **ACTIVE**.  
-3. Anotar fecha/operador en [`SMOKE-TEST-RESULT.md`](./SMOKE-TEST-RESULT.md).
+| Producción live | **5/10** — released; no activado |

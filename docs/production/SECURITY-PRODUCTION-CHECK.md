@@ -1,68 +1,65 @@
 # SECURITY PRODUCTION CHECK — AltivoxAI OS v0.7.0-b7
 
-**Fecha:** 2026-08-07 · Código: `v0.7.0-b7`  
+**Fecha:** 2026-08-07 · Tip docs: activation final check  
+**Código tag release:** `v0.7.0-b7`  
 **Tests:** `npm run test:security` / `test:core` → OK  
-Detalle: [`final-security-check.md`](./final-security-check.md) · [`security-audit.md`](./security-audit.md)
+
+Actualización final: distinción **código** vs **entorno live**.
 
 ---
 
-## Security
+## Auth
 
-| Check | Código | Ops prod |
-|-------|--------|----------|
-| `can()` deny-by-default | ✅ PASS | [ ] verificar con rol real |
-| Roles (admin/operator/jarvis/agent) | ✅ PASS | [ ] `app_metadata.role` en JWT |
-| RLS scripts en repo | ✅ PASS | [ ] aplicadas en Supabase |
+| | |
+|--|--|
+| Código (`can()`, roles, deny-by-default) | **OK** |
+| JWT / roles en Supabase Auth prod | **PENDING** (ops) |
+
+## RLS
+
+| | |
+|--|--|
+| Scripts en `supabase/sql` | **OK** |
+| RLS aplicada y verificada en DB prod | **PENDING** |
 
 ## Lead API
 
 | Check | Resultado |
 |-------|-----------|
-| Anon key + RLS (`anon_insert_leads`) | ✅ PASS |
-| Sin service_role en `/api/lead` | ✅ PASS |
-| Rate limit bucket `lead` | ✅ código |
+| Anon + RLS (código) | **OK** |
+| Sin service_role público (código) | **OK** |
+| Insert real en prod | **PENDING** |
 
 ## Review
 
 | Check | Resultado |
 |-------|-----------|
-| Portal `/r/[token]` | ✅ |
-| Token hasheado; plaintext una vez | ✅ |
-| Expiración / revocación | ✅ |
-| Sin sesión Ops / cookie staff | ✅ |
-| Sin agentes / prompts en vista cliente | ✅ |
-| Approve ≠ auto `projects.status` | ✅ |
+| Token-only | **OK** (código + selftest) |
+| Expiración / revocación | **OK** (código + selftest) |
+| Sin acceso Ops desde portal | **OK** (código) |
+| Portal live `/r/[token]` | **PENDING** HTTP |
 
-## Agent Runtime
+## Agents
 
 | Check | Resultado |
 |-------|-----------|
-| Solo `/api/ops/agents*` · `/api/ops/agent-runs*` | ✅ |
-| Sin exposición en `/r` ni web pública | ✅ |
-| Techo agent sin review/deploy/admin | ✅ |
-| Facade pública `store` (sin leaks `internal/*` externos) | ✅ |
+| Privados (ops only) | **OK** |
+| No visibles en Review | **OK** |
+| Techo sin review/deploy/admin | **OK** |
 
 ## Deploy
 
 | Check | Resultado |
 |-------|-----------|
-| Solo Ops `/api/ops/deployments*` | ✅ |
-| `can(deploy.*)` | ✅ |
-| Sin `/api/public/deploy` | ✅ |
-| Sin auto-deploy desde Review | ✅ |
-| ZIP interno · sin vendors B7 | ✅ |
+| Solo permisos Ops | **OK** |
+| Sin `/api/public/deploy` | **OK** |
+| Deploy live | **PENDING** HTTP |
 
 ---
 
-## Resumen seguridad
+## Veredicto
 
-| Área | Estado |
-|------|--------|
-| Auth / can() | OK (código) |
-| RLS | OK scripts · aplicación ops pendiente |
-| Review aislado | OK |
-| Agents privados | OK |
-| Deploy protegido | OK |
+**Seguridad código: OK**  
+**Seguridad entorno live: PENDING**
 
-**Veredicto código:** PASS  
-**Veredicto entorno:** PENDING hasta SQL + roles JWT + Upstash confirmados.
+No se declara producción ACTIVE solo por seguridad de código.

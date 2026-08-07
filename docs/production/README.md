@@ -7,7 +7,9 @@ Documentación de **preparación para lanzamiento real**.
 
 | Documento | Contenido |
 |-----------|-----------|
-| [`PRODUCTION-ACTIVATION-REPORT.md`](./PRODUCTION-ACTIVATION-REPORT.md) | **Informe activación** · PENDING/ACTIVE |
+| [`PRODUCTION-ACTIVATION-REPORT.md`](./PRODUCTION-ACTIVATION-REPORT.md) | **Informe activación** · **PENDING** |
+| [`FINAL-ENV-VALIDATION.md`](./FINAL-ENV-VALIDATION.md) | Env final (no verificado en agente) |
+| [`FINAL-SQL-VALIDATION.md`](./FINAL-SQL-VALIDATION.md) | SQL final (no aplicado/verificado) |
 | [`ENV-ACTIVATION-CHECK.md`](./ENV-ACTIVATION-CHECK.md) | Variables · prohibido memory stores |
 | [`SUPABASE-ACTIVATION.md`](./SUPABASE-ACTIVATION.md) | Orden SQL (no auto) |
 | [`SECURITY-PRODUCTION-CHECK.md`](./SECURITY-PRODUCTION-CHECK.md) | Security prod |

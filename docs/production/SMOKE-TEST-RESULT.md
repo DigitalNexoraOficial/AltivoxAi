@@ -1,71 +1,59 @@
 # SMOKE TEST RESULT — AltivoxAI OS v0.7.0-b7
 
-**Fecha código:** 2026-08-07  
-Procedimiento: [`smoke-test.md`](./smoke-test.md) · [`go-live-smoke-test.md`](./go-live-smoke-test.md)
+**Fecha:** 2026-08-07  
+Procedimiento: [`smoke-test.md`](./smoke-test.md)
 
 ---
 
-## Capa A — Smoke código (ejecutado)
+## Resultado global smoke
 
-`npm run test:core` en tip `v0.7.0-b7` / activation branch:
+| Capa | Resultado |
+|------|-----------|
+| A · Selftests / `test:core` | **PASS** |
+| B · HTTP E2E producción | **BLOCKED** (sin URL/credenciales/env prod en agente) |
 
-| Suite | Resultado |
-|-------|-----------|
-| security | OK |
-| project-engine | OK |
-| jarvis | OK |
-| engines-contracts | OK |
-| agent-runtime | OK |
-| review-engine | OK |
-| deploy-engine | OK |
+**Registro formal capa B:** **BLOCKED** → no PASS inventado.
 
-Flujo de dominio cubierto por selftests:
+---
+
+## Capa A — Código (ejecutado)
 
 ```text
-Project Engine → (contratos) → Review Engine (token, approve ≠ PE) → Deploy Engine (ZIP packaged)
+security.selftest: ok
+project-engine.selftest: ok
+jarvis.selftest: ok
+engines-contracts.selftest: ok
+agent-runtime.selftest: ok
+review-engine.selftest: ok
+deploy-engine.selftest: ok
 ```
 
 ---
 
-## Capa B — Smoke HTTP real (ops)
-
-**Estado:** no ejecutado en este agente (sin URL/credenciales prod).
-
-### Proyecto
-
-- [ ] Login OPS  
-- [ ] Crear proyecto  
-- [ ] Crear versión  
-- [ ] Registrar deliverable  
-
-### Review
-
-- [ ] Crear sesión Review (Ops)  
-- [ ] Generar token  
-- [ ] Abrir `/r/[token]` sin cookie staff  
-- [ ] Cliente: ver deliverables · comentar · cambios · aprobar/rechazar  
-- [ ] Confirmar: `projects.status` **no** cambia solo por approve  
-
-### Deploy
-
-- [ ] Crear deployment  
-- [ ] Ejecutar build  
-- [ ] Generar ZIP (`packaged`)  
-- [ ] Verificar `deployment_events` / historial  
-
-### Flujo esperado
+## Capa B — Flujo HTTP (no ejecutado)
 
 ```text
-Project Engine → Review Engine → Deploy Engine
+Usuario → Login → Proyecto → Versión → Deliverable
+  → Review → /r/[token] → comentar/aprobar
+  → Deploy → ZIP
 ```
+
+| Paso | Resultado |
+|------|-----------|
+| Login OPS | BLOCKED |
+| Crear proyecto | BLOCKED |
+| Crear versión | BLOCKED |
+| Registrar deliverable | BLOCKED |
+| Crear Review + token | BLOCKED |
+| Abrir `/r/[token]` | BLOCKED |
+| Cliente comenta/aprueba | BLOCKED |
+| Crear Deploy + ZIP | BLOCKED |
+
+**Firma ops (cuando se ejecute):** _______________ **Fecha:** _______________ **PASS/FAIL:** _______________
 
 ---
 
-## Resultado Fase 5
+## Veredicto Fase 5
 
-| Capa | Estado |
-|------|--------|
-| Selftests / contratos | **PASS** |
-| HTTP producción | **PENDING** |
-
-**Firma ops HTTP:** _______________ **Fecha:** _______________
+Smoke producción live: **BLOCKED** hasta entorno real.  
+Smoke código: **PASS**.

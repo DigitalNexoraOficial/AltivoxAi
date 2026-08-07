@@ -6,62 +6,50 @@ Procedimiento base: [`backup-plan.md`](./backup-plan.md)
 
 ---
 
+## Estado de esta validación
+
+**PENDING** — no existe evidencia de backup real ejecutado en este run.
+
+---
+
 ## Antes de producción
 
-| Check | Ops |
-|-------|-----|
-| Backup Supabase realizado (Dashboard o `pg_dump`) | [ ] |
-| Backup descargado / vault | [ ] |
-| Restauración posible (staging) | [ ] |
-| Versión código confirmada | [ ] |
-| Tag oficial confirmado: **`v0.7.0-b7`** | [x] en Git |
+| Check | Estado |
+|-------|--------|
+| Backup Supabase realizado | [ ] **PENDING** |
+| Fecha registrada | [ ] |
+| Backup en vault | [ ] |
+| Tag release guardado: **`v0.7.0-b7`** | [x] en Git (`1e6cb5f…`) |
+| Rollback SQL disponible en repo | [x] `*-rollback.sql` |
+| Rollback Git vía tag | [x] `v0.7.0-b7` / `v0.7.0-rc1-b7` |
 
 ```bash
 git fetch --tags
 git rev-parse v0.7.0-b7^{}
-# esperado: tip main con B0–B7
 ```
 
 ---
 
 ## Rollback preparado
 
-### SQL
-
-| Script | Uso |
-|--------|-----|
-| `deploy-rollback.sql` | Quitar Deploy Engine |
-| `review-rollback.sql` | Quitar Review Engine |
-| `agent-runtime-rollback.sql` | Quitar Agent Runtime |
-| `project-engine-rollback.sql` | Quitar PE |
-| `rbac-rollback.sql` | ⚠️ restaura policies abiertas — preferir **restore dump** |
-
-Orden rollback (si hace falta parcial): Deploy → Review → Agent → PE → (evitar rbac-rollback si hay dump).
-
-### Git
-
-| Acción | Comando / nota |
-|--------|----------------|
-| Volver a release estable | checkout / deploy tag `v0.7.0-b7` |
-| Rollback código anterior a OS | tag/commit pre-merge `b8ca1b8` (landing only) |
-| Vercel | Promote previous deployment |
+| Capa | Disponible |
+|------|------------|
+| SQL scripts | ✅ en repo (preferir restore dump vs `rbac-rollback`) |
+| Git tag | ✅ `v0.7.0-b7` |
+| Vercel previous | [ ] ops |
 
 ---
 
-## Registro
+## Registro ops
 
 | Ítem | Valor |
 |------|-------|
 | Fecha backup | _______________ |
 | Operador | _______________ |
 | Ubicación dump | _______________ |
-| Tag código | `v0.7.0-b7` |
 
 ---
 
-## Resultado Fase 4
+## Veredicto Fase 4
 
-| Dimensión | Estado |
-|-----------|--------|
-| Procedimiento documentado | **PASS** |
-| Backup real ejecutado | **PENDING** (ops) |
+**PENDING** (sin backup real demostrado).
