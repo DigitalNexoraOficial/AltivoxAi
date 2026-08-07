@@ -64,20 +64,19 @@ B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`AD
 
 ---
 
-## P1 — Bloque 5 — Agent runtime + service modules
+## P1 — Bloque 5 — Agent runtime + service modules · **cerrado**
 
-Contrato: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md).  
-**Sin código** hasta OK explícito de implementación.
+Contrato: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md).
 
-| ID | Tarea | Notas |
-|----|-------|-------|
-| T-306 | Agent Runtime (ciclo de vida de runs) | ADR-015 |
-| T-306b | Agent Manager runtime (registro por manifest) | ADR-015; no marketplace |
-| T-307 | Primer service module plugin | Un módulo; capabilities en manifest |
-| T-307b | Tool Registry runtime **mínimo** (solo LLM aprobado) | No vendors de entrega |
-| T-307c | Memory / Capability runtimes **mínimos** | Runs + resolución manifest; no PE capabilities |
-| T-307d | JARVIS Core: intenciones → Agent Runtime / Manager | Sin sustituir PE |
-| T-308 | Relabel/retirar `agentes.html` cosmético | Con B5 o cuando deje de confundir |
+| ID | Tarea | Estado |
+|----|-------|--------|
+| T-306 | Agent Runtime (ciclo de vida de runs) | **done** |
+| T-306b | Agent Manager runtime (registro por manifest) | **done** |
+| T-307 | Primer service module plugin (`web`) | **done** |
+| T-307b | Tool Registry runtime **mínimo** (`llm.complete`) | **done** |
+| T-307c | Memory / Capability runtimes **mínimos** | **done** |
+| T-307d | JARVIS Core: intenciones → Agent Runtime / Manager | **done** |
+| T-308 | Relabel/retirar `agentes.html` cosmético | pendiente (no bloquea cierre B5) |
 
 **Fuera de B5:** Workflow runtime · Review · Deploy · ZIP · CRM · chat como agente · reabrir B0–B4.
 
@@ -140,3 +139,4 @@ Contrato: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md).
 |------|-----|
 | Bloque 4 JARVIS + fronteras | ADR-014 · cerrado |
 | Prebloque B5-A | ADR-015 · sync docs |
+| **Bloque 5** Agent Runtime + módulo web | ADR-015 · **cerrado** |

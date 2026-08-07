@@ -1,9 +1,8 @@
 /**
- * JARVIS Core caller — orchestrator only (Bloque 4 · ADR-014).
+ * JARVIS Core caller — orchestrator only (Bloque 4–5 · ADR-014/015).
  *
- * Chain: JARVIS → Subject → can() (inside PE use-cases) → use-case → PE.
- * Does not import PE internal repository or Supabase clients.
- * Must not use elevated DB credentials; authz stays in PE use-cases via can().
+ * Chain: JARVIS → Subject → can() (inside use-cases) → PE / Agent Runtime.
+ * Does not call LLM / Tool Registry directly.
  */
 
 import {
@@ -16,6 +15,18 @@ import {
   transitionProject,
   updateProjectMeta,
 } from "@/core/project-engine";
+import {
+  cancelAgentRun,
+  createAgentRun,
+  executeAgentRun,
+  getAgentRun,
+} from "@/core/agent-runtime";
+import {
+  bootstrapWebAgents,
+  listAgents,
+  registerAgent,
+  resolveAgentsByCapability,
+} from "@/core/agent-manager";
 import type { Subject } from "@/core/security";
 import { JarvisError, type JarvisIntention } from "./types";
 
@@ -27,8 +38,7 @@ function assertSubject(subject: Subject | null | undefined): Subject {
 }
 
 /**
- * Execute one internal intention by delegating to Project Engine use-cases.
- * Authorization remains inside each use-case via can(subject, action, resource).
+ * Execute one internal intention by delegating to public use-cases.
  */
 export async function executeIntention(
   subject: Subject | null | undefined,
@@ -53,6 +63,22 @@ export async function executeIntention(
       return registerDeliverable(s, intention.projectId, intention.input);
     case "project.timeline":
       return listTimeline(s, intention.projectId, intention.limit);
+    case "agent.register":
+      return registerAgent(s, intention.manifest);
+    case "agent.list":
+      return listAgents(s);
+    case "agent.resolve":
+      return resolveAgentsByCapability(s, intention.capability);
+    case "agent.run.create":
+      return createAgentRun(s, intention.input);
+    case "agent.run.execute":
+      return executeAgentRun(s, intention.runId);
+    case "agent.run.cancel":
+      return cancelAgentRun(s, intention.runId);
+    case "agent.run.get":
+      return getAgentRun(s, intention.runId);
+    case "agent.bootstrap_web":
+      return bootstrapWebAgents(s);
     default: {
       const _exhaustive: never = intention;
       void _exhaustive;
