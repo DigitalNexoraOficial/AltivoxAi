@@ -52,24 +52,33 @@ export default function OpsProjectDetailPage() {
   const [delKind, setDelKind] = useState("artifact");
   const [delUri, setDelUri] = useState("");
   const [delVersionId, setDelVersionId] = useState("");
+  const [reviewVersionId, setReviewVersionId] = useState("");
 
   const load = useCallback(async () => {
     if (!id) return;
     setLoading(true);
     setError(null);
     try {
-      const [p, timeline, reviewList] = await Promise.all([
+      const [p, timeline] = await Promise.all([
         getProject(id),
         listTimeline(id),
-        listReviews(id).catch(() => [] as OpsReviewSession[]),
       ]);
       setProject(p);
       setEvents(timeline);
-      setReviews(reviewList);
       setName(p.name);
       setServiceType(p.serviceType);
       setDescription(p.description || "");
       setToStatus("");
+      try {
+        setReviews(await listReviews(id));
+      } catch (re) {
+        setReviews([]);
+        if (re instanceof OpsApiError) {
+          setError(`Reviews — ${re.code}: ${re.message}`);
+        } else {
+          setError("Reviews — error al listar");
+        }
+      }
     } catch (e) {
       if (e instanceof OpsApiError) {
         setError(
@@ -149,6 +158,7 @@ export default function OpsProjectDetailPage() {
         notes: verNotes,
       });
       setVersionsLocal((prev) => [version, ...prev]);
+      setReviewVersionId(version.id);
       setVerLabel("");
       setVerNotes("");
       const timeline = await listTimeline(project.id);
@@ -189,13 +199,20 @@ export default function OpsProjectDetailPage() {
     e.preventDefault();
     if (!project) return;
     const versionId =
-      delVersionId.trim() || versionsLocal[0]?.id || "";
+      reviewVersionId.trim() ||
+      delVersionId.trim() ||
+      versionsLocal[0]?.id ||
+      "";
     if (!versionId) {
-      setError("Se necesita versionId (crea una versión o indícala en Deliverable)");
+      setError(
+        "Se necesita versionId (pega el uuid de la versión v1 o créala en esta sesión)"
+      );
       return;
     }
     if (deliverablesLocal.length === 0) {
-      setError("Registra al menos un deliverable local para el snapshot");
+      setError(
+        "Registra al menos un deliverable en esta sesión (el snapshot es local; si recargaste, vuelve a registrar uno)"
+      );
       return;
     }
     setBusy(true);
@@ -465,6 +482,17 @@ export default function OpsProjectDetailPage() {
           </p>
           {can("review.create") ? (
             <form className="ops-form" onSubmit={(e) => void onCreateReview(e)}>
+              <div className="ops-form-row">
+                <label htmlFor="review-ver">versionId</label>
+                <input
+                  id="review-ver"
+                  value={reviewVersionId}
+                  onChange={(e) => setReviewVersionId(e.target.value)}
+                  disabled={busy}
+                  placeholder="uuid de versión (obligatorio)"
+                  required
+                />
+              </div>
               <div className="ops-form-actions">
                 <button
                   className="ops-btn"

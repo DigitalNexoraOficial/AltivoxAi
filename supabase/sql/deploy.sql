@@ -57,3 +57,8 @@ create policy deployment_events_staff_all on public.deployment_events
 
 revoke all on public.deployments from anon;
 revoke all on public.deployment_events from anon;
+
+grant all on table public.deployments to service_role;
+grant all on table public.deployment_events to service_role;
+
+notify pgrst, 'reload schema';

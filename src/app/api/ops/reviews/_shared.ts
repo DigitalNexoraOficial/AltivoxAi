@@ -58,6 +58,33 @@ export async function requireOpsUser(
   return { ok: true, user, ip };
 }
 
+/** Duck-type ReviewError — Next bundling can break `instanceof` across chunks. */
+function asReviewError(
+  err: unknown
+): { code: string; message: string; status: number } | null {
+  if (err instanceof ReviewError) {
+    return { code: err.code, message: err.message, status: err.status };
+  }
+  if (
+    err &&
+    typeof err === "object" &&
+    (err as { name?: string }).name === "ReviewError" &&
+    typeof (err as { code?: unknown }).code === "string" &&
+    typeof (err as { message?: unknown }).message === "string"
+  ) {
+    const status =
+      typeof (err as { status?: unknown }).status === "number"
+        ? (err as { status: number }).status
+        : 500;
+    return {
+      code: (err as { code: string }).code,
+      message: (err as { message: string }).message,
+      status,
+    };
+  }
+  return null;
+}
+
 export async function handleReviewError(
   err: unknown,
   ctx: {
@@ -68,11 +95,12 @@ export async function handleReviewError(
     resourceId?: string;
   }
 ): Promise<NextResponse> {
-  if (err instanceof ReviewError) {
+  const reviewErr = asReviewError(err);
+  if (reviewErr) {
     const result =
-      err.code === "forbidden"
+      reviewErr.code === "forbidden"
         ? "deny"
-        : err.code === "persistence_error"
+        : reviewErr.code === "persistence_error"
           ? "error"
           : "rejected";
     await writeAuditEvent({
@@ -85,14 +113,19 @@ export async function handleReviewError(
       resourceId: ctx.resourceId,
       result,
       ip: ctx.ip,
-      errorCode: err.code,
-      metadata: { message: err.message },
+      errorCode: reviewErr.code,
+      metadata: { message: reviewErr.message },
     });
     return NextResponse.json(
-      { error: err.code, message: err.message },
-      { status: err.status }
+      { error: reviewErr.code, message: reviewErr.message },
+      { status: reviewErr.status }
     );
   }
+
+  const message =
+    err instanceof Error
+      ? String(err.message || err.name || "unknown").slice(0, 240)
+      : "unknown";
 
   await writeAuditEvent({
     actorType: ctx.user ? "human" : "system",
@@ -105,8 +138,12 @@ export async function handleReviewError(
     result: "error",
     ip: ctx.ip,
     errorCode: "unhandled",
+    metadata: { message },
   });
-  return NextResponse.json({ error: "internal_error" }, { status: 500 });
+  return NextResponse.json(
+    { error: "internal_error", message },
+    { status: 500 }
+  );
 }
 
 export async function auditOk(

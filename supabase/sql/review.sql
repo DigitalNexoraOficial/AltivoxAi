@@ -110,3 +110,12 @@ revoke all on public.review_tokens from anon;
 revoke all on public.review_deliverables from anon;
 revoke all on public.review_comments from anon;
 revoke all on public.review_events from anon;
+
+-- App writes via service role (PostgREST); mirror Project Engine grants.
+grant all on table public.reviews to service_role;
+grant all on table public.review_tokens to service_role;
+grant all on table public.review_deliverables to service_role;
+grant all on table public.review_comments to service_role;
+grant all on table public.review_events to service_role;
+
+notify pgrst, 'reload schema';

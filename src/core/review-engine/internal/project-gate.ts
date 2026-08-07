@@ -29,6 +29,11 @@ const defaultGate: ProjectGate = async (subject, projectId) => {
       if (err.code === "not_found") {
         throw new ReviewError("not_found", "project_not_found", 404);
       }
+      throw new ReviewError(
+        err.code === "persistence_error" ? "persistence_error" : "invalid_input",
+        `project_gate:${err.message}`,
+        err.status
+      );
     }
     throw err;
   }
