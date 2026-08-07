@@ -262,6 +262,66 @@ export async function revokeReview(
   );
 }
 
+export type OpsDeployment = {
+  id: string;
+  projectId: string;
+  versionId: string;
+  status: string;
+  packageUri: string | null;
+  error: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deliverables: Array<{
+    deliverableId: string;
+    title: string;
+    kind: string;
+    uri: string | null;
+  }>;
+};
+
+export type OpsDeploymentView = {
+  deployment: OpsDeployment;
+  events: Array<{
+    id: string;
+    event: string;
+    createdAt: string;
+  }>;
+};
+
+export async function listDeployments(
+  projectId: string
+): Promise<OpsDeployment[]> {
+  const data = await opsFetch<{ deployments: OpsDeployment[] }>(
+    `/api/ops/deployments?projectId=${encodeURIComponent(projectId)}`
+  );
+  return data.deployments;
+}
+
+export async function createDeployment(input: {
+  projectId: string;
+  versionId: string;
+  deliverables: Array<{
+    deliverableId: string;
+    title: string;
+    kind?: string;
+    uri?: string | null;
+  }>;
+}): Promise<OpsDeploymentView> {
+  return opsFetch<OpsDeploymentView>("/api/ops/deployments", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function executeDeployment(
+  deploymentId: string
+): Promise<OpsDeploymentView> {
+  return opsFetch<OpsDeploymentView>(
+    `/api/ops/deployments/${encodeURIComponent(deploymentId)}/execute`,
+    { method: "POST" }
+  );
+}
+
 /** Catalog of statuses accepted by PE APIs (display only — server enforces transitions). */
 export const OPS_PROJECT_STATUSES = [
   "draft",
@@ -274,4 +334,11 @@ export const OPS_PROJECT_STATUSES = [
   "maintenance",
   "cancelled",
   "archived",
+] as const;
+
+/** Suggested service labels for Ops forms (free-text in PE — not auto-build). */
+export const OPS_SERVICE_TYPE_HINTS = [
+  { value: "web", label: "Web (sitio / landing)" },
+  { value: "chatbot", label: "Chatbot (etiqueta — no auto-genera)" },
+  { value: "automation", label: "Automatización (etiqueta — no auto-genera)" },
 ] as const;

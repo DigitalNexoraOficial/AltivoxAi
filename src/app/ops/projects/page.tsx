@@ -9,6 +9,7 @@ import {
   createProject,
   listProjects,
   OpsApiError,
+  OPS_SERVICE_TYPE_HINTS,
   type OpsProject,
 } from "@/lib/ops-api";
 
@@ -55,10 +56,10 @@ export default function OpsProjectsPage() {
     try {
       const project = await createProject({
         name: name.trim(),
-        serviceType: serviceType.trim(),
+        serviceType: serviceType.trim() || "web",
       });
       setName("");
-      setNotice(`Creado ${project.name}`);
+      setNotice(`Creado «${project.name}» — abre el detalle para seguir el flujo.`);
       await load();
     } catch (err) {
       if (err instanceof OpsApiError) {
@@ -85,7 +86,8 @@ export default function OpsProjectsPage() {
       />
       <h1 className="ops-page-title">Proyectos</h1>
       <p className="ops-lede">
-        Fuente de verdad: Project Engine (APIs <span className="ops-mono">/api/ops/projects</span>).
+        Cada proyecto sigue: datos → versión → entregable → review cliente →
+        deploy. Entra al detalle para el asistente paso a paso.
       </p>
 
       {error ? <div className="ops-error">{error}</div> : null}
@@ -94,6 +96,10 @@ export default function OpsProjectsPage() {
       {can("project.create") ? (
         <div className="ops-panel">
           <h2>Nuevo proyecto</h2>
+          <p className="ops-help">
+            Empieza con un nombre claro. El tipo de servicio es una etiqueta
+            (recomendado <span className="ops-mono">web</span>).
+          </p>
           <form className="ops-form" onSubmit={(e) => void onCreate(e)}>
             <div className="ops-form-row">
               <label htmlFor="proj-name">Nombre</label>
@@ -103,29 +109,42 @@ export default function OpsProjectsPage() {
                 onChange={(e) => setName(e.target.value)}
                 required
                 maxLength={200}
+                placeholder="Ej. Web Clínica Sol"
               />
             </div>
             <div className="ops-form-row">
-              <label htmlFor="proj-service">service_type</label>
+              <label htmlFor="proj-service">Tipo de servicio</label>
               <input
                 id="proj-service"
+                list="proj-service-hints"
                 value={serviceType}
                 onChange={(e) => setServiceType(e.target.value)}
                 required
                 maxLength={100}
               />
+              <datalist id="proj-service-hints">
+                {OPS_SERVICE_TYPE_HINTS.map((h) => (
+                  <option key={h.value} value={h.value}>
+                    {h.label}
+                  </option>
+                ))}
+              </datalist>
+              <p className="ops-field-hint">
+                Chatbot / automation no se generan solos — solo clasifican el
+                proyecto.
+              </p>
             </div>
             <div className="ops-form-actions">
               <button className="ops-btn" type="submit" disabled={creating}>
-                {creating ? "Creando…" : "Crear"}
+                {creating ? "Creando…" : "Crear proyecto"}
               </button>
             </div>
           </form>
         </div>
       ) : (
         <p className="ops-callout">
-          Sin <span className="ops-mono">project.create</span> en sesión — el
-          formulario de alta no se muestra. El servidor es la autoridad.
+          Sin <span className="ops-mono">project.create</span> — no puedes
+          crear proyectos con esta sesión.
         </p>
       )}
 
@@ -134,7 +153,7 @@ export default function OpsProjectsPage() {
         {loading ? (
           <p className="ops-muted">Cargando…</p>
         ) : projects.length === 0 ? (
-          <p className="ops-muted">No hay proyectos.</p>
+          <p className="ops-muted">No hay proyectos. Crea el primero arriba.</p>
         ) : (
           <table className="ops-table">
             <thead>

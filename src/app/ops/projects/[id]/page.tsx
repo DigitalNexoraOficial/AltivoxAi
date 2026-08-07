@@ -2,28 +2,61 @@
 
 import Link from "next/link";
 import type { FormEvent } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { OpsBreadcrumbs } from "@/components/ops/OpsBreadcrumbs";
 import { useOpsSession } from "@/components/ops/OpsSessionProvider";
 import {
+  createDeployment,
   createVersion,
   getProject,
+  listDeployments,
   listTimeline,
   listReviews,
   createReview,
   revokeReview,
+  executeDeployment,
   OpsApiError,
   OPS_PROJECT_STATUSES,
+  OPS_SERVICE_TYPE_HINTS,
   registerDeliverable,
   transitionProject,
   updateProjectMeta,
+  type OpsDeployment,
   type OpsEvent,
   type OpsProject,
   type OpsVersion,
   type OpsDeliverable,
   type OpsReviewSession,
 } from "@/lib/ops-api";
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function storageKey(projectId: string, kind: "versions" | "deliverables") {
+  return `altivox.ops.${kind}.${projectId}`;
+}
+
+function readLocalJson<T>(key: string): T[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? (parsed as T[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeLocalJson(key: string, value: unknown) {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* ignore quota */
+  }
+}
 
 export default function OpsProjectDetailPage() {
   const params = useParams();
@@ -37,6 +70,7 @@ export default function OpsProjectDetailPage() {
     []
   );
   const [reviews, setReviews] = useState<OpsReviewSession[]>([]);
+  const [deployments, setDeployments] = useState<OpsDeployment[]>([]);
   const [lastPortalPath, setLastPortalPath] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +103,20 @@ export default function OpsProjectDetailPage() {
       setServiceType(p.serviceType);
       setDescription(p.description || "");
       setToStatus("");
+
+      const storedVersions = readLocalJson<OpsVersion>(
+        storageKey(id, "versions")
+      );
+      const storedDeliverables = readLocalJson<OpsDeliverable>(
+        storageKey(id, "deliverables")
+      );
+      setVersionsLocal(storedVersions);
+      setDeliverablesLocal(storedDeliverables);
+      if (storedVersions[0]?.id) {
+        setReviewVersionId((prev) => prev || storedVersions[0].id);
+        setDelVersionId((prev) => prev || storedVersions[0].id);
+      }
+
       try {
         setReviews(await listReviews(id));
       } catch (re) {
@@ -78,6 +126,12 @@ export default function OpsProjectDetailPage() {
         } else {
           setError("Reviews — error al listar");
         }
+      }
+
+      try {
+        setDeployments(await listDeployments(id));
+      } catch {
+        setDeployments([]);
       }
     } catch (e) {
       if (e instanceof OpsApiError) {
@@ -101,6 +155,31 @@ export default function OpsProjectDetailPage() {
     if (!sessionLoading) void load();
   }, [sessionLoading, load]);
 
+  useEffect(() => {
+    if (!id) return;
+    writeLocalJson(storageKey(id, "versions"), versionsLocal);
+  }, [id, versionsLocal]);
+
+  useEffect(() => {
+    if (!id) return;
+    writeLocalJson(storageKey(id, "deliverables"), deliverablesLocal);
+  }, [id, deliverablesLocal]);
+
+  const flow = useMemo(() => {
+    const hasVersion = versionsLocal.length > 0;
+    const hasDeliverable = deliverablesLocal.length > 0;
+    const hasReview = reviews.some((r) => r.status !== "revoked");
+    const hasPackaged = deployments.some((d) => d.status === "packaged");
+    return [
+      { id: "meta", label: "1 · Datos", done: Boolean(project) },
+      { id: "status", label: "2 · Estado", done: project?.status !== "draft" },
+      { id: "version", label: "3 · Versión", done: hasVersion },
+      { id: "deliverable", label: "4 · Entregable", done: hasDeliverable },
+      { id: "review", label: "5 · Review", done: hasReview },
+      { id: "deploy", label: "6 · Deploy", done: hasPackaged },
+    ];
+  }, [project, versionsLocal, deliverablesLocal, reviews, deployments]);
+
   function mapErr(e: unknown, fallback: string): string {
     if (e instanceof OpsApiError) {
       if (e.status === 403) return `403 — ${e.message || "forbidden"}`;
@@ -108,6 +187,20 @@ export default function OpsProjectDetailPage() {
       return `${e.code}: ${e.message}`;
     }
     return fallback;
+  }
+
+  function resolveVersionUuid(raw: string): string | null {
+    const t = raw.trim();
+    if (UUID_RE.test(t)) return t;
+    if (!t && versionsLocal[0]) return versionsLocal[0].id;
+    const byLabel = versionsLocal.find(
+      (v) => v.label.toLowerCase() === t.toLowerCase()
+    );
+    if (byLabel) return byLabel.id;
+    if (delVersionId.trim() && UUID_RE.test(delVersionId.trim())) {
+      return delVersionId.trim();
+    }
+    return null;
   }
 
   async function onSaveMeta(e: FormEvent) {
@@ -159,6 +252,7 @@ export default function OpsProjectDetailPage() {
       });
       setVersionsLocal((prev) => [version, ...prev]);
       setReviewVersionId(version.id);
+      setDelVersionId(version.id);
       setVerLabel("");
       setVerNotes("");
       const timeline = await listTimeline(project.id);
@@ -176,16 +270,17 @@ export default function OpsProjectDetailPage() {
     setBusy(true);
     setError(null);
     try {
+      const versionId =
+        resolveVersionUuid(delVersionId) || versionsLocal[0]?.id || null;
       const deliverable = await registerDeliverable(project.id, {
         title: delTitle.trim(),
         kind: delKind.trim() || "artifact",
         uri: delUri.trim() || null,
-        versionId: delVersionId.trim() || null,
+        versionId,
       });
       setDeliverablesLocal((prev) => [deliverable, ...prev]);
       setDelTitle("");
       setDelUri("");
-      setDelVersionId("");
       const timeline = await listTimeline(project.id);
       setEvents(timeline);
     } catch (err) {
@@ -193,22 +288,6 @@ export default function OpsProjectDetailPage() {
     } finally {
       setBusy(false);
     }
-  }
-
-  function resolveVersionUuid(raw: string): string | null {
-    const t = raw.trim();
-    const uuidRe =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (uuidRe.test(t)) return t;
-    if (!t && versionsLocal[0]) return versionsLocal[0].id;
-    const byLabel = versionsLocal.find(
-      (v) => v.label.toLowerCase() === t.toLowerCase()
-    );
-    if (byLabel) return byLabel.id;
-    if (delVersionId.trim() && uuidRe.test(delVersionId.trim())) {
-      return delVersionId.trim();
-    }
-    return null;
   }
 
   async function onCreateReview(e: FormEvent) {
@@ -219,13 +298,13 @@ export default function OpsProjectDetailPage() {
     );
     if (!versionId) {
       setError(
-        'versionId debe ser el UUID (ej. 65ccbac6-…), no el label "v1". Crea la versión en esta sesión o pégalo desde la lista.'
+        'Elige una versión de la lista (UUID). No uses el label "v1" a mano.'
       );
       return;
     }
     if (deliverablesLocal.length === 0) {
       setError(
-        "Registra al menos un deliverable en esta sesión (el snapshot es local; si recargaste, vuelve a registrar uno)"
+        "Primero registra un entregable en el paso 4 (se guarda en esta sesión del navegador)."
       );
       return;
     }
@@ -267,6 +346,47 @@ export default function OpsProjectDetailPage() {
     }
   }
 
+  async function onDeploy(e: FormEvent) {
+    e.preventDefault();
+    if (!project) return;
+    const versionId = resolveVersionUuid(
+      reviewVersionId || versionsLocal[0]?.id || ""
+    );
+    if (!versionId) {
+      setError("Necesitas una versión (paso 3) antes del deploy.");
+      return;
+    }
+    if (deliverablesLocal.length === 0) {
+      setError("Necesitas al menos un entregable (paso 4) para empaquetar.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const created = await createDeployment({
+        projectId: project.id,
+        versionId,
+        deliverables: deliverablesLocal.map((d) => ({
+          deliverableId: d.id,
+          title: d.title,
+          kind: d.kind,
+          uri: d.uri,
+        })),
+      });
+      const executed = await executeDeployment(created.deployment.id);
+      setDeployments((prev) => [executed.deployment, ...prev]);
+    } catch (err) {
+      setError(mapErr(err, "No se pudo ejecutar deploy"));
+      try {
+        setDeployments(await listDeployments(project.id));
+      } catch {
+        /* ignore */
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (loading || sessionLoading) {
     return <p className="ops-muted">Cargando proyecto…</p>;
   }
@@ -289,6 +409,9 @@ export default function OpsProjectDetailPage() {
     );
   }
 
+  const currentStep =
+    flow.find((s) => !s.done)?.id || flow[flow.length - 1]?.id;
+
   return (
     <>
       <OpsBreadcrumbs
@@ -302,48 +425,101 @@ export default function OpsProjectDetailPage() {
       <p className="ops-lede">
         Estado <span className="ops-status">{project.status}</span>
         {" · "}
-        <span className="ops-mono">{project.serviceType}</span>
+        tipo <span className="ops-mono">{project.serviceType}</span>
         {" · "}
         <span className="ops-mono">{project.id}</span>
       </p>
 
+      <p className="ops-help" style={{ marginTop: "-0.75rem" }}>
+        Flujo recomendado: datos → (estado opcional) → versión → entregable →
+        review cliente → empaquetar deploy. El tipo de servicio es solo una
+        etiqueta: no genera chatbot ni automatización sola.
+      </p>
+
+      <ul className="ops-flow" aria-label="Progreso del proyecto">
+        {flow.map((s) => (
+          <li
+            key={s.id}
+            className={
+              s.done ? "is-done" : s.id === currentStep ? "is-current" : ""
+            }
+          >
+            {s.label}
+            {s.done ? " ✓" : ""}
+          </li>
+        ))}
+      </ul>
+
+      <nav className="ops-anchor-nav" aria-label="Ir a sección">
+        <a href="#paso-datos">Datos</a>
+        <a href="#paso-estado">Estado</a>
+        <a href="#paso-version">Versión</a>
+        <a href="#paso-entregable">Entregable</a>
+        <a href="#paso-review">Review</a>
+        <a href="#paso-deploy">Deploy</a>
+        <a href="#paso-timeline">Timeline</a>
+      </nav>
+
       {error ? <div className="ops-error">{error}</div> : null}
 
       <div className="ops-stack">
-        <section className="ops-panel">
-          <h2>Metadatos</h2>
+        <section className="ops-panel" id="paso-datos">
+          <div className="ops-step-head">
+            <span className="ops-step-num">1</span>
+            <h2>Datos del proyecto</h2>
+          </div>
+          <p className="ops-help">
+            Nombre visible y tipo de servicio (texto libre). Hoy el módulo
+            operativo real es <strong>web</strong>; otros valores son
+            clasificación interna.
+          </p>
           <form className="ops-form" onSubmit={(e) => void onSaveMeta(e)}>
             <div className="ops-form-row">
-              <label htmlFor="meta-name">Nombre</label>
+              <label htmlFor="meta-name">Nombre del proyecto</label>
               <input
                 id="meta-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={!can("project.update") || busy}
+                placeholder="Ej. Web Clínica Sol"
               />
             </div>
             <div className="ops-form-row">
-              <label htmlFor="meta-service">service_type</label>
+              <label htmlFor="meta-service">Tipo de servicio</label>
               <input
                 id="meta-service"
+                list="service-hints"
                 value={serviceType}
                 onChange={(e) => setServiceType(e.target.value)}
                 disabled={!can("project.update") || busy}
+                placeholder="web"
               />
+              <datalist id="service-hints">
+                {OPS_SERVICE_TYPE_HINTS.map((h) => (
+                  <option key={h.value} value={h.value}>
+                    {h.label}
+                  </option>
+                ))}
+              </datalist>
+              <p className="ops-field-hint">
+                Sugerido: <span className="ops-mono">web</span>. Chatbot /
+                automation = etiqueta, no entrega automática.
+              </p>
             </div>
             <div className="ops-form-row">
-              <label htmlFor="meta-desc">Descripción</label>
+              <label htmlFor="meta-desc">Descripción (opcional)</label>
               <textarea
                 id="meta-desc"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={!can("project.update") || busy}
+                placeholder="Notas internas para el equipo"
               />
             </div>
             {can("project.update") ? (
               <div className="ops-form-actions">
                 <button className="ops-btn" type="submit" disabled={busy}>
-                  Guardar
+                  Guardar datos
                 </button>
               </div>
             ) : (
@@ -352,11 +528,15 @@ export default function OpsProjectDetailPage() {
           </form>
         </section>
 
-        <section className="ops-panel">
-          <h2>Transición de estado</h2>
-          <p className="ops-muted">
-            El servidor valida la máquina de estados. Una transición ilegal
-            devuelve error (no se calcula el grafo en el cliente).
+        <section className="ops-panel" id="paso-estado">
+          <div className="ops-step-head">
+            <span className="ops-step-num">2</span>
+            <h2>Estado interno (PE)</h2>
+          </div>
+          <p className="ops-help">
+            Máquina de estados del proyecto. La aprobación del cliente en Review{" "}
+            <strong>no</strong> cambia esto sola. Puedes dejarlo en{" "}
+            <span className="ops-mono">draft</span> al principio.
           </p>
           <form className="ops-form" onSubmit={(e) => void onTransition(e)}>
             <div className="ops-form-row">
@@ -389,26 +569,37 @@ export default function OpsProjectDetailPage() {
           </form>
         </section>
 
-        <section className="ops-panel">
-          <h2>Versión</h2>
+        <section className="ops-panel" id="paso-version">
+          <div className="ops-step-head">
+            <span className="ops-step-num">3</span>
+            <h2>Versión</h2>
+          </div>
+          <p className="ops-help">
+            Crea un hito (ej. <span className="ops-mono">v1</span>). El sistema
+            guarda un <strong>UUID</strong>; ese UUID es el que usan Review y
+            Deploy (no el texto &quot;v1&quot;).
+          </p>
           <form className="ops-form" onSubmit={(e) => void onVersion(e)}>
             <div className="ops-form-row">
-              <label htmlFor="ver-label">Label</label>
+              <label htmlFor="ver-label">Label (nombre corto)</label>
               <input
                 id="ver-label"
                 value={verLabel}
                 onChange={(e) => setVerLabel(e.target.value)}
                 disabled={busy}
                 required
+                placeholder="v1"
               />
+              <p className="ops-field-hint">Solo etiqueta humana. Ej. v1, v1.1</p>
             </div>
             <div className="ops-form-row">
-              <label htmlFor="ver-notes">Notas</label>
+              <label htmlFor="ver-notes">Notas (opcional)</label>
               <textarea
                 id="ver-notes"
                 value={verNotes}
                 onChange={(e) => setVerNotes(e.target.value)}
                 disabled={busy}
+                placeholder="Qué incluye esta versión"
               />
             </div>
             <div className="ops-form-actions">
@@ -422,23 +613,39 @@ export default function OpsProjectDetailPage() {
               {versionsLocal.map((v) => (
                 <li key={v.id}>
                   <strong>{v.label}</strong>
-                  <span className="ops-mono"> {v.id}</span>{" "}
+                  <div className="ops-mono">{v.id}</div>
                   <button
                     type="button"
                     className="ops-btn ops-btn-ghost"
+                    style={{ marginTop: 6 }}
                     disabled={busy}
-                    onClick={() => setReviewVersionId(v.id)}
+                    onClick={() => {
+                      setReviewVersionId(v.id);
+                      setDelVersionId(v.id);
+                    }}
                   >
-                    Usar en review
+                    Usar en entregable / review / deploy
                   </button>
                 </li>
               ))}
             </ul>
-          ) : null}
+          ) : (
+            <p className="ops-muted" style={{ marginTop: "0.75rem" }}>
+              Aún no hay versiones en esta sesión del navegador. Crea una arriba.
+            </p>
+          )}
         </section>
 
-        <section className="ops-panel">
-          <h2>Deliverable</h2>
+        <section className="ops-panel" id="paso-entregable">
+          <div className="ops-step-head">
+            <span className="ops-step-num">4</span>
+            <h2>Entregable</h2>
+          </div>
+          <p className="ops-help">
+            Pieza que el cliente verá en la review (ej. Home, Landing). El
+            snapshot de Review usa los entregables de <strong>esta sesión</strong>{" "}
+            del navegador.
+          </p>
           <form className="ops-form" onSubmit={(e) => void onDeliverable(e)}>
             <div className="ops-form-row">
               <label htmlFor="del-title">Título</label>
@@ -448,35 +655,56 @@ export default function OpsProjectDetailPage() {
                 onChange={(e) => setDelTitle(e.target.value)}
                 disabled={busy}
                 required
+                placeholder="Home"
               />
             </div>
             <div className="ops-form-row">
-              <label htmlFor="del-kind">Kind</label>
+              <label htmlFor="del-kind">Tipo</label>
               <input
                 id="del-kind"
                 value={delKind}
                 onChange={(e) => setDelKind(e.target.value)}
                 disabled={busy}
+                placeholder="artifact"
               />
+              <p className="ops-field-hint">
+                Normalmente <span className="ops-mono">artifact</span>
+              </p>
             </div>
             <div className="ops-form-row">
-              <label htmlFor="del-uri">URI (opcional)</label>
+              <label htmlFor="del-uri">Enlace / URI (opcional)</label>
               <input
                 id="del-uri"
                 value={delUri}
                 onChange={(e) => setDelUri(e.target.value)}
                 disabled={busy}
+                placeholder="https://… o ruta interna"
               />
             </div>
             <div className="ops-form-row">
-              <label htmlFor="del-ver">versionId (opcional)</label>
-              <input
-                id="del-ver"
-                value={delVersionId}
-                onChange={(e) => setDelVersionId(e.target.value)}
-                disabled={busy}
-                placeholder="uuid de versión"
-              />
+              <label htmlFor="del-ver">Versión asociada</label>
+              {versionsLocal.length > 0 ? (
+                <select
+                  id="del-ver"
+                  value={delVersionId || versionsLocal[0]?.id || ""}
+                  onChange={(e) => setDelVersionId(e.target.value)}
+                  disabled={busy}
+                >
+                  {versionsLocal.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.label} — {v.id}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  id="del-ver"
+                  value={delVersionId}
+                  onChange={(e) => setDelVersionId(e.target.value)}
+                  disabled={busy}
+                  placeholder="Crea primero una versión (paso 3)"
+                />
+              )}
             </div>
             <div className="ops-form-actions">
               <button className="ops-btn" type="submit" disabled={busy}>
@@ -493,19 +721,27 @@ export default function OpsProjectDetailPage() {
                 </li>
               ))}
             </ul>
-          ) : null}
+          ) : (
+            <p className="ops-muted" style={{ marginTop: "0.75rem" }}>
+              Sin entregables en sesión — Review y Deploy estarán bloqueados.
+            </p>
+          )}
         </section>
 
-        <section className="ops-panel">
-          <h2>Review cliente (B6)</h2>
-          <p className="ops-muted">
-            Emite un enlace <code>/r/[token]</code>. La aprobación del cliente{" "}
-            <strong>no</strong> cambia el estado PE automáticamente.
+        <section className="ops-panel" id="paso-review">
+          <div className="ops-step-head">
+            <span className="ops-step-num">5</span>
+            <h2>Review cliente</h2>
+          </div>
+          <p className="ops-help">
+            Genera un enlace privado <span className="ops-mono">/r/[token]</span>{" "}
+            para que el cliente vea los entregables y apruebe. Guarda el enlace:
+            el token solo se muestra una vez.
           </p>
           {can("review.create") ? (
             <form className="ops-form" onSubmit={(e) => void onCreateReview(e)}>
               <div className="ops-form-row">
-                <label htmlFor="review-ver">Versión (UUID, no el label)</label>
+                <label htmlFor="review-ver">Versión a revisar</label>
                 {versionsLocal.length > 0 ? (
                   <select
                     id="review-ver"
@@ -525,22 +761,18 @@ export default function OpsProjectDetailPage() {
                     value={reviewVersionId}
                     onChange={(e) => setReviewVersionId(e.target.value)}
                     disabled={busy}
-                    placeholder="65ccbac6-7787-483b-b894-… (uuid, no v1)"
+                    placeholder="UUID de versión (paso 3)"
                     required
                   />
                 )}
               </div>
-              <p className="ops-muted">
-                Si escribes solo &quot;v1&quot; fallará: hace falta el uuid de la
-                versión.
-              </p>
               <div className="ops-form-actions">
                 <button
                   className="ops-btn"
                   type="submit"
                   disabled={busy || deliverablesLocal.length === 0}
                 >
-                  Emitir review (snapshot deliverables locales)
+                  Emitir review
                 </button>
               </div>
             </form>
@@ -548,8 +780,18 @@ export default function OpsProjectDetailPage() {
             <p className="ops-muted">Sin permiso review.create</p>
           )}
           {lastPortalPath ? (
-            <p className="ops-mono" style={{ marginTop: "0.75rem" }}>
-              Portal (mostrar una vez): {lastPortalPath}
+            <p className="ops-ok" style={{ marginTop: "0.75rem" }}>
+              Enlace cliente (copiar ahora):{" "}
+              <a
+                className="ops-mono"
+                href={lastPortalPath}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {typeof window !== "undefined"
+                  ? `${window.location.origin}${lastPortalPath}`
+                  : lastPortalPath}
+              </a>
             </p>
           ) : null}
           {reviews.length > 0 ? (
@@ -577,8 +819,65 @@ export default function OpsProjectDetailPage() {
           )}
         </section>
 
-        <section className="ops-panel">
-          <h2>Timeline</h2>
+        <section className="ops-panel" id="paso-deploy">
+          <div className="ops-step-head">
+            <span className="ops-step-num">6</span>
+            <h2>Deploy (paquete ZIP)</h2>
+          </div>
+          <p className="ops-help">
+            Empaqueta la versión + entregables de esta sesión. No publica a un
+            hosting externo: deja el deployment en estado{" "}
+            <span className="ops-mono">packaged</span>.
+          </p>
+          {can("deploy.create") && can("deploy.execute") ? (
+            <form className="ops-form" onSubmit={(e) => void onDeploy(e)}>
+              <div className="ops-form-actions">
+                <button
+                  className="ops-btn"
+                  type="submit"
+                  disabled={
+                    busy ||
+                    deliverablesLocal.length === 0 ||
+                    versionsLocal.length === 0
+                  }
+                >
+                  Crear y ejecutar packaging
+                </button>
+              </div>
+            </form>
+          ) : (
+            <p className="ops-muted">
+              Sin permisos deploy.create / deploy.execute
+            </p>
+          )}
+          {deployments.length > 0 ? (
+            <ul className="ops-timeline" style={{ marginTop: "0.75rem" }}>
+              {deployments.map((d) => (
+                <li key={d.id}>
+                  <strong>{d.status}</strong>
+                  <div className="ops-mono">{d.id}</div>
+                  {d.packageUri ? (
+                    <div className="ops-mono">{d.packageUri}</div>
+                  ) : null}
+                  {d.error ? (
+                    <div className="ops-error" style={{ marginTop: 6 }}>
+                      {d.error}
+                    </div>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="ops-muted">Sin deployments aún.</p>
+          )}
+        </section>
+
+        <section className="ops-panel" id="paso-timeline">
+          <div className="ops-step-head">
+            <span className="ops-step-num">·</span>
+            <h2>Timeline</h2>
+          </div>
+          <p className="ops-help">Historial de eventos del Project Engine.</p>
           {events.length === 0 ? (
             <p className="ops-muted">Sin eventos de dominio.</p>
           ) : (
