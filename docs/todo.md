@@ -3,7 +3,7 @@
 Leyenda: **P0** bloqueante · **P1** alto · **P2** medio · **P3** mejora  
 Regla: no código sin aprobación del bloque.
 
-Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](./roadmap.md)
+Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](./roadmap.md) · B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md)
 
 ---
 
@@ -14,6 +14,7 @@ Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](.
 | T-000 | Realineación documental Altivox OS + ADR-010 | **done** |
 | T-000b | Cinco motores del núcleo + ADR-011 | **done** |
 | T-000c | Prebloque B2-A sync docs + ADR-013 | **done** |
+| T-000d | Prebloque B4-A sync docs + ADR-014 | **done** |
 
 ---
 
@@ -50,32 +51,48 @@ Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](.
 
 | ID | Tarea | Notas |
 |----|-------|-------|
-| T-201 | Migrar leads/clientes desde HTML | gradual; no en B3 |
+| T-201 | Migrar leads/clientes desde HTML | gradual; **no** en B3 ni B4 |
 
 ---
 
-## P1 — JARVIS + agentes (Fases 4–5)
+## P1 — Bloque 4 — JARVIS + motores (interfaces)
+
+Contrato: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md).  
+**Sin código** hasta OK explícito de implementación.
 
 | ID | Tarea | Notas |
 |----|-------|-------|
-| T-300 | JARVIS Core como caller de motores | core-engines.md |
-| T-302 | Workflow Engine | |
-| T-303 | Tool Registry | |
-| T-304 | Memory Engine | |
-| T-305 | Capability Registry | |
-| T-306 | Agent Manager registro en caliente | |
-| T-307 | Primer service module plugin | |
-| T-308 | Relabel/retirar `agentes.html` cosmético | |
+| T-300 | Frontera JARVIS (orquestador / caller de motores) | Solo interfaces / responsabilidades; no runtime de agentes |
+| T-301 | Fronteras del resto de motores del núcleo | Workflow · Tool Registry · Memory · Capability Registry · Agent Manager (registro) — **sin** runtimes |
+
+**Fuera de B4 (explícito):** Agent Runtime · runtimes de motores · Review Engine · Deployment Engine · service modules · tablas nuevas · APIs nuevas · stubs · simulaciones · chatbot público · reabrir B0–B3.
 
 ---
 
-## P1 — Review + entrega (Fases 6–7)
+## P1 — Bloque 5 — Agent runtime + service modules
 
 | ID | Tarea | Notas |
 |----|-------|-------|
-| T-400 | `/r/[token]` | sin internos |
-| T-401 | ZIP delivery pipeline | |
-| T-402 | Deploy adapters + confirmación | |
+| T-306 | Agent Runtime + Agent Manager en ejecución | **No** B4 |
+| T-307 | Primer service module plugin | **No** B4 |
+| T-308 | Relabel/retirar `agentes.html` cosmético | Con B5 o cuando deje de confundir producto |
+
+---
+
+## P1 — Bloque 6 — Review Engine
+
+| ID | Tarea | Notas |
+|----|-------|-------|
+| T-400 | `/r/[token]` + Review Engine | Sin internos; **no** B4 |
+
+---
+
+## P1 — Bloque 7 — Entrega + Deployment
+
+| ID | Tarea | Notas |
+|----|-------|-------|
+| T-401 | ZIP delivery pipeline | **No** B4 |
+| T-402 | Deploy adapters + confirmación (vía Tool Registry) | **No** B4 |
 
 ---
 
@@ -106,9 +123,10 @@ Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](.
 |------------|--------|
 | T-023 Chat → tools agentes OS | Viola aislamiento público/OS |
 | T-202 JARVIS stub en B3 | Prohibido fingir motores |
+| T-302…T-305 como “implementar runtime en B4” | Runtimes = B5+; B4 solo fronteras (ADR-014) |
 | Plataforma agentes pública | ADR-010 |
 | JARVIS respuesta unificada al visitante | ADR-010 |
-| Portal demo como producto cliente IA | Sustituido por `/r/[token]` |
+| Portal demo como producto cliente IA | Sustituido por `/r/[token]` (B6) |
 
 ---
 
@@ -118,3 +136,4 @@ Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](.
 |------|-----|
 | Bloque 2 Project Engine | ADR-013 |
 | Bloque 3 Ops Shell | `/ops` + proyectos UI |
+| Prebloque B4-A | ADR-014 · sync docs |

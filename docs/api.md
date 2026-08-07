@@ -37,17 +37,19 @@ Tres familias alineadas a las tres superficies.
 Mutaciones PE: use-cases en `src/core/project-engine` + `can(subject, action, resource)`.  
 Dominio → `project_events`. Técnico → `audit_events`.
 
-**No en B2:** `/api/review/*`, deploy endpoints, capabilities, workflows, tools, memory, agent runs.
+**No en B2 ni en B4:** `/api/review/*`, deploy endpoints, capabilities, workflows, tools, memory, agent runs.
 
 ---
 
-## 3. Horizonte (diferido)
+## 3. Horizonte (diferido · no Bloque 4)
 
-Workflow run · capability assign · tool invoke · memory · review token APIs · deploy — ver [`core-engines.md`](./core-engines.md).
+Bloque 4 (**ADR-014**) es corte de **interfaces / fronteras**: **no** añade APIs nuevas.
+
+Workflow run · capability assign · tool invoke · memory · agent runs · review token APIs · deploy — bloques **5–7**. Ver [`core-engines.md`](./core-engines.md) · [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md).
 
 ---
 
 ## 4. Eventos
 
-Dominio PE: [`flow.md`](./flow.md) §6.  
+Dominio PE: [`flow.md`](./flow.md) §7.  
 Técnico: `audit_events`.

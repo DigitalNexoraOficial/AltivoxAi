@@ -3,9 +3,9 @@
 **Producto:** Altivox OS — Sistema Operativo interno de Altivox AI  
 **Escaparate:** web pública https://www.altivoxai.es  
 **Visión oficial:** [`product-vision.md`](./product-vision.md)  
-**ADRs:** [`ADR-010`](./adr/ADR-010-altivox-os-pivot.md) · [`ADR-011`](./adr/ADR-011-core-engines.md)  
+**ADRs:** [`ADR-010`](./adr/ADR-010-altivox-os-pivot.md) · [`ADR-011`](./adr/ADR-011-core-engines.md) · [`ADR-012`](./adr/ADR-012-security-foundation.md) · [`ADR-013`](./adr/ADR-013-project-engine.md) · [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md)  
 **Motores del núcleo:** [`core-engines.md`](./core-engines.md)  
-**Actualizado:** 2026-08-07 · Bloque 0 (+ motores)
+**Actualizado:** 2026-08-07 · Prebloque B4-A (sync docs; sin cambio de arquitectura)
 
 ---
 
@@ -66,17 +66,17 @@
 
 **Motores oficiales** (detalle: [`core-engines.md`](./core-engines.md)):
 
-| Motor | Dueño de |
-|-------|----------|
-| **Project Engine** | Proyectos, estados (fase B2), versiones, entregables, eventos de dominio. Review tokens / deploys = **diferidos** ([ADR-013](./adr/ADR-013-project-engine.md)) |
-| **Workflow Engine** | Procesos reutilizables (diferido) |
-| **Tool Registry** | I/O externo (diferido) |
-| **Memory Engine** | Memoria runtime (diferido) |
-| **Capability Registry** | Capabilities → agentes (diferido) |
+| Motor | Dueño de | Fase |
+|-------|----------|------|
+| **Project Engine** | Proyectos, estados (B2), versiones, entregables, eventos de dominio. Review tokens / deploys = **diferidos** ([ADR-013](./adr/ADR-013-project-engine.md)) | **Cerrado (B2)** |
+| **Workflow Engine** | Procesos reutilizables | Frontera en B4 · runtime posterior |
+| **Tool Registry** | I/O externo | Frontera en B4 · runtime posterior |
+| **Memory Engine** | Memoria runtime | Frontera en B4 · runtime posterior |
+| **Capability Registry** | Capabilities → agentes | Frontera en B4 · runtime posterior |
 
-Además: Identidad/RBAC · Agent Manager · Event Bus · Logger · Configuration · API Gateway `/api/ops/*`.
+Además: Identidad/RBAC (B1) · Agent Manager (frontera B4; **runtime de agentes = B5**) · Event Bus · Logger · Configuration · API Gateway `/api/ops/*`.
 
-JARVIS es **orquestador caller**, no el almacén de proyectos ni el bus de I/O.
+JARVIS es **orquestador caller** (corte B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md)), no el almacén de proyectos ni el bus de I/O.
 
 ### 3.2 Módulos / plugins de servicio
 
@@ -99,9 +99,14 @@ Descubrimiento por manifest; cero `if/else` de servicio en el core.
 | Landing Next.js 16 | Producción |
 | Admin HTML `public/*.html` | Producción temporal ≠ `/ops` |
 | APIs lead/chat/n8n/site-settings | Producción |
-| Supabase leads/clientes/site_settings | Producción |
-| `/ops`, Project Engine, JARVIS, `/r/[token]` | PE B2 pendiente de código; resto no implementado |
-| Extensión modular formal | **No implementado** |
+| Supabase leads/clientes/site_settings + audit + PE | Producción / entorno (SQL B1–B2) |
+| Project Engine (B2) | **Implementado** (ADR-013) |
+| Shell `/ops` + UI Proyectos (B3) | **Implementado** |
+| JARVIS + resto de motores (interfaces) | Contrato ADR-014 · **código pendiente de OK** |
+| Agent runtime · service modules | Bloque **5** — no B4 |
+| `/r/[token]` · Review Engine | Bloque **6** — no B4 |
+| Deploy / ZIP | Bloque **7** — no B4 |
+| Extensión modular formal | **No implementado** (B5+) |
 
 La auditoría histórica de la landing permanece como contexto en el historial git; el **norte de diseño** es este documento + product-vision.
 
@@ -151,3 +156,4 @@ Ver [`security.md`](./security.md).
 | [`database.md`](./database.md) | Modelo as-is / to-be |
 | [`api.md`](./api.md) | Contratos HTTP |
 | [`MEMORY.md`](./MEMORY.md) | Memoria humana + ADRs |
+| [`adr/ADR-014-bloque-4-jarvis-motores-interfaces.md`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) | Corte documental Bloque 4 |

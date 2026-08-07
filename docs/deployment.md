@@ -7,12 +7,12 @@
 ```
 GitHub → Vercel
           ├─ Web pública (producción actual)
-          ├─ /ops (futuro, mismo deploy o path)
-          └─ /r/[token] (futuro)
+          ├─ /ops (implementado · Bloque 3; mismo deploy / path)
+          └─ /r/[token] (futuro · Bloque 6)
 
 Supabase = Auth + DB
 n8n = automatización ops
-LLM providers = chat público + (futuro) agent runtime OS
+LLM providers = chat público + (futuro · Bloque 5) agent runtime OS
 ```
 
 ---
@@ -35,7 +35,9 @@ Mismo repositorio permitido; **límites de seguridad** por ruta y rol, no por �
 - `npm run build` / Vercel  
 - Env: `SUPABASE_*`, `N8N_*`, LLM keys, WA/Cal públicos  
 - SQL manual en Supabase Editor  
-- Admin estático en `public/*.html`
+- Shell `/ops` App Router (**Bloque 3 cerrado**) + `/api/ops/*`  
+- Admin estático en `public/*.html` (CRM/legacy temporal)  
+- Portal `/r/[token]` y Deployment Engine de proyectos cliente: **aún no** (B6 / B7)
 
 ---
 
@@ -58,8 +60,8 @@ Los adapters son **plugins**; añadir destino nuevo no modifica el núcleo OS.
 2. SQL/migraciones aplicadas  
 3. Env completas  
 4. Smoke pública: `/`, lead, chat  
-5. Smoke OS (cuando exista): login RBAC, proyecto  
-6. Smoke review: token, sin fuga de internos  
+5. Smoke OS (`/ops` B3): login RBAC, proyecto  
+6. Smoke review (cuando exista · B6): token, sin fuga de internos  
 
 ---
 

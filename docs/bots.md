@@ -37,7 +37,13 @@ Estas etiquetas **no** son el catálogo OS. En producto/UI interna deben etiquet
 
 ## 4. To-be bots/agentes OS
 
-Ver [`agents.md`](./agents.md). Runtime solo tras Fases 4–5 del roadmap.
+Ver [`agents.md`](./agents.md) · contrato B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md).
+
+**Visión de producto (largo plazo):** agentes, workflows, capabilities, memory y herramientas en el OS — vía motores + Agent Runtime.
+
+**Recorte Bloque 4:** solo fronteras / contratos (JARVIS como caller de motores). **Sin** Agent Runtime ni runtimes de motores.
+
+**Bloque 5:** Agent Runtime (+ service modules).
 
 ---
 
