@@ -5,7 +5,6 @@ export {
   HUMAN_ROLES,
   MACHINE_PRINCIPAL_TYPES,
   STAFF_ROLES,
-  OPS_ACCESS_ROLES,
   ROLE_PERMISSIONS,
   MACHINE_PERMISSION_CEILINGS,
   isHumanRole,
@@ -34,7 +33,7 @@ export {
   PROTECTED_HTML,
   fetchSupabaseUser,
   resolveOpsUserFromToken,
-  readOpsToken,
   setOpsCookie,
   clearOpsCookie,
+  isOpsProtectedPath,
 } from "./session";

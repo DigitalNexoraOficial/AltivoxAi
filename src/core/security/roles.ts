@@ -33,9 +33,6 @@ export const STAFF_ROLES: readonly HumanRole[] = [
   "viewer",
 ];
 
-/** Roles allowed to open admin HTML /ops (UX + middleware). */
-export const OPS_ACCESS_ROLES: readonly HumanRole[] = STAFF_ROLES;
-
 export function isHumanRole(value: unknown): value is HumanRole {
   return (
     typeof value === "string" &&

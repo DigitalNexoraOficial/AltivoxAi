@@ -8,10 +8,11 @@ Ver ADR: [`adr/ADR-012-security-foundation.md`](./adr/ADR-012-security-foundatio
 - Roles/permisos en TypeScript (sin grants DB)
 - RLS: `supabase/sql/rbac.sql`
 - Audit: `supabase/sql/audit-events.sql` + `writeAuditEvent`
-- Middleware: `src/middleware.ts` + cookie ops session
+- Middleware: `src/middleware.ts` — cookie `altivox_ops_token` es **solo transporte** del access token de Supabase; la verdad es `/auth/v1/user` + `can(ops.access)`
 - Rate limit: Upstash (`RATE_LIMIT_MODE`, `UPSTASH_*`)
 - `/api/n8n` exige secret **o** humano con `n8n.emit` / `n8n.write_crm`
 - `GET /api/site-settings` solo anon key
+- `POST /api/ops/site-settings` — `can(settings.write)` + escritura con JWT del usuario (RLS), sin service_role
 
 ## Operación
 

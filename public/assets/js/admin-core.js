@@ -212,15 +212,31 @@
   }
 
   async function saveSiteSettings(sb, data) {
-    var rows = ["brand", "hero", "contact", "flags", "social"].map(function (key) {
-      return {
-        key: key,
-        value: data[key] || {},
-        updated_at: new Date().toISOString(),
-      };
+    var sessionRes = await sb.auth.getSession();
+    var token =
+      sessionRes &&
+      sessionRes.data &&
+      sessionRes.data.session &&
+      sessionRes.data.session.access_token;
+    if (!token) throw new Error("Sesión no disponible");
+    var res = await fetch("/api/ops/site-settings", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        brand: data.brand || {},
+        hero: data.hero || {},
+        contact: data.contact || {},
+        flags: data.flags || {},
+        social: data.social || {},
+      }),
     });
-    var res = await sb.from("site_settings").upsert(rows, { onConflict: "key" });
-    if (res.error) throw res.error;
+    var body = await res.json().catch(function () { return {}; });
+    if (!res.ok) {
+      throw new Error(body.error || "No se pudieron guardar los ajustes");
+    }
     return true;
   }
 

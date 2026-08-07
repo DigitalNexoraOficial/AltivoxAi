@@ -1,24 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  PROTECTED_HTML,
+  isOpsProtectedPath,
   resolveOpsUserFromToken,
+  OPS_COOKIE,
 } from "@/core/security/session";
 
+/**
+ * Gate admin HTML / future /ops.
+ * Cookie `altivox_ops_token` is only a transport for the Supabase access token.
+ * Access requires live Supabase session validation + Permission Manager (ops.access).
+ */
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  const isProtectedHtml = (PROTECTED_HTML as readonly string[]).includes(
-    pathname
-  );
-  const isOpsApp = pathname === "/ops" || pathname.startsWith("/ops/");
-  const isOpsApi =
-    pathname.startsWith("/api/ops/") && pathname !== "/api/ops/session";
-
-  if (!isProtectedHtml && !isOpsApp && !isOpsApi) {
+  if (!isOpsProtectedPath(pathname)) {
     return NextResponse.next();
   }
 
-  const token = req.cookies.get("altivox_ops_token")?.value || "";
+  // Prefer Authorization if present; otherwise cookie transport.
+  const auth = req.headers.get("authorization") || "";
+  const bearer = auth.replace(/^Bearer\s+/i, "").trim();
+  const cookieToken = req.cookies.get(OPS_COOKIE)?.value || "";
+  const token = bearer || cookieToken;
+
+  const isOpsApi = pathname.startsWith("/api/ops/");
+
   if (!token) {
     if (isOpsApi) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
@@ -29,31 +35,26 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(login);
   }
 
+  // Source of truth: Supabase Auth + can(ops.access) — never the cookie alone.
   const user = await resolveOpsUserFromToken(token);
   if (!user) {
     if (isOpsApi) {
-      return NextResponse.json({ error: "forbidden" }, { status: 403 });
+      const res = NextResponse.json({ error: "forbidden" }, { status: 403 });
+      if (cookieToken) {
+        res.cookies.set({ name: OPS_COOKIE, value: "", path: "/", maxAge: 0 });
+      }
+      return res;
     }
     const login = new URL("/login.html", req.url);
     login.searchParams.set("error", "forbidden");
     const res = NextResponse.redirect(login);
-    res.cookies.set({
-      name: "altivox_ops_token",
-      value: "",
-      path: "/",
-      maxAge: 0,
-    });
+    res.cookies.set({ name: OPS_COOKIE, value: "", path: "/", maxAge: 0 });
     return res;
   }
 
-  const requestHeaders = new Headers(req.headers);
-  requestHeaders.set("x-altivox-user-id", user.id);
-  requestHeaders.set("x-altivox-user-role", user.role);
-  if (user.email) requestHeaders.set("x-altivox-user-email", user.email);
-
-  return NextResponse.next({
-    request: { headers: requestHeaders },
-  });
+  // Do NOT forward role/id as request headers — clients could spoof them on
+  // unmatched routes. APIs must call resolveOpsUserFromToken / can() themselves.
+  return NextResponse.next();
 }
 
 export const config = {

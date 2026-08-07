@@ -1,13 +1,15 @@
 /**
- * Ops session cookie bridge (admin HTML uses localStorage; middleware needs cookies).
+ * Ops session: cookie is ONLY a transport for the Supabase access token
+ * so Edge middleware can read it (admin HTML keeps the session in localStorage).
+ *
+ * Authorization truth = Supabase Auth /auth/v1/user + Permission Manager can().
+ * The cookie value alone never grants access.
  */
 
-import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { subjectFromUser, type HumanSubject } from "./auth";
-import { can } from "./permission-manager";
+import { subjectFromUser, roleFromUser } from "./auth";
+import { can, type HumanSubject } from "./permission-manager";
 import type { HumanRole } from "./roles";
-import { roleFromUser } from "./auth";
 
 export const OPS_COOKIE = "altivox_ops_token";
 
@@ -22,19 +24,44 @@ export type ResolvedOpsUser = {
   accessToken: string;
 };
 
+export const PROTECTED_HTML = [
+  "/dashboard.html",
+  "/clientes.html",
+  "/ajustes.html",
+  "/chatbot.html",
+  "/jarvis.html",
+  "/agentes.html",
+] as const;
+
+/** Pure path helper (testable; used by middleware). */
+export function isOpsProtectedPath(pathname: string): boolean {
+  if ((PROTECTED_HTML as readonly string[]).includes(pathname)) return true;
+  if (pathname === "/ops" || pathname.startsWith("/ops/")) return true;
+  if (pathname.startsWith("/api/ops/") && pathname !== "/api/ops/session") {
+    return true;
+  }
+  return false;
+}
+
+function looksLikeJwt(token: string): boolean {
+  const parts = token.split(".");
+  return parts.length === 3 && parts.every((p) => p.length > 0);
+}
+
 export async function fetchSupabaseUser(accessToken: string): Promise<{
   id: string;
   email?: string;
   app_metadata?: Record<string, unknown>;
 } | null> {
   const anon = String(process.env.SUPABASE_ANON_KEY || "").trim();
-  if (!anon || !accessToken) return null;
+  if (!anon || !accessToken || !looksLikeJwt(accessToken)) return null;
   try {
     const res = await fetch(SUPABASE_URL + "/auth/v1/user", {
       headers: {
         Authorization: "Bearer " + accessToken,
         apikey: anon,
       },
+      cache: "no-store",
     });
     if (!res.ok) return null;
     const user = (await res.json()) as {
@@ -49,6 +76,10 @@ export async function fetchSupabaseUser(accessToken: string): Promise<{
   }
 }
 
+/**
+ * Resolve staff subject from a Supabase access token (Bearer or cookie transport).
+ * Always re-validates with Supabase; always checks can(..., "ops.access").
+ */
 export async function resolveOpsUserFromToken(
   accessToken: string
 ): Promise<ResolvedOpsUser | null> {
@@ -61,7 +92,7 @@ export async function resolveOpsUserFromToken(
     app_metadata: user.app_metadata,
   });
   if (!role || !subject) return null;
-  if (!can(subject, "ops.access").allowed) return null;
+  if (!can(subject, "ops.access", { type: "ops" }).allowed) return null;
   return {
     id: user.id,
     email: user.email,
@@ -71,17 +102,11 @@ export async function resolveOpsUserFromToken(
   };
 }
 
-export function readOpsToken(req: NextRequest): string {
-  const fromCookie = req.cookies.get(OPS_COOKIE)?.value || "";
-  if (fromCookie) return fromCookie;
-  const auth = req.headers.get("authorization") || "";
-  return auth.replace(/^Bearer\s+/i, "").trim();
-}
-
-export function setOpsCookie(res: NextResponse, token: string): void {
+export function setOpsCookie(res: NextResponse, accessToken: string): void {
+  // Transport only — expiry is enforced by Supabase when resolving the token.
   res.cookies.set({
     name: OPS_COOKIE,
-    value: token,
+    value: accessToken,
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -101,12 +126,3 @@ export function clearOpsCookie(res: NextResponse): void {
     maxAge: 0,
   });
 }
-
-export const PROTECTED_HTML = [
-  "/dashboard.html",
-  "/clientes.html",
-  "/ajustes.html",
-  "/chatbot.html",
-  "/jarvis.html",
-  "/agentes.html",
-] as const;
