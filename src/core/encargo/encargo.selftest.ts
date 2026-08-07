@@ -107,9 +107,9 @@ async function main() {
   });
   const mustangArt = extractPrimaryArtifact(localMustang, "web", "Xabier");
   assert(mustangArt?.kind === "html", "mustang local html");
-  assert(mustangArt.content.includes("three"), "three.js present");
+  assert(mustangArt.content.includes("jsdelivr.net"), "three via jsdelivr (CSP)");
   assert(
-    /puertas|hood|scroll|Mustang/i.test(mustangArt.content),
+    /Ford Mustang|puertas|hood|scroll/i.test(mustangArt.content),
     "scroll car beats present"
   );
 

@@ -181,15 +181,11 @@ function wantsCinematicCarLanding(description: string): boolean {
 }
 
 function guessCarTitle(description: string, clientName: string): string {
-  const mustang = description.match(
-    /mustang(?:\s+gt)?(?:\s+\d{4})?/i
-  );
-  if (mustang?.[0]) {
-    return mustang[0]
-      .replace(/\s+/g, " ")
-      .trim()
-      .replace(/mustang/i, "Mustang")
-      .replace(/\bgt\b/i, "GT");
+  const mustang = description.match(/mustang/i);
+  if (mustang) {
+    const year = description.match(/\b(19\d{2}|20\d{2})\b/);
+    const gt = /\bgt\b/i.test(description) ? " GT" : "";
+    return `Ford Mustang${gt}${year ? ` ${year[1]}` : ""}`;
   }
   const model = description.match(
     /(?:modelo|coche|auto|veh[ií]culo)\s+([A-Za-z0-9][A-Za-z0-9 \-]{2,40})/i
@@ -205,7 +201,6 @@ function buildCinematicCarHtml(input: {
 }): string {
   const brand = escapeHtml(input.clientName || "Altivox");
   const carTitle = escapeHtml(guessCarTitle(input.description, input.clientName));
-  const brief = escapeHtml(input.description.slice(0, 320));
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -237,7 +232,12 @@ function buildCinematicCarHtml(input: {
       radial-gradient(circle at 80% 10%, rgba(196,92,38,.18), transparent 40%),
       linear-gradient(180deg, #0c0e14, #050507 70%);
   }
-  canvas { display: block; width: 100%; height: 100%; }
+  #stage canvas { display: block; width: 100%; height: 100%; }
+  #stage-msg {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    color: var(--muted); font-size: 14px; padding: 24px; text-align: center;
+  }
+  #stage-msg[hidden] { display: none; }
   .scroll-track { position: relative; z-index: 1; height: 520vh; pointer-events: none; }
   .hud {
     position: fixed; inset: 0; z-index: 2; pointer-events: none;
@@ -283,7 +283,9 @@ function buildCinematicCarHtml(input: {
 </style>
 </head>
 <body>
-  <div id="stage" aria-hidden="true"></div>
+  <div id="stage" aria-hidden="true">
+    <div id="stage-msg">Cargando modelo 3D…</div>
+  </div>
   <div class="scroll-track" aria-hidden="true"></div>
   <div class="hud">
     <div class="top">
@@ -294,21 +296,29 @@ function buildCinematicCarHtml(input: {
       <div class="copy" id="copy">
         <div class="kicker" id="kicker">Experiencia scroll</div>
         <h1 id="headline">${carTitle}</h1>
-        <p id="sub">${brief}</p>
+        <p id="sub">Fox-body · recorrido cinematográfico 3D. Desplaza para abrir puertas, entrar al interior, salir por la luna y revelar el motor.</p>
       </div>
     </div>
     <div class="hint">Desplaza · <span id="beat">Exterior</span></div>
   </div>
-<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<!-- Three.js via jsDelivr (allowlisted by Altivox CSP). -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
 (function () {
-  if (!window.THREE) return;
+  var msg = document.getElementById("stage-msg");
+  function fail(text) {
+    if (msg) { msg.hidden = false; msg.textContent = text; }
+  }
+  if (!window.THREE) {
+    fail("No se pudo cargar Three.js. Abre en pestaña o descarga el HTML.");
+    return;
+  }
   var scenes = [
-    { k: "01 · Presentación", h: ${JSON.stringify(guessCarTitle(input.description, input.clientName))}, s: "Silueta premium. Gira y observa el cuerpo antes del recorrido.", beat: "Exterior" },
+    { k: "01 · Presentación", h: ${JSON.stringify(guessCarTitle(input.description, input.clientName))}, s: "Silueta Fox-body. El modelo gira; observa el largo capó del Mustang GT.", beat: "Exterior" },
     { k: "02 · Acceso", h: "Puertas abiertas", s: "Conductor y copiloto se abren al ritmo del scroll.", beat: "Puertas" },
     { k: "03 · Cabina", h: "Interior", s: "Entra en el habitáculo: asientos, volante y consolas.", beat: "Interior" },
     { k: "04 · Luna", h: "Salida frontal", s: "La cámara atraviesa el parabrisas hacia la carretera.", beat: "Luna" },
-    { k: "05 · Motor", h: "Capó y motor", s: "Vista superior: el capó se abre y revela el bloque.", beat: "Motor" }
+    { k: "05 · Motor", h: "Capó y motor", s: "Vista superior: el capó se abre y revela el bloque V8.", beat: "Motor" }
   ];
 
   var stage = document.getElementById("stage");
@@ -320,39 +330,49 @@ function buildCinematicCarHtml(input: {
   var copy = document.getElementById("copy");
   var sceneIdx = 0;
 
-  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  var renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  } catch (err) {
+    fail("WebGL no disponible en este navegador/preview.");
+    return;
+  }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  if (renderer.outputColorSpace !== undefined) renderer.outputColorSpace = THREE.SRGBColorSpace;
   stage.appendChild(renderer.domElement);
+  if (msg) msg.hidden = true;
 
   var scene = new THREE.Scene();
   var camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
-  camera.position.set(4.2, 1.6, 5.4);
+  camera.position.set(4.6, 1.7, 5.8);
 
-  var hemi = new THREE.HemisphereLight(0xf0e6d8, 0x1a120c, 1.1);
-  scene.add(hemi);
-  var key = new THREE.DirectionalLight(0xffffff, 1.35);
+  scene.add(new THREE.HemisphereLight(0xf0e6d8, 0x1a120c, 1.15));
+  var key = new THREE.DirectionalLight(0xffffff, 1.45);
   key.position.set(6, 8, 4);
   scene.add(key);
-  var rim = new THREE.DirectionalLight(0xc45c26, 0.55);
+  var rim = new THREE.DirectionalLight(0xc45c26, 0.65);
   rim.position.set(-5, 3, -4);
   scene.add(rim);
+  var fill = new THREE.DirectionalLight(0x88aaff, 0.35);
+  fill.position.set(-3, 2, 6);
+  scene.add(fill);
 
   var floor = new THREE.Mesh(
     new THREE.CircleGeometry(18, 64),
-    new THREE.MeshStandardMaterial({ color: 0x12141a, metalness: 0.2, roughness: 0.9 })
+    new THREE.MeshStandardMaterial({ color: 0x12141a, metalness: 0.25, roughness: 0.88 })
   );
   floor.rotation.x = -Math.PI / 2;
-  floor.position.y = -0.55;
+  floor.position.y = -0.52;
   scene.add(floor);
 
-  var paint = new THREE.MeshStandardMaterial({ color: 0xb42318, metalness: 0.72, roughness: 0.28 });
+  var paint = new THREE.MeshStandardMaterial({ color: 0xc4121a, metalness: 0.78, roughness: 0.22 });
   var dark = new THREE.MeshStandardMaterial({ color: 0x111318, metalness: 0.6, roughness: 0.4 });
-  var chrome = new THREE.MeshStandardMaterial({ color: 0xc9d0db, metalness: 1, roughness: 0.18 });
-  var glass = new THREE.MeshStandardMaterial({ color: 0x7ec8e3, metalness: 0.2, roughness: 0.05, transparent: true, opacity: 0.35 });
+  var chrome = new THREE.MeshStandardMaterial({ color: 0xc9d0db, metalness: 1, roughness: 0.16 });
+  var glass = new THREE.MeshStandardMaterial({ color: 0x8ed0ea, metalness: 0.15, roughness: 0.04, transparent: true, opacity: 0.38 });
   var leather = new THREE.MeshStandardMaterial({ color: 0x2a211c, roughness: 0.85, metalness: 0.05 });
-  var engineMat = new THREE.MeshStandardMaterial({ color: 0x2f343c, metalness: 0.85, roughness: 0.35 });
+  var engineMat = new THREE.MeshStandardMaterial({ color: 0x2f343c, metalness: 0.88, roughness: 0.32 });
+  var blackout = new THREE.MeshStandardMaterial({ color: 0x050505, metalness: 0.4, roughness: 0.55 });
 
   var car = new THREE.Group();
   scene.add(car);
@@ -363,41 +383,45 @@ function buildCinematicCarHtml(input: {
     return m;
   }
 
-  var body = box(2.6, 0.55, 1.15, paint, 0, 0.05, 0);
-  car.add(body);
-  var cabin = box(1.35, 0.48, 1.05, paint, -0.15, 0.48, 0);
-  car.add(cabin);
-  var nose = box(0.7, 0.35, 1.05, paint, 1.35, 0.02, 0);
-  car.add(nose);
-  var tail = box(0.55, 0.38, 1.08, paint, -1.4, 0.0, 0);
-  car.add(tail);
+  /* Fox-body Mustang GT proportions: long hood, cabin set back, short deck. */
+  car.add(box(2.05, 0.52, 1.22, paint, -0.15, 0.08, 0));
+  car.add(box(1.15, 0.42, 1.18, paint, -0.55, 0.52, 0));
+  car.add(box(0.55, 0.36, 1.2, paint, -1.55, 0.05, 0));
+  car.add(box(0.95, 0.08, 0.95, glass, -0.45, 0.78, 0));
 
-  var windshield = box(0.06, 0.42, 0.95, glass, 0.55, 0.55, 0);
-  windshield.rotation.z = -0.35;
+  var windshield = box(0.08, 0.48, 1.05, glass, 0.18, 0.62, 0);
+  windshield.rotation.z = -0.42;
   car.add(windshield);
 
   var hoodPivot = new THREE.Group();
-  hoodPivot.position.set(0.85, 0.32, 0);
-  var hood = box(1.05, 0.06, 1.02, paint, 0.52, 0, 0);
-  hoodPivot.add(hood);
+  hoodPivot.position.set(0.55, 0.34, 0);
+  hoodPivot.add(box(1.45, 0.07, 1.18, paint, 0.72, 0, 0));
+  hoodPivot.add(box(0.55, 0.06, 0.28, blackout, 0.55, 0.05, 0.28));
+  hoodPivot.add(box(0.55, 0.06, 0.28, blackout, 0.55, 0.05, -0.28));
   car.add(hoodPivot);
+
+  car.add(box(0.12, 0.18, 0.22, chrome, 1.95, 0.12, 0.42));
+  car.add(box(0.12, 0.18, 0.22, chrome, 1.95, 0.12, -0.42));
+  car.add(box(0.12, 0.14, 0.18, chrome, 1.95, 0.08, 0.18));
+  car.add(box(0.12, 0.14, 0.18, chrome, 1.95, 0.08, -0.18));
+  car.add(box(0.35, 0.08, 1.05, blackout, 1.88, -0.05, 0));
+  car.add(box(0.2, 0.12, 0.95, chrome, -1.82, 0.22, 0));
 
   var engine = new THREE.Group();
   engine.position.set(1.15, 0.12, 0);
   engine.visible = false;
-  engine.add(box(0.55, 0.28, 0.55, engineMat, 0, 0, 0));
-  engine.add(box(0.18, 0.12, 0.18, chrome, 0.12, 0.18, 0.12));
-  engine.add(box(0.18, 0.12, 0.18, chrome, -0.12, 0.18, -0.12));
-  engine.add(box(0.08, 0.22, 0.08, chrome, 0, 0.22, 0));
+  engine.add(box(0.7, 0.32, 0.62, engineMat, 0, 0, 0));
+  engine.add(box(0.55, 0.08, 0.5, chrome, 0, 0.2, 0));
+  engine.add(box(0.12, 0.2, 0.12, chrome, 0.18, 0.28, 0.16));
+  engine.add(box(0.12, 0.2, 0.12, chrome, -0.18, 0.28, -0.16));
+  engine.add(box(0.08, 0.28, 0.08, chrome, 0, 0.3, 0));
   car.add(engine);
 
   function makeDoor(side) {
     var pivot = new THREE.Group();
-    pivot.position.set(-0.05, 0.22, side * 0.55);
-    var panel = box(1.15, 0.42, 0.08, paint, 0.2, 0, side * 0.04);
-    var windowPane = box(0.55, 0.22, 0.04, glass, 0.15, 0.22, side * 0.04);
-    pivot.add(panel);
-    pivot.add(windowPane);
+    pivot.position.set(-0.15, 0.22, side * 0.61);
+    pivot.add(box(1.2, 0.44, 0.08, paint, 0.15, 0, side * 0.02));
+    pivot.add(box(0.62, 0.24, 0.04, glass, 0.05, 0.24, side * 0.02));
     car.add(pivot);
     return pivot;
   }
@@ -405,31 +429,25 @@ function buildCinematicCarHtml(input: {
   var doorR = makeDoor(-1);
 
   var interior = new THREE.Group();
-  interior.position.set(-0.2, 0.18, 0);
-  interior.add(box(0.85, 0.08, 0.9, leather, 0, 0, 0));
-  interior.add(box(0.28, 0.28, 0.32, leather, 0.05, 0.18, 0.28));
-  interior.add(box(0.28, 0.28, 0.32, leather, 0.05, 0.18, -0.28));
-  interior.add(box(0.08, 0.22, 0.08, chrome, 0.42, 0.22, 0.22));
-  interior.add(box(0.35, 0.06, 0.35, dark, 0.35, 0.12, 0));
+  interior.position.set(-0.45, 0.2, 0);
+  interior.add(box(0.95, 0.08, 0.95, leather, 0, 0, 0));
+  interior.add(box(0.32, 0.3, 0.34, leather, 0.05, 0.2, 0.28));
+  interior.add(box(0.32, 0.3, 0.34, leather, 0.05, 0.2, -0.28));
+  interior.add(box(0.08, 0.24, 0.08, chrome, 0.48, 0.24, 0.22));
+  interior.add(box(0.4, 0.06, 0.38, dark, 0.4, 0.14, 0));
   car.add(interior);
 
   function wheel(x, z) {
     var g = new THREE.Group();
-    var tire = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.28, 0.28, 0.18, 24),
-      dark
-    );
+    var tire = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.2, 24), dark);
     tire.rotation.z = Math.PI / 2;
-    var rimM = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.16, 0.16, 0.2, 16),
-      chrome
-    );
+    var rimM = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.22, 16), chrome);
     rimM.rotation.z = Math.PI / 2;
     g.add(tire); g.add(rimM);
-    g.position.set(x, -0.28, z);
+    g.position.set(x, -0.26, z);
     car.add(g);
   }
-  wheel(0.95, 0.55); wheel(0.95, -0.55); wheel(-0.95, 0.55); wheel(-0.95, -0.55);
+  wheel(1.15, 0.58); wheel(1.15, -0.58); wheel(-1.15, 0.58); wheel(-1.15, -0.58);
 
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
   function lerp(a, b, t) { return a + (b - a) * t; }
@@ -441,16 +459,16 @@ function buildCinematicCarHtml(input: {
     return new THREE.Vector3(lerp(a.x, b.x, t), lerp(a.y, b.y, t), lerp(a.z, b.z, t));
   }
 
-  var camA = new THREE.Vector3(4.2, 1.6, 5.4);
-  var camB = new THREE.Vector3(2.8, 1.4, 4.2);
-  var camC = new THREE.Vector3(0.1, 0.85, 0.15);
-  var camD = new THREE.Vector3(2.4, 1.1, 0.05);
-  var camE = new THREE.Vector3(1.2, 4.2, 0.2);
-  var lookA = new THREE.Vector3(0, 0.3, 0);
-  var lookB = new THREE.Vector3(0.1, 0.35, 0);
-  var lookC = new THREE.Vector3(-0.1, 0.35, 0);
-  var lookD = new THREE.Vector3(1.6, 0.4, 0);
-  var lookE = new THREE.Vector3(1.15, 0.2, 0);
+  var camA = new THREE.Vector3(4.6, 1.7, 5.8);
+  var camB = new THREE.Vector3(3.0, 1.45, 4.4);
+  var camC = new THREE.Vector3(-0.2, 0.9, 0.12);
+  var camD = new THREE.Vector3(2.6, 1.15, 0.05);
+  var camE = new THREE.Vector3(1.25, 4.4, 0.15);
+  var lookA = new THREE.Vector3(0.2, 0.35, 0);
+  var lookB = new THREE.Vector3(0.15, 0.4, 0);
+  var lookC = new THREE.Vector3(-0.2, 0.4, 0);
+  var lookD = new THREE.Vector3(1.7, 0.45, 0);
+  var lookE = new THREE.Vector3(1.2, 0.25, 0);
 
   function setCopy(i) {
     if (i === sceneIdx) return;
@@ -467,15 +485,15 @@ function buildCinematicCarHtml(input: {
     }, 160);
   }
 
-  function applyScroll(p) {
+  function applyScroll(p, idleSpin) {
     bar.style.width = (p * 100).toFixed(1) + "%";
     var doors = smoothstep(0.12, 0.32, p);
-    doorL.rotation.y = doors * 1.15;
-    doorR.rotation.y = -doors * 1.15;
+    doorL.rotation.y = doors * 1.2;
+    doorR.rotation.y = -doors * 1.2;
 
     var hoodOpen = smoothstep(0.72, 0.92, p);
     hoodPivot.rotation.z = -hoodOpen * 0.95;
-    engine.visible = p > 0.7;
+    engine.visible = p > 0.68;
 
     var pos, look, idx;
     if (p < 0.18) {
@@ -483,17 +501,17 @@ function buildCinematicCarHtml(input: {
       var t = p / 0.18;
       pos = mix(camA, camB, t);
       look = mix(lookA, lookB, t);
-      car.rotation.y = lerp(0.35, -0.15, t);
+      car.rotation.y = lerp(0.55 + idleSpin, -0.1, t);
     } else if (p < 0.38) {
       idx = 1;
       var t2 = (p - 0.18) / 0.2;
-      pos = mix(camB, new THREE.Vector3(1.8, 1.1, 3.2), t2);
+      pos = mix(camB, new THREE.Vector3(2.0, 1.15, 3.4), t2);
       look = mix(lookB, lookB, t2);
-      car.rotation.y = lerp(-0.15, -0.05, t2);
+      car.rotation.y = lerp(-0.1, 0, t2);
     } else if (p < 0.58) {
       idx = 2;
       var t3 = (p - 0.38) / 0.2;
-      pos = mix(new THREE.Vector3(1.8, 1.1, 3.2), camC, t3);
+      pos = mix(new THREE.Vector3(2.0, 1.15, 3.4), camC, t3);
       look = mix(lookB, lookC, t3);
       car.rotation.y = 0;
     } else if (p < 0.76) {
@@ -517,23 +535,23 @@ function buildCinematicCarHtml(input: {
     return clamp(window.scrollY / max, 0, 1);
   }
 
-  var target = 0, current = 0;
-  function onScroll() { target = progress(); }
-  window.addEventListener("scroll", onScroll, { passive: true });
+  var target = 0, current = 0, t0 = performance.now();
+  window.addEventListener("scroll", function () { target = progress(); }, { passive: true });
   window.addEventListener("resize", function () {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
-  function tick() {
+  function tick(now) {
     current += (target - current) * 0.08;
-    applyScroll(current);
+    var idle = current < 0.02 ? Math.sin((now - t0) * 0.00045) * 0.25 : 0;
+    applyScroll(current, idle);
     renderer.render(scene, camera);
     requestAnimationFrame(tick);
   }
-  applyScroll(0);
-  tick();
+  applyScroll(0, 0);
+  requestAnimationFrame(tick);
 })();
 </script>
 </body>
