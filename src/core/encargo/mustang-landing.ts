@@ -18,15 +18,15 @@ const MODEL = {
   sourceUrl: "https://github.com/NateKenopic/3d-car",
 } as const;
 
-/** Prefer CDN (blob preview has no /assets origin), then prod, then relative. */
+/** Prefer prod/self (JPEG GLB), then CDN for Ops blob preview. */
 function modelUrlCandidates(file: string): string[] {
-  /** Pinned commit so blob-preview CDN resolves before Vercel deploys /assets. */
-  const pin = "c13f3ac";
+  /** Branch pin — jsDelivr for blob:// Ops preview (no same-origin /assets). */
+  const pin = "cursor/mustang-textures-prod-4521";
   const repo = "digitalnexoraoficial/altivoxai";
   return [
-    `https://cdn.jsdelivr.net/gh/${repo}@${pin}/public/assets/encargos/mustang/${file}`,
     `https://www.altivoxai.es/assets/encargos/mustang/${file}`,
     `/assets/encargos/mustang/${file}`,
+    `https://cdn.jsdelivr.net/gh/${repo}@${pin}/public/assets/encargos/mustang/${file}`,
   ];
 }
 
