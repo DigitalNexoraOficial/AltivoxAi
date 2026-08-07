@@ -116,3 +116,4 @@ export async function resolveAgentsByCapability(
 }
 
 export { bootstrapWebAgents } from "./bootstrap";
+export { bootstrapDeliveryAgents } from "./bootstrap-delivery";

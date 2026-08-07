@@ -24,6 +24,12 @@ export default function OpsDashboardPage() {
             vía APIs del Bloque 2.
           </p>
         </Link>
+        <Link href="/ops/encargos" className="ops-card-link">
+          <h3>Encargos</h3>
+          <p>
+            Wizard cliente → servicio → brief → agentes con OK humano obligatorio.
+          </p>
+        </Link>
         <a href="/dashboard.html" className="ops-card-link">
           <h3>CRM · legacy</h3>
           <p>Panel HTML temporal. No es App Router.</p>

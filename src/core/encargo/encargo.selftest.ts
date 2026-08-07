@@ -1,0 +1,80 @@
+/**
+ * Encargo orchestration selftest (memory store + mocked LLM).
+ */
+import {
+  createEncargoDraft,
+  continueEncargo,
+  approveStep,
+  rejectStep,
+  resetEncargoStoreForTests,
+  getEncargoView,
+} from "@/core/encargo";
+import { setLlmCompleterForTests } from "@/core/tool-registry";
+import { bootstrapDeliveryAgents } from "@/core/agent-manager";
+import { resetAgentStoreForTests } from "@/core/agent-runtime";
+import type { Subject } from "@/core/security";
+
+function assert(cond: unknown, msg: string): asserts cond {
+  if (!cond) throw new Error(msg);
+}
+
+function admin(): Subject {
+  return {
+    type: "human",
+    id: "admin-test",
+    role: "superadmin",
+  };
+}
+
+async function main() {
+  process.env.ALTIVOX_SELFTEST = "1";
+  process.env.ALTIVOX_ENCARGO_STORE = "memory";
+  process.env.ALTIVOX_AGENT_STORE = "memory";
+
+  resetEncargoStoreForTests();
+  resetAgentStoreForTests();
+
+  setLlmCompleterForTests(async ({ prompt }) => ({
+    text: `PROPUESTA_TEST: ${String(prompt).slice(0, 120)}`,
+    provider: "test",
+  }));
+
+  const a = admin();
+  await bootstrapDeliveryAgents(a);
+
+  const draft = await createEncargoDraft(a, {
+    clientId: "11111111-1111-1111-1111-111111111111",
+    clientName: "Cliente Demo",
+    serviceKey: "web",
+    description: "Necesito una landing moderna para clínica dental con CTA.",
+  });
+  assert(draft.encargo.status === "draft", "draft status");
+  assert(draft.steps.length === 0, "no steps before continue");
+
+  let view = await continueEncargo(a, draft.encargo.id);
+  assert(view.steps.length === 4, "four steps");
+  assert(view.steps[0].status === "proposed", "first proposed");
+  assert(view.steps[0].proposal.includes("PROPUESTA"), "proposal text");
+  assert(view.encargo.status === "awaiting_approval", "awaiting human");
+
+  view = await rejectStep(a, view.encargo.id, view.steps[0].id);
+  assert(view.steps[0].status === "rejected", "rejected");
+
+  view = await continueEncargo(a, view.encargo.id);
+  assert(view.steps[0].status === "proposed", "re-proposed");
+
+  view = await approveStep(a, view.encargo.id, view.steps[0].id);
+  assert(view.steps[0].status === "done", "first done after OK");
+  assert(view.steps[1].status === "proposed", "second auto-proposed");
+
+  const again = await getEncargoView(a, view.encargo.id);
+  assert(again.steps[0].output.length > 0, "output stored");
+
+  setLlmCompleterForTests(null);
+  console.log("encargo.selftest: ok");
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

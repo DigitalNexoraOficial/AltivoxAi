@@ -275,3 +275,142 @@ export const OPS_PROJECT_STATUSES = [
   "cancelled",
   "archived",
 ] as const;
+
+/** Suggested service labels for Ops forms (free-text in PE — not auto-build). */
+export const OPS_SERVICE_TYPE_HINTS = [
+  { value: "web", label: "Web (sitio / landing)" },
+  { value: "chatbot", label: "Chatbot (etiqueta — no auto-genera)" },
+  { value: "automation", label: "Automatización (etiqueta — no auto-genera)" },
+] as const;
+
+export type OpsClient = {
+  id: string;
+  nombre: string;
+  empresa: string;
+  email: string;
+  telefono: string;
+  estado: string;
+  origen: string;
+  leadId: string | null;
+  notas: string;
+};
+
+export type OpsLead = {
+  id: string;
+  nombre: string;
+  email: string;
+  empresa: string;
+  telefono: string;
+  mensaje: string;
+  tipoInteres: string;
+  fuente: string;
+  estado: string;
+  createdAt: string;
+};
+
+export type OpsEncargo = {
+  id: string;
+  clientId: string;
+  clientName: string;
+  leadId: string | null;
+  serviceKey: string;
+  serviceLabel: string;
+  description: string;
+  status: string;
+  projectId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type OpsEncargoStep = {
+  id: string;
+  encargoId: string;
+  sortOrder: number;
+  role: string;
+  agentId: string;
+  status: string;
+  proposal: string;
+  output: string;
+  runId: string | null;
+};
+
+export type OpsEncargoView = {
+  encargo: OpsEncargo;
+  steps: OpsEncargoStep[];
+};
+
+export type OpsEncargoService = {
+  key: string;
+  label: string;
+  hint: string;
+};
+
+export async function listClients(): Promise<OpsClient[]> {
+  const data = await opsFetch<{ clients: OpsClient[] }>("/api/ops/clientes");
+  return data.clients;
+}
+
+export async function listLeads(): Promise<OpsLead[]> {
+  const data = await opsFetch<{ leads: OpsLead[] }>("/api/ops/leads");
+  return data.leads;
+}
+
+export async function listEncargos(): Promise<{
+  encargos: OpsEncargo[];
+  services: OpsEncargoService[];
+}> {
+  return opsFetch("/api/ops/encargos");
+}
+
+export async function createEncargo(input: {
+  clientId: string;
+  clientName: string;
+  leadId?: string | null;
+  serviceKey: string;
+  description: string;
+}): Promise<OpsEncargoView> {
+  return opsFetch("/api/ops/encargos", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function getEncargo(id: string): Promise<OpsEncargoView> {
+  return opsFetch(`/api/ops/encargos/${encodeURIComponent(id)}`);
+}
+
+export async function continueEncargo(id: string): Promise<OpsEncargoView> {
+  return opsFetch(`/api/ops/encargos/${encodeURIComponent(id)}/continue`, {
+    method: "POST",
+  });
+}
+
+export async function approveEncargoStep(
+  encargoId: string,
+  stepId: string
+): Promise<OpsEncargoView> {
+  return opsFetch(
+    `/api/ops/encargos/${encodeURIComponent(encargoId)}/steps/${encodeURIComponent(stepId)}/approve`,
+    { method: "POST" }
+  );
+}
+
+export async function rejectEncargoStep(
+  encargoId: string,
+  stepId: string
+): Promise<OpsEncargoView> {
+  return opsFetch(
+    `/api/ops/encargos/${encodeURIComponent(encargoId)}/steps/${encodeURIComponent(stepId)}/reject`,
+    { method: "POST" }
+  );
+}
+
+export async function proposeEncargoStep(
+  encargoId: string,
+  stepId: string
+): Promise<OpsEncargoView> {
+  return opsFetch(
+    `/api/ops/encargos/${encodeURIComponent(encargoId)}/steps/${encodeURIComponent(stepId)}/propose`,
+    { method: "POST" }
+  );
+}

@@ -424,3 +424,100 @@
   border-radius: 0.5rem;
   padding: 0.75rem;
 }
+
+.ops-help {
+  margin: 0 0 0.85rem;
+  font-size: 0.8rem;
+  color: var(--ops-muted);
+  line-height: 1.45;
+}
+
+.ops-field-hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.72rem;
+  color: var(--ops-muted);
+  line-height: 1.35;
+}
+
+.ops-btn-go {
+  border-color: rgba(52, 211, 153, 0.55);
+  background: rgba(52, 211, 153, 0.18);
+  color: var(--ops-ok);
+  font-weight: 700;
+  min-width: 9rem;
+}
+
+.ops-btn-go:disabled {
+  opacity: 0.35;
+}
+
+.ops-console {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--ops-line);
+  background: #070b10;
+  color: #c6f6d5;
+  font-family: var(--ops-mono);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 28rem;
+  overflow: auto;
+}
+
+.ops-step-card {
+  border: 1px solid var(--ops-line);
+  border-radius: 0.55rem;
+  padding: 0.75rem 0.85rem;
+  background: rgba(18, 24, 33, 0.75);
+  margin-bottom: 0.65rem;
+}
+
+.ops-step-card.is-proposed {
+  border-color: rgba(251, 191, 36, 0.45);
+}
+
+.ops-step-card.is-done {
+  border-color: rgba(52, 211, 153, 0.4);
+}
+
+.ops-wizard-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.ops-wizard-steps li {
+  font-size: 0.72rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--ops-line);
+  color: var(--ops-muted);
+}
+
+.ops-wizard-steps li.is-active {
+  color: var(--ops-accent);
+  border-color: rgba(45, 212, 191, 0.45);
+}
+
+.ops-wizard-steps li.is-done {
+  color: var(--ops-ok);
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
+.ops-table tr.is-selected {
+  background: var(--ops-accent-dim);
+}
+
+.ops-table tbody tr {
+  cursor: pointer;
+}
+
+.ops-table tbody tr:hover {
+  background: rgba(45, 212, 191, 0.06);
+}

@@ -12,6 +12,7 @@ type NavItem = {
 const NAV: NavItem[] = [
   { href: "/ops", label: "Dashboard" },
   { href: "/ops/projects", label: "Proyectos" },
+  { href: "/ops/encargos", label: "Encargos" },
   { href: "/dashboard.html", label: "CRM", legacy: true },
   { href: "/clientes.html", label: "Clientes", legacy: true },
   { href: "/ajustes.html", label: "Ajustes", legacy: true },

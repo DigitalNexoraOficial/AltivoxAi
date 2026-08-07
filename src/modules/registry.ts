@@ -4,8 +4,9 @@
  */
 
 import { webModule } from "@/modules/web/manifest";
+import { deliveryModule } from "@/modules/delivery/manifest";
 
-const MODULES = [webModule] as const;
+const MODULES = [webModule, deliveryModule] as const;
 
 export type ServiceModuleManifest = {
   id: string;
