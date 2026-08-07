@@ -97,6 +97,26 @@ async function main() {
   assert(chatArt?.kind === "html", "chatbot local html");
   assert(chatArt.content.includes("LuBot") || chatArt.content.includes("chat"), "chatbot widget");
 
+  const localMustang = buildLocalImplementation({
+    role: "code",
+    serviceKey: "web",
+    clientName: "Xabier",
+    description:
+      "Landing Mustang GT 1990 modelación 3d animación scroll puertas interior luna capó motor",
+    proposal: "cinematic",
+  });
+  const mustangArt = extractPrimaryArtifact(localMustang, "web", "Xabier");
+  assert(mustangArt?.kind === "html", "mustang local html");
+  assert(
+    mustangArt.content.includes("GLTFLoader") &&
+      mustangArt.content.includes("mustang.glb"),
+    "gltf mustang landing"
+  );
+  assert(
+    /Ford Mustang|NateKenopic|foxbody|WebGL/i.test(mustangArt.content),
+    "mustang landing content"
+  );
+
   setLlmCompleterForTests(null);
   console.log("encargo.selftest: ok");
 }

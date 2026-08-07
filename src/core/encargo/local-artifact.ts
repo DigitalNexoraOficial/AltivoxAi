@@ -4,6 +4,7 @@
  */
 
 import type { EncargoServiceKey } from "./types";
+import { buildMustangPhotoLandingHtml } from "./mustang-landing";
 
 function escapeHtml(s: string): string {
   return String(s)
@@ -167,10 +168,51 @@ function buildChatbotHtml(input: {
 </html>`;
 }
 
+function wantsCinematicCarLanding(description: string): boolean {
+  const d = description.toLowerCase();
+  const hasCar =
+    /mustang|veh[ií]culo|coche|auto|carro|gt\b|deportivo|motor|cap[oó]|puertas|interior/.test(
+      d
+    );
+  const hasMotion =
+    /3d|scroll|animaci[oó]n|cinemat|modelaci[oó]n|three|premium|luna|parabrisas|capot|capó/.test(
+      d
+    );
+  return hasCar && hasMotion;
+}
+
+function guessCarTitle(description: string, clientName: string): string {
+  const mustang = description.match(/mustang/i);
+  if (mustang) {
+    const year = description.match(/\b(19\d{2}|20\d{2})\b/);
+    const gt = /\bgt\b/i.test(description) ? " GT" : "";
+    return `Ford Mustang${gt}${year ? ` ${year[1]}` : ""}`;
+  }
+  const model = description.match(
+    /(?:modelo|coche|auto|veh[ií]culo)\s+([A-Za-z0-9][A-Za-z0-9 \-]{2,40})/i
+  );
+  if (model?.[1]) return model[1].trim();
+  return clientName || "Edition";
+}
+
+/** Real textured Mustang GLB + WebGL scroll landing. */
+function buildCinematicCarHtml(input: {
+  clientName: string;
+  description: string;
+}): string {
+  return buildMustangPhotoLandingHtml({
+    clientName: input.clientName,
+    carTitle: guessCarTitle(input.description, input.clientName),
+  });
+}
+
 function buildWebHtml(input: {
   clientName: string;
   description: string;
 }): string {
+  if (wantsCinematicCarLanding(input.description)) {
+    return buildCinematicCarHtml(input);
+  }
   const title = escapeHtml(input.clientName || "Landing");
   const brief = escapeHtml(input.description.slice(0, 400));
   return `<!DOCTYPE html>
@@ -184,7 +226,7 @@ function buildWebHtml(input: {
   * { box-sizing: border-box; }
   body {
     margin: 0; min-height: 100vh; color: var(--text);
-    font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    font-family: "Segoe UI", system-ui, sans-serif;
     background:
       radial-gradient(circle at 12% -8%, rgba(34,211,238,.14), transparent 42%),
       var(--bg);

@@ -557,9 +557,10 @@
 .ops-deliverable-frame {
   display: block;
   width: 100%;
-  min-height: 520px;
+  min-height: 640px;
+  height: min(78vh, 820px);
   border: 0;
-  background: #fff;
+  background: #050507;
 }
 
 .ops-recent-list {

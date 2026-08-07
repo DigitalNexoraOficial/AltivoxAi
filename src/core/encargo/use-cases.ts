@@ -104,7 +104,12 @@ function implementPrompt(
             ? `- HTML autocontenido (CSS+JS) con widget de chat usable.`
             : serviceKey === "automation"
               ? `- JSON de flujo (n8n-like) válido.`
-              : `- HTML autocontenido de landing/web.`,
+              : [
+                  `- HTML autocontenido de landing/web que respete el brief del cliente.`,
+                  `- Si el brief pide 3D, scroll cinematográfico, coche/auto, puertas, interior o motor:`,
+                  `  usa Three.js vía CDN, escena scroll-driven (scrub), y cumple la secuencia pedida.`,
+                  `- No entregues un hero genérico si el brief describe una experiencia específica.`,
+                ].join("\n"),
           `Obligatorio: envuelve el archivo en un bloque markdown \`\`\`html o \`\`\`json.`,
           `No digas solo el plan: incluye el código completo.`,
         ].join("\n")

@@ -80,13 +80,18 @@ export function EncargoDeliverablePreview({
         </div>
       </div>
 
-      {artifact.previewHtml ? (
+      {tabUrl ? (
         <iframe
           className="ops-deliverable-frame"
           title={`Preview ${artifact.filename}`}
-          sandbox="allow-scripts allow-forms"
-          srcDoc={artifact.previewHtml}
+          sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+          allow="fullscreen; autoplay; xr-spatial-tracking"
+          src={tabUrl}
         />
+      ) : artifact.previewHtml ? (
+        <div className="ops-deliverable-frame" style={{ display: "grid", placeItems: "center" }}>
+          <span className="ops-field-hint">Preparando vista previa…</span>
+        </div>
       ) : (
         <pre className="ops-console" style={{ marginTop: "0.65rem" }}>
           {artifact.content.slice(0, 4000)}
