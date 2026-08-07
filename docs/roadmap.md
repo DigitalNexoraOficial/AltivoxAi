@@ -50,11 +50,14 @@ Migración gradual desde `public/*.html` (redirects temporales).
 
 ---
 
-## Fase 4 — JARVIS Core (orquestador)
+## Fase 4 — JARVIS + motores del núcleo
 
-Módulos de núcleo: Memory, Context, Agent Manager, Prompt Registry, Task Scheduler, Workflow Engine, Event Bus, Logger, Monitoring, Config, Permissions, Tool Registry, Knowledge Base, API Gateway.  
-Comunicación **solo por interfaces**.  
-JARVIS **no** ejecuta entregables.
+Implementar interfaces de:
+
+Project Engine · Workflow Engine · Tool Registry · Memory Engine · Capability Registry · Agent Manager  
+
+JARVIS como **caller** (no dueño de proyectos ni de I/O).  
+Comunicación solo por interfaces ([`core-engines.md`](./core-engines.md), ADR-011).
 
 ---
 

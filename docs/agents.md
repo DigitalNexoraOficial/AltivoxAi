@@ -13,19 +13,22 @@ Visión: [`product-vision.md`](./product-vision.md) · Flujo: [`flow.md`](./flow
 | Campo | Definición |
 |-------|------------|
 | **Qué es** | Orquestador / director de proyectos del OS |
-| **Qué no es** | Chatbot, UI de marketing, ejecutor de entregables |
-| **Objetivo** | Interpretar solicitudes internas, crear/planificar proyectos, asignar agentes, coordinar el ciclo de vida, detectar errores, pedir revisiones, generar informes, registrar todo |
-| **Entradas** | Leads/clientes/proyectos, eventos, memoria, documentación, módulos de servicio |
-| **Salidas** | Planes, asignaciones, órdenes a Agent Manager, eventos `project.*` / `jarvis.*`, informes |
-| **Regla de oro** | **Nunca realiza el trabajo de entrega directamente** — siempre coordina agentes |
+| **Qué no es** | Chatbot · Project Engine · Tool Registry · ejecutor de entregables |
+| **Objetivo** | Interpretar solicitudes, **ejecutar workflows**, pedir altas al Project Engine, resolver capabilities→agentes, coordinar el ciclo, detectar errores, informes |
+| **Entradas** | Leads/clientes, eventos, Memory Engine, docs, módulos, Workflow definitions |
+| **Salidas** | Órdenes a Project Engine / Workflow Engine / Agent Manager / Capability Registry; eventos `jarvis.*` |
+| **Regla de oro** | No entrega código/artefactos él mismo · **no crea proyectos directamente** · no llama vendors sin Tool Registry |
 
-Capacidades documentadas (producto):
+Capacidades de producto (vía motores — ver [`core-engines.md`](./core-engines.md)):
 
-- Crear proyectos · interpretar solicitudes · asignar / activar / detener agentes  
-- Consultar memoria y documentación · coordinar flujo · detectar errores  
-- Solicitar revisiones · generar informes · registrar lo ocurrido  
+- Solicitar creación/plan al **Project Engine**  
+- Ejecutar **Workflow Engine**  
+- Consultar **Capability Registry** y asignar agentes  
+- Activar/detener agentes · consultar **Memory Engine**  
+- Pedir review / entrega / deploy (Project Engine → Tool Registry)  
+- Registrar todo lo ocurrido  
 
-Implementación actual: `public/jarvis.html` es **UI legacy de scoring**, no el orquestador. El Core se construye en Fase 4 del roadmap.
+Implementación actual: `public/jarvis.html` = UI legacy. Core = Fase 4 roadmap.
 
 ---
 
@@ -42,12 +45,12 @@ Cada agente es un worker registrable **sin modificar el núcleo** (Agent Manager
 | Descripción | Qué hace |
 | Especialidad | Dominio (frontend, SEO, QA, …) |
 | Prompt | Base versionada (Prompt Registry) |
-| Modelo IA | Provider/model vía Tool Registry |
-| Herramientas | Allowlist de tools |
+| Modelo IA | Provider/model **solo** vía Tool Registry |
+| Herramientas | Allowlist de **tool capabilities** (nunca SDK directo) |
 | Estado | idle / running / error / disabled |
 | Coste | Acumulado / estimado |
 | Tiempo estimado | SLA interno |
-| Memoria | Scope permitido |
+| Memoria | Scope en **Memory Engine** (no silo propio) |
 | Logs | Runs |
 | Permisos | RBAC / capability |
 | Prioridad | Scheduling |
@@ -88,22 +91,33 @@ La lista exacta vive en el registro de agentes, no hardcodeada en el núcleo.
 
 ---
 
-## 4. Relación con módulos de servicio
+## 4. Relación con capabilities y módulos
 
 ```
-Módulo "Desarrollo web"  → sugiere agentes Frontend, Backend, Diseño, QA, DevOps
-Módulo "Chatbot"         → sugiere agentes Conversacional, Integraciones, QA
-Módulo "Automatización"  → sugiere agentes n8n/Workflow, Datos, QA
-…
+Proyecto declara capabilities
+  → Capability Registry
+  → JARVIS elige agentes que las implementan
+  → Agent Manager ejecuta
+  → Tools solo vía Tool Registry
+  → Hechos en Memory Engine
+  → Estados en Project Engine
 ```
 
-JARVIS elige subconjunto según brief del proyecto; el núcleo solo conoce la **interfaz** del módulo.
+```
+Módulo "Desarrollo web"  → capabilities: ui.design, web.frontend, web.backend, qa.review, deploy.web
+Módulo "Chatbot"         → capabilities: conv.design, integrate.api, qa.review
+Módulo "Automatización"  → capabilities: workflow.design, data.sync, qa.review
+```
+
+Sustituir un agente no modifica el proyecto si la capability se mantiene.
 
 ---
 
 ## 5. Reglas de producto
 
-1. Añadir un agente = manifest + prompt versionado + tools allowlist — **cero cambios al core**.  
+1. Añadir un agente = manifest + prompt versionado + capabilities + tools allowlist — **cero cambios al core**.  
 2. Prohibido exponer prompts o IDs de agentes al portal de revisión.  
 3. El chat de la landing no registra agentes OS ni los enciende.  
-4. Costes y logs solo en `/ops` con RBAC.
+4. Costes y logs solo en `/ops` con RBAC.  
+5. Prohibido I/O externo fuera del Tool Registry.  
+6. Prohibido memoria crítica fuera del Memory Engine.

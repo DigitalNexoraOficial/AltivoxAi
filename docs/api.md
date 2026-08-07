@@ -31,19 +31,18 @@ Detalle de campos: código en `src/app/api/*/route.ts`.
 
 ## 3. To-be OS (no implementado)
 
+Las mutaciones de ciclo de vida deben pasar por servicios que implementen los motores ([`core-engines.md`](./core-engines.md)): Project Engine, Workflow Engine, etc. Las rutas HTTP son adaptadores; **no** sustituyen al motor.
+
 Ejemplos de recursos (contratos a formalizar en Fase 2–4):
 
-- `POST /api/ops/projects` — crear proyecto (JARVIS/humano)  
-- `POST /api/ops/projects/:id/plan` — planificación  
-- `POST /api/ops/projects/:id/assign` — asignación agentes  
-- `POST /api/ops/projects/:id/runs` — disparar ejecución  
-- `POST /api/ops/projects/:id/qa` — QA  
-- `POST /api/ops/projects/:id/release-candidate` — versión  
-- `POST /api/ops/projects/:id/review-link` — emitir token  
-- `POST /api/ops/projects/:id/deliver` — ZIP  
-- `POST /api/ops/projects/:id/deploy` — solicita deploy (requiere confirmación)  
-- `GET /api/ops/agents` — catálogo privado  
-- `GET /api/ops/events` — bus/audit  
+- `POST /api/ops/projects` — Project Engine (crear)  
+- `POST /api/ops/workflows/:id/run` — Workflow Engine (JARVIS ejecuta)  
+- `POST /api/ops/projects/:id/capabilities` — Capability Registry  
+- `POST /api/ops/projects/:id/assign` — resolución capability→agent (JARVIS)  
+- `POST /api/ops/tools/invoke` — Tool Registry (nunca SDKs en agentes)  
+- `GET/POST /api/ops/memory` — Memory Engine  
+- `POST /api/ops/projects/:id/runs` — Agent Manager  
+- `POST /api/ops/projects/:id/release-candidate` · `review-link` · `deliver` · `deploy` — Project Engine  
 
 Review:
 

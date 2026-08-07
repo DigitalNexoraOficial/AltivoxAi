@@ -59,7 +59,8 @@ Lead
   → Cliente
   → Proyecto
   → Planificación
-  → Asignación de agentes
+  → Definición de capabilities
+  → Asignación de agentes (JARVIS via Capability Registry)
   → Ejecución
   → Control de calidad
   → Versión candidata
@@ -71,7 +72,9 @@ Lead
   → Mantenimiento
 ```
 
-JARVIS coordina; los agentes ejecutan; el cliente solo ve el portal `/r/[token]` y la web pública.
+JARVIS orquesta; **Project Engine** posee el proyecto; agentes ejecutan; cliente solo ve `/r/[token]` y la web pública.
+
+Detalle de motores: [`core-engines.md`](./core-engines.md).
 
 ---
 

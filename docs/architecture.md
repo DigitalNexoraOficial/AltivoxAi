@@ -2,8 +2,10 @@
 
 **Producto:** Altivox OS — Sistema Operativo interno de Altivox AI  
 **Escaparate:** web pública https://www.altivoxai.es  
-**Visión oficial:** [`product-vision.md`](./product-vision.md) · **ADR:** [`adr/ADR-010-altivox-os-pivot.md`](./adr/ADR-010-altivox-os-pivot.md)  
-**Actualizado:** 2026-08-07 · Bloque 0
+**Visión oficial:** [`product-vision.md`](./product-vision.md)  
+**ADRs:** [`ADR-010`](./adr/ADR-010-altivox-os-pivot.md) · [`ADR-011`](./adr/ADR-011-core-engines.md)  
+**Motores del núcleo:** [`core-engines.md`](./core-engines.md)  
+**Actualizado:** 2026-08-07 · Bloque 0 (+ motores)
 
 ---
 
@@ -11,12 +13,13 @@
 
 1. **Tres superficies** — pública / `/ops` / `/r/[token]`. Nunca mezclar concerns.  
 2. **Núcleo estable** — añadir servicios solo como **módulos/plugins** vía interfaces.  
-3. **JARVIS orquesta** — no ejecuta trabajo de entrega; asigna y consolida.  
-4. **Agentes privados** — solo dentro del OS; invisibles al cliente.  
-5. **Ciclo de vida único** — ver [`flow.md`](./flow.md); todo desarrollo se alinea a él.  
-6. **Autorización en servidor** — RBAC + RLS; el cliente UI no es frontera de seguridad.  
-7. **Registro total** — cada transición de estado, run de agente, aprobación y deploy queda auditado.  
-8. **Clean Architecture / SOLID / DRY / KISS** — TypeScript estricto; DDD donde aporte (Proyecto, Cliente, Módulo de servicio).
+3. **JARVIS orquesta** — no ejecuta entrega; no crea proyectos directo; usa Project Engine + Workflow Engine + Capability Registry.  
+4. **Agentes privados** — solo OS; I/O solo vía Tool Registry; memoria solo vía Memory Engine.  
+5. **Capabilities antes que agentes** — los proyectos declaran capacidades; JARVIS elige agentes.  
+6. **Ciclo de vida único** — [`flow.md`](./flow.md).  
+7. **Autorización en servidor** — RBAC + RLS.  
+8. **Registro total** — auditado en Memory Engine / event log.  
+9. **Clean Architecture / SOLID / DRY / KISS** — TypeScript estricto.
 
 ---
 
@@ -34,15 +37,17 @@
 │  CRM · Clientes · Proyectos · JARVIS · Agentes · Tools      │
 │  Workflows · Memoria · Logs · Analítica · Deploy · Config   │
 │                                                             │
-│  ┌─────────────┐    interfaces     ┌────────────────────┐   │
-│  │  OS Core    │◄─────────────────►│ Service Modules    │   │
-│  │  (estable)  │                   │ (plugins)          │   │
-│  └──────┬──────┘                   └────────────────────┘   │
-│         │ orquesta                                          │
-│         ▼                                                   │
-│  ┌─────────────┐                                            │
-│  │   JARVIS    │ → Agent runtime (privado)                  │
-│  └─────────────┘                                            │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ OS CORE (estable)                                    │   │
+│  │ Project Engine · Workflow Engine · Tool Registry     │   │
+│  │ Memory Engine · Capability Registry · Agent Manager  │   │
+│  │ Event Bus · Logger · Config · API Gateway · RBAC     │   │
+│  └───────────────────────┬──────────────────────────────┘   │
+│                          │ interfaces                       │
+│         ┌────────────────┼────────────────┐                 │
+│         ▼                ▼                ▼                 │
+│     JARVIS         Service Modules    Agent runtime         │
+│   (orquesta)         (plugins)         (privado)            │
 └───────────────────────────┬─────────────────────────────────┘
                             │ versión candidata + token
                             ▼
@@ -59,30 +64,31 @@
 
 ### 3.1 Núcleo (no se modifica por servicio nuevo)
 
-Responsabilidades estables:
+**Motores oficiales** (detalle: [`core-engines.md`](./core-engines.md)):
 
-- Identidad y RBAC  
-- Catálogo de clientes / leads / proyectos (entidades genéricas)  
-- Máquina de estados del ciclo de vida  
-- JARVIS orchestration API (asignar, pausar, consolidar)  
-- Agent Manager + Tool Registry (contratos)  
-- Event Bus + Logger + Memoria + Configuration  
-- Review tokens + entregables + deploy adapters (interfaces)  
-- API Gateway interno `/api/ops/*` y público mínimo
+| Motor | Dueño de |
+|-------|----------|
+| **Project Engine** | Crear proyectos, estados, versiones, entregables, revisiones, despliegues |
+| **Workflow Engine** | Definir/ejecutar procesos reutilizables (independiente de JARVIS) |
+| **Tool Registry** | Único acceso a GitHub, Vercel, Supabase, n8n, LLMs, WP, FTP, APIs… |
+| **Memory Engine** | Memoria central única; sin silos críticos en agentes |
+| **Capability Registry** | Capabilities de proyecto → resolución a agentes (vía JARVIS) |
+
+Además: Identidad/RBAC · Agent Manager · Event Bus · Logger · Configuration · API Gateway `/api/ops/*`.
+
+JARVIS es **orquestador caller**, no el almacén de proyectos ni el bus de I/O.
 
 ### 3.2 Módulos / plugins de servicio
 
-Cada oferta de Altivox (web, automatización, chatbot, marketing, contenido, integración, …) es un **módulo** que declara:
+Cada oferta de Altivox es un **módulo** que declara:
 
-- `serviceType` / capacidades  
-- plantillas de planificación  
-- agentes recomendados  
-- herramientas permitidas  
-- criterios de QA  
-- formato de entregable  
-- adapters de deploy opcionales  
+- `serviceType`  
+- **capabilities** tipicas (no agent IDs fijos)  
+- plantillas de workflow / planificación  
+- tools permitidos (ids del Tool Registry)  
+- criterios de QA · formato de entregable · adapters de deploy  
 
-El núcleo descubre módulos por registro (manifest), no por `if/else` en el core.
+Descubrimiento por manifest; cero `if/else` de servicio en el core.
 
 ---
 
@@ -105,11 +111,13 @@ La auditoría histórica de la landing permanece como contexto en el historial g
 
 ```
 UI (/ops, /r, pública)
-  → API Gateway (pública vs ops vs review)
-    → Application services
-      → JARVIS (orquestación)
-      → Domain (Project, Client, Lead, Delivery, Module)
-        → Infrastructure (Supabase, LLM providers, n8n, storage, git/vercel adapters)
+  → API Gateway
+    → JARVIS (orquestación) + Application services
+      → Project Engine · Workflow Engine · Capability Registry
+      → Agent Manager → agents
+      → Memory Engine
+      → Tool Registry → adapters (GitHub, Vercel, LLMs, n8n, …)
+      → Domain entities (Client, Lead, Module manifests)
 ```
 
 Carpetas objetivo (Bloque arquitectura de código; no crear aún sin aprobación):
@@ -135,10 +143,11 @@ Ver [`security.md`](./security.md).
 
 | Doc | Rol |
 |-----|-----|
-| [`product-vision.md`](./product-vision.md) | Visión 3–5 años y definición de producto |
+| [`product-vision.md`](./product-vision.md) | Visión 3–5 años |
+| [`core-engines.md`](./core-engines.md) | Cinco motores del núcleo |
 | [`flow.md`](./flow.md) | Ciclo de vida oficial |
 | [`agents.md`](./agents.md) | JARVIS + agentes privados |
 | [`roadmap.md`](./roadmap.md) | Orden de bloques |
-| [`database.md`](./database.md) | Modelo de datos as-is / to-be |
+| [`database.md`](./database.md) | Modelo as-is / to-be |
 | [`api.md`](./api.md) | Contratos HTTP |
-| [`MEMORY.md`](./MEMORY.md) | Memoria + ADRs índice |
+| [`MEMORY.md`](./MEMORY.md) | Memoria humana + ADRs |

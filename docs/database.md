@@ -26,49 +26,35 @@ auth.users (+ app_metadata.role)
 leads ──► clients (clientes)
               │
               ▼
-           projects  ◄── service_module_id (plugin)
+           projects (Project Engine)
               │
-     project_states / history (audit)
+     capabilities[]  (Capability Registry)
               │
-     ┌────────┼────────┐
-     ▼        ▼        ▼
-agent_runs  versions  conversations
-     │         │
-     │         ▼
-     │   review_tokens ──► portal /r/[token]
-     │         │
-     │         ▼
-     │   deliverables / artifacts
-     │         │
-     │         ▼
-     │   deployments
-     ▼
-agent_definitions (registro privado)
-tool_registry / configs
-event_log / memory_records
+     workflows / runs (Workflow Engine)
+              │
+     agent_runs → tools via Tool Registry
+              │
+     memory_records (Memory Engine — única)
+              │
+     versions · review_tokens · deliverables · deployments
 ```
 
 ### Tablas objetivo (conceptual)
 
-| Tabla | Rol en el flujo |
-|-------|-----------------|
-| `leads` | Lead |
-| `clientes` | Cliente |
-| `projects` | Proyecto + estado del ciclo oficial |
-| `project_tasks` / plan | Planificación |
-| `project_agents` | Asignación |
+| Tabla | Rol / motor |
+|-------|-------------|
+| `leads` / `clientes` | Captación / CRM |
+| `projects` | **Project Engine** |
+| `project_capabilities` | **Capability Registry** |
+| `workflows` / `workflow_runs` | **Workflow Engine** |
 | `agent_definitions` | Catálogo privado |
-| `agent_runs` | Ejecución + coste + logs |
-| `qa_reports` | Control de calidad |
-| `project_versions` | Versión candidata |
-| `review_tokens` | URL privada |
-| `review_comments` | Comentarios / cambios |
-| `deliverables` | Entrega (ZIP refs) |
-| `deployments` | Despliegue opcional |
-| `maintenance_records` | Mantenimiento |
-| `service_modules` | Plugins de tipo de servicio |
-| `event_log` / `memory_records` | Memoria y auditoría |
-| `site_settings` | Solo marketing público |
+| `agent_runs` | Ejecución |
+| `tool_adapters` / audit tool | **Tool Registry** |
+| `memory_records` | **Memory Engine** |
+| `project_versions` · `review_*` · `deliverables` · `deployments` | **Project Engine** |
+| `service_modules` | Plugins de servicio |
+| `event_log` | Bus / audit |
+| `site_settings` | Marketing público |
 
 Estados de `projects` deben mapear 1:1 al ciclo en [`flow.md`](./flow.md).
 

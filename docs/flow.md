@@ -39,7 +39,10 @@ Proyecto
 Planificación
   │
   ▼
-Asignación de agentes
+Definición de capabilities
+  │
+  ▼
+Asignación de agentes  (Capability Registry → JARVIS)
   │
   ▼
 Ejecución
@@ -48,7 +51,7 @@ Ejecución
 Control de calidad
   │
   ▼
-Versión candidata
+Versión candidata  (Project Engine)
   │
   ▼
 URL privada de revisión  (/r/[token])
@@ -61,14 +64,16 @@ Cambios solicitados ───► (vuelve a Ejecución o QA según política)
 Aprobación
   │
   ▼
-Entrega
+Entrega  (Project Engine)
   │
   ▼
-Despliegue opcional  (siempre con confirmación humana)
+Despliegue opcional  (Project Engine → Tool Registry; confirmación humana)
   │
   ▼
 Mantenimiento
 ```
+
+Toda mutación de proyecto pasa por el **Project Engine**. Los procesos reutilizables viven en el **Workflow Engine**. Memoria crítica en el **Memory Engine**. I/O externo solo **Tool Registry**.
 
 ### Semántica de estados (dominio)
 
@@ -77,17 +82,18 @@ Mantenimiento
 | Lead | Visitante + sistema captación | Pública → OS |
 | Cliente | Equipo / conversión CRM | OS |
 | Proyecto | JARVIS crea / equipo confirma | OS |
-| Planificación | JARVIS + módulo de servicio | OS |
-| Asignación de agentes | JARVIS | OS |
-| Ejecución | Agentes privados | OS (invisible al cliente) |
+| Planificación | JARVIS + módulo + Workflow Engine | OS |
+| Capabilities | Proyecto declara necesidades | OS |
+| Asignación de agentes | JARVIS + Capability Registry | OS |
+| Ejecución | Agentes privados (Tool Registry / Memory Engine) | OS (invisible al cliente) |
 | Control de calidad | Agente QA / política / humano | OS |
-| Versión candidata | Sistema empaqueta entregable | OS |
+| Versión candidata | **Project Engine** empaqueta | OS |
 | URL de revisión | Cliente | `/r/[token]` |
-| Cambios solicitados | Cliente pide; OS reabre trabajo | Review → OS |
+| Cambios solicitados | Cliente pide; Project Engine reabre | Review → OS |
 | Aprobación | Cliente | Review |
-| Entrega | OS genera ZIP / artefactos | OS (+ descarga cliente según política) |
-| Despliegue opcional | OS adapters + confirmación | OS |
-| Mantenimiento | OS + módulos | OS |
+| Entrega | Project Engine genera ZIP / artefactos | OS |
+| Despliegue opcional | Project Engine → Tool Registry (+ confirmación) | OS |
+| Mantenimiento | Project Engine + módulos | OS |
 
 ---
 
@@ -114,20 +120,18 @@ El chat público **no** invoca el Agent Manager.
 ## 4. Dentro de Altivox OS
 
 1. Lead visible en CRM.  
-2. Conversión a Cliente (datos contractuales mínimos).  
-3. JARVIS (o humano) crea **Proyecto** con `serviceType` del módulo.  
-4. Planificación: tareas, estimaciones, agentes sugeridos por el módulo.  
-5. Asignación: Agent Manager reserva workers.  
-6. Ejecución: runs con logs, coste, artefactos parciales.  
-7. QA: checklist del módulo; fallos → re-ejecución o escalado humano.  
-8. Versión candidata: snapshot versionado + manifest de entregables.  
-9. Emisión de `review_token` → URL `/r/[token]`.  
-10. Feedback del cliente como eventos (`review.change_requested`, `review.approved`, …).  
-11. Entrega: ZIP (código, docs, guía, env example, README).  
-12. Deploy opcional vía adapter (GitHub, Vercel, WordPress, FTP, …) **con confirmación**.  
-13. Mantenimiento: proyecto en estado `maintenance` con historial continuo.
-
-Todo queda en memoria/audit log.
+2. Conversión a Cliente.  
+3. JARVIS (o humano) **solicita** al Project Engine crear **Proyecto** (`serviceType` del módulo).  
+4. Opcional: JARVIS **ejecuta** un workflow del Workflow Engine.  
+5. Planificación: capabilities + estimaciones (no agent IDs fijos).  
+6. JARVIS resuelve capabilities → agentes (Capability Registry) → Agent Manager.  
+7. Ejecución: runs; tools solo Tool Registry; hechos en Memory Engine.  
+8. QA → Project Engine marca versión candidata.  
+9. Project Engine emite `review_token` → `/r/[token]`.  
+10. Feedback cliente como eventos; Project Engine reaplica estados.  
+11. Entrega ZIP vía Project Engine.  
+12. Deploy opcional: Project Engine → Tool Registry (+ confirmación).  
+13. Mantenimiento: estado en Project Engine + historial en Memory Engine.
 
 ---
 

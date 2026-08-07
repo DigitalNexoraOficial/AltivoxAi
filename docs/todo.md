@@ -11,7 +11,8 @@ Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](.
 
 | ID | Tarea | Estado |
 |----|-------|--------|
-| T-000 | Realineación documental Altivox OS + ADR-010 | **done** (este bloque) |
+| T-000 | Realineación documental Altivox OS + ADR-010 | **done** |
+| T-000b | Cinco motores del núcleo + ADR-011 | **done** |
 
 ---
 
@@ -55,10 +56,15 @@ Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](.
 
 | ID | Tarea | Notas |
 |----|-------|-------|
-| T-300 | JARVIS Core módulos + interfaces | no chatbot |
-| T-301 | Agent Manager registro en caliente | |
-| T-302 | Primer service module plugin | |
-| T-303 | Retirar o relabel `agentes.html` cosmético | sin engañar |
+| T-300 | JARVIS Core como caller de motores | core-engines.md |
+| T-301 | Project Engine | |
+| T-302 | Workflow Engine | |
+| T-303 | Tool Registry | |
+| T-304 | Memory Engine | |
+| T-305 | Capability Registry | |
+| T-306 | Agent Manager registro en caliente | |
+| T-307 | Primer service module plugin | |
+| T-308 | Relabel/retirar `agentes.html` cosmético | |
 
 ---
 
