@@ -1,6 +1,6 @@
 /**
- * Mustang landing with Sketchfab embed (when the mesh is view-only / not downloadable).
- * Model: Ford Mustang Fastback 1967 by ZIRODESIGN.
+ * Mustang landing: real textured GLB (1965 classic) + scroll-driven Three.js camera.
+ * Mesh: Nathan Kenopic / NateKenopic 3d-car (no primitive boxes).
  */
 
 function escapeHtml(s: string): string {
@@ -11,28 +11,38 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-const SKETCHFAB = {
-  uid: "8949a90f004848e9b26c16819ece43ae",
-  title: "Ford Mustang Fastback 1967",
-  author: "ZIRODESIGN",
-  authorUrl: "https://sketchfab.com/zirodesign",
-  modelUrl:
-    "https://sketchfab.com/3d-models/ford-mustang-fastback-1967-8949a90f004848e9b26c16819ece43ae",
-  embedSrc:
-    "https://sketchfab.com/models/8949a90f004848e9b26c16819ece43ae/embed?ui_theme=dark&autostart=1&ui_infos=0&ui_watermark_link=0&ui_settings=0&dnt=1",
+const MODEL = {
+  title: "Ford Mustang 1965",
+  author: "Nathan Kenopic",
+  authorUrl: "https://github.com/NateKenopic",
+  sourceUrl: "https://github.com/NateKenopic/3d-car",
 } as const;
 
+/** Prefer CDN (blob preview has no /assets origin), then prod, then relative. */
+function modelUrlCandidates(file: string): string[] {
+  const branch = "cursor/encargo-landing-mustang-fix-4521";
+  const repo = "digitalnexoraoficial/altivoxai";
+  return [
+    `https://cdn.jsdelivr.net/gh/${repo}@${branch}/public/assets/encargos/mustang/${file}`,
+    `https://www.altivoxai.es/assets/encargos/mustang/${file}`,
+    `/assets/encargos/mustang/${file}`,
+  ];
+}
+
 /**
- * Full-bleed Sketchfab Mustang + scroll narrative.
- * Sketchfab does not allow downloading this mesh; embed is the only legal integration.
+ * Full-bleed WebGL Mustang + scroll narrative (doors → interior → windshield → hood).
  */
 export function buildMustangPhotoLandingHtml(input: {
   clientName: string;
   carTitle: string;
 }): string {
   const brand = escapeHtml(input.clientName || "Altivox");
-  const carTitle = escapeHtml(SKETCHFAB.title);
-  const author = escapeHtml(SKETCHFAB.author);
+  const carTitle = escapeHtml(input.carTitle || MODEL.title);
+  const author = escapeHtml(MODEL.author);
+  const urlsJson = JSON.stringify([
+    ...modelUrlCandidates("mustang.glb"),
+    ...modelUrlCandidates("foxbody.glb"),
+  ]);
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -42,6 +52,7 @@ export function buildMustangPhotoLandingHtml(input: {
 <title>${carTitle} · ${brand}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
 <style>
   :root {
@@ -61,17 +72,19 @@ export function buildMustangPhotoLandingHtml(input: {
   }
   .stage {
     position: sticky; top: 0; height: 100vh; z-index: 0;
-    background: #050507;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 80% 55% at 55% 42%, #1a1c24 0%, #07080c 70%),
+      linear-gradient(160deg, #0c0e14, #050507);
   }
-  .stage iframe {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%; border: 0;
+  #c {
+    position: absolute; inset: 0; width: 100%; height: 100%; display: block;
   }
   .stage-veil {
     position: absolute; inset: 0; z-index: 1; pointer-events: none;
     background:
-      linear-gradient(180deg, rgba(5,5,7,.55) 0%, transparent 28%, transparent 62%, rgba(5,5,7,.82) 100%),
-      linear-gradient(90deg, rgba(5,5,7,.5) 0%, transparent 35%);
+      linear-gradient(180deg, rgba(5,5,7,.5) 0%, transparent 26%, transparent 64%, rgba(5,5,7,.78) 100%),
+      linear-gradient(90deg, rgba(5,5,7,.45) 0%, transparent 38%);
   }
   .hud {
     position: absolute; inset: 0; z-index: 2; pointer-events: none;
@@ -98,6 +111,26 @@ export function buildMustangPhotoLandingHtml(input: {
     font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
   }
   .hint span { color: var(--steel); }
+  .load {
+    position: absolute; left: 50%; top: 52%; transform: translate(-50%,-50%);
+    z-index: 3; text-align: center; pointer-events: none;
+    transition: opacity .5s ease;
+  }
+  .load[data-done="1"] { opacity: 0; }
+  .load .bar {
+    width: min(220px, 50vw); height: 2px; margin: 14px auto 0;
+    background: rgba(243,240,234,.12); overflow: hidden;
+  }
+  .load .bar i {
+    display: block; height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--steel));
+    transition: width .25s ease;
+  }
+  .load p { margin: 0; color: var(--muted); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; }
+  .err {
+    display: none; position: absolute; inset: auto 12% 18%; z-index: 4;
+    text-align: center; color: #e8b4a0; font-size: 14px;
+  }
   .story {
     position: relative; z-index: 3;
     background: linear-gradient(180deg, transparent, var(--bg) 48px);
@@ -122,7 +155,7 @@ export function buildMustangPhotoLandingHtml(input: {
     padding: 0 clamp(18px, 4vw, 40px);
     font-size: 12px; color: rgba(154,149,140,.85); line-height: 1.5;
   }
-  .credit a { color: #1CAAD9; }
+  .credit a { color: #c9a27a; }
   @media (max-width: 720px) {
     .hint { justify-self: start; }
   }
@@ -130,79 +163,303 @@ export function buildMustangPhotoLandingHtml(input: {
 </head>
 <body>
   <section class="stage" aria-label="Modelo 3D ${carTitle}">
-    <iframe
-      title="${carTitle}"
-      src="${SKETCHFAB.embedSrc}"
-      allow="autoplay; fullscreen; xr-spatial-tracking"
-      allowfullscreen
-      loading="eager"
-    ></iframe>
+    <canvas id="c"></canvas>
     <div class="stage-veil" aria-hidden="true"></div>
+    <div class="load" id="load" aria-live="polite">
+      <p>Cargando Mustang 3D</p>
+      <div class="bar"><i id="prog"></i></div>
+    </div>
+    <p class="err" id="err"></p>
     <div class="hud">
       <div>
         <div class="brand">${brand}</div>
         <div class="hero-copy" style="margin-top:18px">
-          <div class="kicker">Modelo 3D · Sketchfab</div>
+          <div class="kicker">Modelo 3D · WebGL</div>
           <h1>${carTitle}</h1>
-          <p>Explora el coche en 3D: arrastra para orbitar, scroll o pellizca para zoom.</p>
+          <p>Scroll para un recorrido cinematográfico: puertas, habitáculo, luna y capó.</p>
         </div>
       </div>
-      <div class="hint">Interactúa · <span>Orbit / Zoom</span></div>
+      <div class="hint">Scroll · <span id="beatLabel">Presentación</span></div>
     </div>
   </section>
 
   <main class="story">
-    <article class="beat">
+    <article class="beat" data-beat="0">
       <div class="n">01 · Presentación</div>
       <h2>${carTitle}</h2>
-      <p>Silueta fastback clásica. El modelo 3D de alta densidad vive en el visor superior: gíralo y examina carrocería, faros y líneas de techo.</p>
+      <p>Silueta clásica con mesh texturizado de alta densidad — carrocería, faros y líneas de techo reales, no primitivas.</p>
     </article>
-    <article class="beat">
-      <div class="n">02 · Acceso</div>
-      <h2>Puertas y acceso</h2>
-      <p>Acércate a los laterales en el visor para apreciar paneles, manillas y proporciones del habitáculo. (El autor no permite descargar el mesh; la interacción es la del visor Sketchfab.)</p>
+    <article class="beat" data-beat="1">
+      <div class="n">02 · Puertas</div>
+      <h2>Acceso lateral</h2>
+      <p>La cámara se acerca al flanco del conductor: panel, manilla y proporción del vano frente al pilar.</p>
     </article>
-    <article class="beat">
+    <article class="beat" data-beat="2">
       <div class="n">03 · Interior</div>
       <h2>Habitáculo</h2>
-      <p>Entra con zoom hacia la cabina: asientos, salpicadero y detalles modelados en el archivo original de ${author}.</p>
+      <p>Entramos hacia la cabina: asientos, salpicadero y el volumen del habitáculo clásico.</p>
     </article>
-    <article class="beat">
-      <div class="n">04 · Frontal</div>
-      <h2>Luna y morro</h2>
-      <p>Orienta la cámara al frontal: parabrisas, parrilla y óptica del Mustang Fastback.</p>
+    <article class="beat" data-beat="3">
+      <div class="n">04 · Luna</div>
+      <h2>Parabrisas</h2>
+      <p>Vista frontal a través de la luna: parrilla, óptica y el morro del Mustang.</p>
     </article>
-    <article class="beat">
+    <article class="beat" data-beat="4">
       <div class="n">05 · Capó</div>
       <h2>Capó y vano</h2>
-      <p>Desplázate sobre el capó en el visor para la vista superior del morro. Para animaciones propias (apertura de puertas/capó) haría falta un GLB descargable con licencia.</p>
+      <p>Plano alto sobre el capó: nervaduras, vano motor y la línea que define el muscle car.</p>
     </article>
     <p class="credit">
-      <a href="${SKETCHFAB.modelUrl}" target="_blank" rel="noopener noreferrer">${carTitle}</a>
-      by <a href="${SKETCHFAB.authorUrl}" target="_blank" rel="noopener noreferrer">${author}</a>
-      on <a href="https://sketchfab.com" target="_blank" rel="noopener noreferrer">Sketchfab</a>
-      · embed oficial (modelo no descargable)
+      Modelo 3D basado en
+      <a href="${MODEL.sourceUrl}" target="_blank" rel="noopener noreferrer">${MODEL.title}</a>
+      por <a href="${MODEL.authorUrl}" target="_blank" rel="noopener noreferrer">${author}</a>
+      · render WebGL Altivox
     </p>
   </main>
-<script>
-(function () {
-  // Soft reveal for story beats
-  var beats = document.querySelectorAll(".beat");
-  if (!("IntersectionObserver" in window)) return;
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) {
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+
+const URLS = ${urlsJson};
+const LABELS = ["Presentación", "Puertas", "Interior", "Luna", "Capó"];
+
+const canvas = document.getElementById("c");
+const loadEl = document.getElementById("load");
+const progEl = document.getElementById("prog");
+const errEl = document.getElementById("err");
+const beatLabel = document.getElementById("beatLabel");
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x07080c);
+scene.fog = new THREE.Fog(0x07080c, 8, 28);
+
+const camera = new THREE.PerspectiveCamera(40, 1, 0.05, 80);
+const clock = new THREE.Clock();
+
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+const hemi = new THREE.HemisphereLight(0xdde4f0, 0x1a120c, 0.55);
+scene.add(hemi);
+const key = new THREE.DirectionalLight(0xfff2e0, 2.2);
+key.position.set(4.5, 7, 3.5);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.near = 0.5;
+key.shadow.camera.far = 30;
+key.shadow.camera.left = -6;
+key.shadow.camera.right = 6;
+key.shadow.camera.top = 6;
+key.shadow.camera.bottom = -6;
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x8eb4ff, 0.85);
+rim.position.set(-5, 3, -4);
+scene.add(rim);
+const fill = new THREE.DirectionalLight(0xffc9a0, 0.35);
+fill.position.set(0, 2, -6);
+scene.add(fill);
+
+const ground = new THREE.Mesh(
+  new THREE.CircleGeometry(9, 64),
+  new THREE.MeshStandardMaterial({ color: 0x101218, metalness: 0.4, roughness: 0.85 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = 0;
+ground.receiveShadow = true;
+scene.add(ground);
+
+const car = new THREE.Group();
+scene.add(car);
+
+function resize() {
+  const w = canvas.clientWidth || window.innerWidth;
+  const h = canvas.clientHeight || window.innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / Math.max(h, 1);
+  camera.updateProjectionMatrix();
+}
+resize();
+window.addEventListener("resize", resize);
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+function smoothstep(t) {
+  const x = Math.min(1, Math.max(0, t));
+  return x * x * (3 - 2 * x);
+}
+function catmull(p0, p1, p2, p3, t) {
+  const t2 = t * t, t3 = t2 * t;
+  return 0.5 * (
+    (2 * p1) +
+    (-p0 + p2) * t +
+    (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
+    (-p0 + 3 * p1 - 3 * p2 + p3) * t3
+  );
+}
+function samplePath(pts, u) {
+  const n = pts.length - 1;
+  const x = Math.min(0.9999, Math.max(0, u)) * n;
+  const i = Math.floor(x);
+  const t = x - i;
+  const p0 = pts[Math.max(0, i - 1)];
+  const p1 = pts[i];
+  const p2 = pts[Math.min(n, i + 1)];
+  const p3 = pts[Math.min(n, i + 2)];
+  return new THREE.Vector3(
+    catmull(p0.x, p1.x, p2.x, p3.x, t),
+    catmull(p0.y, p1.y, p2.y, p3.y, t),
+    catmull(p0.z, p1.z, p2.z, p3.z, t)
+  );
+}
+
+/** Camera + lookAt keyed to scroll narrative */
+const camPath = [
+  new THREE.Vector3(4.6, 1.55, 5.2),   // presentation 3/4
+  new THREE.Vector3(-3.8, 1.05, 1.4),  // driver door
+  new THREE.Vector3(0.15, 1.05, 0.35), // interior
+  new THREE.Vector3(0.0, 1.15, 5.4),   // windshield / front
+  new THREE.Vector3(0.2, 3.4, 1.1),    // hood top
+];
+const lookPath = [
+  new THREE.Vector3(0.1, 0.55, 0.2),
+  new THREE.Vector3(-0.35, 0.7, 0.15),
+  new THREE.Vector3(0.05, 0.85, -0.2),
+  new THREE.Vector3(0.0, 0.75, 0.8),
+  new THREE.Vector3(0.0, 0.55, 0.4),
+];
+
+let scrollT = 0;
+let targetT = 0;
+let ready = false;
+let idleSpin = 0;
+
+function scrollProgress() {
+  const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  return Math.min(1, Math.max(0, window.scrollY / max));
+}
+
+window.addEventListener("scroll", () => {
+  targetT = scrollProgress();
+  const idx = Math.min(LABELS.length - 1, Math.floor(targetT * LABELS.length));
+  beatLabel.textContent = LABELS[idx];
+}, { passive: true });
+
+function fitCar(root) {
+  const box = new THREE.Box3().setFromObject(root);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  const scale = 3.6 / Math.max(size.x, size.y, size.z);
+  root.position.sub(center);
+  root.scale.setScalar(scale);
+  root.updateMatrixWorld(true);
+  const box2 = new THREE.Box3().setFromObject(root);
+  root.position.y -= box2.min.y;
+}
+
+async function loadFirst(urls) {
+  const loader = new GLTFLoader();
+  let lastErr = null;
+  for (const url of urls) {
+    try {
+      const gltf = await new Promise((resolve, reject) => {
+        loader.load(
+          url,
+          resolve,
+          (e) => {
+            if (e.total) progEl.style.width = Math.round((e.loaded / e.total) * 100) + "%";
+          },
+          reject
+        );
+      });
+      return { gltf, url };
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr || new Error("model_load_failed");
+}
+
+try {
+  const { gltf } = await loadFirst(URLS);
+  gltf.scene.traverse((o) => {
+    if (o.isMesh) {
+      o.castShadow = true;
+      o.receiveShadow = true;
+      if (o.material) {
+        const mats = Array.isArray(o.material) ? o.material : [o.material];
+        mats.forEach((m) => {
+          if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
+          m.envMapIntensity = 1.1;
+        });
+      }
+    }
+  });
+  fitCar(gltf.scene);
+  car.add(gltf.scene);
+  ready = true;
+  progEl.style.width = "100%";
+  loadEl.dataset.done = "1";
+} catch (e) {
+  console.error(e);
+  loadEl.style.display = "none";
+  errEl.style.display = "block";
+  errEl.textContent = "No se pudo cargar el modelo 3D. Revisa la conexión o vuelve a intentar.";
+}
+
+const beats = document.querySelectorAll(".beat");
+if ("IntersectionObserver" in window) {
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
       if (!e.isIntersecting) return;
       e.target.style.opacity = "1";
       e.target.style.transform = "translateY(0)";
     });
   }, { threshold: 0.2 });
-  beats.forEach(function (el) {
+  beats.forEach((el) => {
     el.style.opacity = "0";
     el.style.transform = "translateY(18px)";
     el.style.transition = "opacity .6s ease, transform .6s ease";
     io.observe(el);
   });
-})();
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(0.05, clock.getDelta());
+  scrollT = lerp(scrollT, targetT, 1 - Math.pow(0.001, dt));
+  const u = smoothstep(scrollT);
+
+  if (ready && scrollT < 0.02) {
+    idleSpin += dt * 0.15;
+    car.rotation.y = idleSpin;
+  } else if (ready) {
+    car.rotation.y = lerp(car.rotation.y, 0, 1 - Math.pow(0.02, dt));
+  }
+
+  const camPos = samplePath(camPath, u);
+  const look = samplePath(lookPath, u);
+  camera.position.copy(camPos);
+  camera.lookAt(look);
+
+  renderer.render(scene, camera);
+}
+animate();
 </script>
 </body>
 </html>`;

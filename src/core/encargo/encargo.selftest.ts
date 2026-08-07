@@ -108,12 +108,12 @@ async function main() {
   const mustangArt = extractPrimaryArtifact(localMustang, "web", "Xabier");
   assert(mustangArt?.kind === "html", "mustang local html");
   assert(
-    mustangArt.content.includes("sketchfab.com") ||
-      mustangArt.content.includes("GLTFLoader"),
-    "sketchfab embed or gltf landing"
+    mustangArt.content.includes("GLTFLoader") &&
+      mustangArt.content.includes("mustang.glb"),
+    "gltf mustang landing"
   );
   assert(
-    /Ford Mustang|Fastback|DoorLPivot|foxbody/i.test(mustangArt.content),
+    /Ford Mustang|NateKenopic|foxbody|WebGL/i.test(mustangArt.content),
     "mustang landing content"
   );
 
