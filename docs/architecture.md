@@ -1,171 +1,144 @@
-# Arquitectura Altivox AI
+# Arquitectura — Altivox OS
 
-**Producto:** plataforma de captación, conversión y operación con IA para pymes.  
-**Dominio:** https://www.altivoxai.es  
-**Stack actual:** Next.js 16 (App Router) · React 19 · TypeScript · Tailwind 3 · Supabase · n8n · Vercel  
-**Fecha de auditoría:** 2026-08-07 · Estado: producción operativa + documentación Fases 1–4
-
----
-
-## 1. Informe de auditoría (Fase 1)
-
-### 1.1 Qué está bien
-
-- Landing Next.js con secciones claras, CMS estático de casos (`src/content/cms.ts`) y metadata base + JSON-LD Organization.
-- Captura de leads endurecida: allowlists, límites de body, scoring **server-side** por `fuente` (`src/app/api/lead/route.ts`).
-- Bridge n8n con autenticación (`N8N_SECRET` o JWT Supabase), no emit público abierto.
-- Feature flags y contenido editable vía `site_settings` + Admin → Ajustes.
-- Diferido de extras (`DeferredExtras`, `GrowthSuite`) y Three.js con `dynamic(..., { ssr: false })`.
-- Headers de seguridad (CSP, HSTS, nosniff, frame-ancestors) en `next.config.ts`.
-- Panel admin unificado con shell compartido (`admin-core.js` + `admin.css`).
-- SQL con RLS básico para `leads`, `clientes`, `site_settings`.
-- `prefers-reduced-motion` considerado en varios puntos de la experiencia.
-
-### 1.2 Qué está mal o es frágil
-
-- **Dos productos en uno:** marketing en React/App Router vs admin en HTML/JS estático (`public/*.html`) sin capa de dominio compartida.
-- **“Agentes” ≠ plataforma multiagente:** `/api/chat` solo cambia el nombre/prompt; `agentes.html` guarda toggles en `localStorage` sin efecto en producción.
-- **JARVIS** es una pantalla de scoring/UI, no un supervisor orquestador.
-- Three.js (`ScrollAIScene`) con `frameloop="always"` en **todos** los dispositivos → coste GPU/móvil alto.
-- Rate limits en memoria (`Map`) ineficaces en serverless multi-instancia.
-- Authz débil: cualquier usuario `authenticated` en Supabase puede operar CRM/n8n; RLS `using (true)`.
-- Admin sin middleware: las rutas HTML son públicas; el login es solo client-side.
-- CSP permite `'unsafe-inline'` / `'unsafe-eval'` + CDN jsDelivr (necesario en parte por el admin legacy).
-- SEO: OG = favicon; sitemap estático; sin metadata por ruta en casos/portal.
-- Dependencias muertas/huérfanas: `clsx` sin uso; `HeroAtmosphere` / `HeroScene` / `BackgroundFX` no montados.
-- Duplicación: `n8n-bridge` TS + JS; `chat-leads.sql` vs `auth-admin-only.sql`; headers en `next.config` y `vercel.json`.
-
-### 1.3 Qué se puede mejorar
-
-- Unificar admin en App Router (`/admin/*`) con RBAC real.
-- Extraer capa de dominio (`src/domain/`, `src/server/`) para leads, clientes, eventos, agentes.
-- Orquestador JARVIS (cola de tareas, routing, tools, memoria, evaluación).
-- Rate limiting durable (Upstash/Redis) + bot protection en chat/lead.
-- Reducir stack de motion (elegir Framer **o** GSAP+Lenis como primario).
-- Blog real (hoy Insights/CMS posts sin ruta `/blog`).
-- Observabilidad: logs estructurados, tracing, presupuestos LLM.
-- Tests (unit + API + e2e críticos) y CI.
-
-### 1.4 Qué sobra
-
-- Componentes Three/FX no usados.
-- `public/_legacy/` vacío.
-- `clsx` sin imports.
-- Portal demo y CrmDemo si no hay roadmap de producto cliente (mantener solo si son marketing consciente).
-- README desactualizado (“Next.js 15+”).
-
-### 1.5 Qué falta
-
-- Documentación de arquitectura (este `/docs` la inicia).
-- Middleware Edge, roles admin, auditoría de acciones.
-- Orquestación multiagente real (tools, handoff, memoria).
-- Blog/CMS dinámico, schema FAQ/Offer, OG images.
-- Suite de tests y budgets de rendimiento.
-- Contratos de eventos versionados (n8n ↔ API).
+**Producto:** Altivox OS — Sistema Operativo interno de Altivox AI  
+**Escaparate:** web pública https://www.altivoxai.es  
+**Visión oficial:** [`product-vision.md`](./product-vision.md) · **ADR:** [`adr/ADR-010-altivox-os-pivot.md`](./adr/ADR-010-altivox-os-pivot.md)  
+**Actualizado:** 2026-08-07 · Bloque 0
 
 ---
 
-## 2. Vista de capas (estado actual)
+## 1. Principios
+
+1. **Tres superficies** — pública / `/ops` / `/r/[token]`. Nunca mezclar concerns.  
+2. **Núcleo estable** — añadir servicios solo como **módulos/plugins** vía interfaces.  
+3. **JARVIS orquesta** — no ejecuta trabajo de entrega; asigna y consolida.  
+4. **Agentes privados** — solo dentro del OS; invisibles al cliente.  
+5. **Ciclo de vida único** — ver [`flow.md`](./flow.md); todo desarrollo se alinea a él.  
+6. **Autorización en servidor** — RBAC + RLS; el cliente UI no es frontera de seguridad.  
+7. **Registro total** — cada transición de estado, run de agente, aprobación y deploy queda auditado.  
+8. **Clean Architecture / SOLID / DRY / KISS** — TypeScript estricto; DDD donde aporte (Proyecto, Cliente, Módulo de servicio).
+
+---
+
+## 2. Diagrama de superficies
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Experiencia pública (Next.js App Router)                   │
-│  /  /casos/[slug]  /bienvenida  /portal  /design-system     │
-├─────────────────────────────────────────────────────────────┤
-│  APIs Route Handlers                                        │
-│  /api/lead  /api/chat  /api/n8n  /api/site-settings  /api/ig│
-├─────────────────────────────────────────────────────────────┤
-│  Admin estático (public/*.html + admin-core + Supabase CDN) │
-├──────────────┬──────────────────────┬───────────────────────┤
-│  Supabase    │  LLM (OpenRouter →   │  n8n webhooks         │
-│  Auth+DB     │  Gemini fallback)    │  lead/ops workflows   │
-└──────────────┴──────────────────────┴───────────────────────┘
+│  1. WEB PÚBLICA  (/ , /casos, …)                            │
+│  Marketing · captación · info · chat comercial · forms      │
+└───────────────────────────┬─────────────────────────────────┘
+                            │ leads / mensajes
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│  2. ALTIVOX OS  (/ops)     ← Centro de operaciones          │
+│  CRM · Clientes · Proyectos · JARVIS · Agentes · Tools      │
+│  Workflows · Memoria · Logs · Analítica · Deploy · Config   │
+│                                                             │
+│  ┌─────────────┐    interfaces     ┌────────────────────┐   │
+│  │  OS Core    │◄─────────────────►│ Service Modules    │   │
+│  │  (estable)  │                   │ (plugins)          │   │
+│  └──────┬──────┘                   └────────────────────┘   │
+│         │ orquesta                                          │
+│         ▼                                                   │
+│  ┌─────────────┐                                            │
+│  │   JARVIS    │ → Agent runtime (privado)                  │
+│  └─────────────┘                                            │
+└───────────────────────────┬─────────────────────────────────┘
+                            │ versión candidata + token
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│  3. PORTAL REVISIÓN  (/r/[token])                           │
+│  Entregables · comentarios · cambios · aprobar/rechazar     │
+│  Sin agentes · sin prompts · sin datos internos             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### 2.1 Arquitectura objetivo (empresa)
+---
+
+## 3. Núcleo vs módulos
+
+### 3.1 Núcleo (no se modifica por servicio nuevo)
+
+Responsabilidades estables:
+
+- Identidad y RBAC  
+- Catálogo de clientes / leads / proyectos (entidades genéricas)  
+- Máquina de estados del ciclo de vida  
+- JARVIS orchestration API (asignar, pausar, consolidar)  
+- Agent Manager + Tool Registry (contratos)  
+- Event Bus + Logger + Memoria + Configuration  
+- Review tokens + entregables + deploy adapters (interfaces)  
+- API Gateway interno `/api/ops/*` y público mínimo
+
+### 3.2 Módulos / plugins de servicio
+
+Cada oferta de Altivox (web, automatización, chatbot, marketing, contenido, integración, …) es un **módulo** que declara:
+
+- `serviceType` / capacidades  
+- plantillas de planificación  
+- agentes recomendados  
+- herramientas permitidas  
+- criterios de QA  
+- formato de entregable  
+- adapters de deploy opcionales  
+
+El núcleo descubre módulos por registro (manifest), no por `if/else` en el core.
+
+---
+
+## 4. Estado actual del código (as-is)
+
+| Pieza | Estado |
+|-------|--------|
+| Landing Next.js 16 | Producción |
+| Admin HTML `public/*.html` | Producción temporal ≠ `/ops` |
+| APIs lead/chat/n8n/site-settings | Producción |
+| Supabase leads/clientes/site_settings | Producción |
+| `/ops`, proyectos, JARVIS core, `/r/[token]` | **No implementado** |
+| Extensión modular formal | **No implementado** |
+
+La auditoría histórica de la landing permanece como contexto en el historial git; el **norte de diseño** es este documento + product-vision.
+
+---
+
+## 5. Arquitectura objetivo (to-be) — capas
 
 ```
-Cliente Web / Admin App / Chat / WhatsApp
-                 │
-         ┌───────▼────────┐
-         │  Edge Gateway  │  auth · rate limit · CORS · bot
-         └───────┬────────┘
-                 │
-    ┌────────────▼────────────┐
-    │   Application Services  │  Lead · CRM · Content · Chat
-    └────────────┬────────────┘
-                 │
-    ┌────────────▼────────────┐
-    │   JARVIS Orchestrator   │  routing · tools · memory · QA
-    └────────────┬────────────┘
-         ┌───────┴────────┐
-         ▼                ▼
-   Agent Workers     Event Bus → n8n / CRM / Analytics
-         │
-   Supabase + Object Storage + Vector (futuro)
+UI (/ops, /r, pública)
+  → API Gateway (pública vs ops vs review)
+    → Application services
+      → JARVIS (orquestación)
+      → Domain (Project, Client, Lead, Delivery, Module)
+        → Infrastructure (Supabase, LLM providers, n8n, storage, git/vercel adapters)
 ```
 
-Principios: **modular**, **event-driven**, **RBAC**, **un solo admin**, **agentes como workers con contratos**, no prompts sueltos.
+Carpetas objetivo (Bloque arquitectura de código; no crear aún sin aprobación):
+
+- `src/core` — núcleo OS  
+- `src/modules` — plugins de servicio  
+- `src/domain` · `src/server` · `src/services` · `src/types` · `src/config`  
+- Mantener `src/lib` para utilidades compartidas no de dominio  
 
 ---
 
-## 3. Estructura de carpetas (mapa real)
+## 6. Seguridad (resumen)
 
-| Ruta | Rol |
-|------|-----|
-| `src/app/` | Rutas, layout, globals, APIs |
-| `src/components/sections/` | Bloques de landing |
-| `src/components/tools/` | Audit, quiz, comparador, CRM demo |
-| `src/components/chat/` | Widget multi-etiqueta |
-| `src/components/three/` | Fondo R3F |
-| `src/components/experience/` | Loader, booking, WA, deferred |
-| `src/components/providers/` | Theme, i18n, industry, Lenis, settings |
-| `src/components/ui/` | Sticky CTA, reveal, skip link |
-| `src/content/` | CMS estático casos/posts |
-| `src/lib/` | i18n, brand, n8n, sound, A/B |
-| `public/` | Admin HTML, SEO, assets, guía PDF |
-| `supabase/sql/` | Esquemas y RLS |
-| `n8n/workflows/` | Export JSON de automatizaciones |
-| `docs/` | Documentación de producto/arquitectura |
+Ver [`security.md`](./security.md).
+
+- `/ops` y `/api/ops/*`: autenticación + RBAC.  
+- `/r/[token]`: autorización por token de revisión de alcance mínimo.  
+- Agentes y prompts: nunca en respuestas del portal ni de la web pública.
 
 ---
 
-## 4. Decisiones técnicas vigentes
+## 7. Documentación relacionada
 
-Documentadas en detalle en [`MEMORY.md`](./MEMORY.md). Resumen:
-
-1. Landing App Router + admin HTML (deuda consciente a migrar).
-2. Supabase como Auth + Postgres + REST; service role en APIs server.
-3. n8n como capa de notificaciones/ops, no como CRM.
-4. Lead scoring solo en servidor.
-5. Contenido marketing parcialmente editable vía `site_settings`.
-
----
-
-## 5. Convenciones
-
-- Componentes React: PascalCase; archivos alineados al export.
-- APIs: `route.ts` con CORS allowlist + validación allowlist de campos.
-- Admin: `AltivoxAdmin.*` / `AltivoxN8n.*` en global window.
-- SQL: idempotente (`if not exists`, `on conflict`, `drop policy if exists`).
-- Eventos n8n: `lead.*`, `cliente.*`, `jarvis.*`, `system.ping`.
-- Ramas cloud: `cursor/<nombre>-4521`.
-
----
-
-## 6. Relación con otros docs
-
-| Doc | Contenido |
-|-----|-----------|
-| [`agents.md`](./agents.md) | Organigrama JARVIS + agentes |
-| [`flow.md`](./flow.md) | Mapa usuario → CRM |
-| [`bots.md`](./bots.md) | Chatbots y prompts |
+| Doc | Rol |
+|-----|-----|
+| [`product-vision.md`](./product-vision.md) | Visión 3–5 años y definición de producto |
+| [`flow.md`](./flow.md) | Ciclo de vida oficial |
+| [`agents.md`](./agents.md) | JARVIS + agentes privados |
+| [`roadmap.md`](./roadmap.md) | Orden de bloques |
+| [`database.md`](./database.md) | Modelo de datos as-is / to-be |
 | [`api.md`](./api.md) | Contratos HTTP |
-| [`database.md`](./database.md) | Modelo de datos |
-| [`security.md`](./security.md) | Amenazas y controles |
-| [`performance.md`](./performance.md) | Presupuestos y bottlenecks |
-| [`seo.md`](./seo.md) | SEO técnico/contenido |
-| [`deployment.md`](./deployment.md) | Vercel, env, n8n |
-| [`roadmap.md`](./roadmap.md) | Fases de producto |
-| [`todo.md`](./todo.md) | Backlog priorizado |
-| [`MEMORY.md`](./MEMORY.md) | Memoria permanente |
+| [`MEMORY.md`](./MEMORY.md) | Memoria + ADRs índice |

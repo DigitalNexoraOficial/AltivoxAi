@@ -1,91 +1,66 @@
-# Seguridad — Altivox AI
+# Seguridad — Altivox OS
+
+Visión: [`product-vision.md`](./product-vision.md)
 
 ---
 
-## 1. Postura actual (resumen)
+## 1. Modelo de amenaza por superficie
 
-**Fortalezas:** headers HTTP, allowlists en APIs, scoring de leads no confiable en cliente, n8n no abierto, RLS activado, CSP base.  
-**Debilidades:** authz plana, admin HTML público + login client-only, rate limits no durables, CSP permisiva, secrets/project id con fallbacks en repo.
-
----
-
-## 2. Controles existentes
-
-| Control | Dónde |
-|---------|--------|
-| CSP, HSTS, X-Frame, nosniff, COOP, Referrer | `next.config.ts` (+ parcial `vercel.json`) |
-| CORS allowlist | APIs lead/chat/n8n |
-| Body size + field allowlist | `/api/lead`, `/api/chat`, `/api/n8n` |
-| Timing-safe secret | `/api/n8n` ↔ `N8N_SECRET` |
-| JWT opcional | Bearer Supabase en `/api/n8n` |
-| Lead score server-side | `/api/lead` |
-| IG redirect allowlist | `/api/ig-image` |
-| RLS | SQL `leads`, `clientes`, `site_settings` |
-| robots disallow admin/api | `public/robots.txt` |
-| `poweredByHeader: false` | Next config |
+| Superficie | Actores | Riesgo principal | Control |
+|------------|---------|------------------|---------|
+| Web pública | Anónimos | Spam leads, abuso LLM chat, scraping | Rate limit durable, allowlists, validación |
+| `/ops` | Staff | Acceso no autorizado a PII/proyectos/agentes | Auth + RBAC + RLS + middleware |
+| `/r/[token]` | Cliente | Enumeración tokens, fuga de internos | Token opaco, scope mínimo, sin datos OS |
+| APIs n8n | Automatismos | Write sin privilegio | Secret + rol Admin+ |
 
 ---
 
-## 3. Amenazas y mitigaciones
+## 2. Controles as-is
 
-| Amenaza | Riesgo hoy | Mitigación actual | Siguiente control |
-|---------|------------|-------------------|-------------------|
-| Spam leads | Alto | Rate Map + validación email | Captcha + Upstash + anomaly |
-| Abuso LLM (coste) | Alto | Rate Map 10/min | Cuota diaria + auth soft + WAF |
-| Usuario Auth no-admin | Alto | Ninguno (RLS abierto) | Claim `role=admin` + RLS |
-| XSS admin CDN | Medio | Confianza CDN | Self-host + CSP estricta |
-| Exfil service role | Crítico si leak | Solo server | Secret scanning + rotación |
-| Open admin URLs | Medio | Auth client | Middleware rewrite/auth |
-| Prompt injection | Medio | Instrucciones soft | Guardrails + tool allowlist |
-| PII en logs/n8n | Medio | Campos limitados | Redaction + retention |
+Headers/CSP, allowlists API, scoring server-side, n8n no abierto, RLS básico “authenticated”, robots disallow admin.
+
+**Gaps críticos para OS:** sin roles reales; admin HTML confía en cliente; rate limit en memoria; sin tokens de review; service role fallback en site-settings.
 
 ---
 
-## 4. Secretos y env
+## 3. Controles to-be (Bloque 1+)
 
-| Variable | Uso |
-|----------|-----|
-| `SUPABASE_URL` | API DB |
-| `SUPABASE_ANON_KEY` / publishable | Cliente + API lectura |
-| `SUPABASE_SERVICE_ROLE_KEY` | Writes server |
-| `N8N_WEBHOOK_URL` | Emit eventos |
-| `N8N_SECRET` | Auth bridge |
-| `OPENROUTER_*` / `GEMINI_*` | Chat |
-| `NEXT_PUBLIC_WHATSAPP_NUMBER` | Fallback WA |
-| `NEXT_PUBLIC_CAL_URL` | Booking |
+1. Roles: `superadmin` · `admin` · `editor` · `agent` · `user` en `app_metadata`.  
+2. RLS por jerarquía de roles en leads/clientes/settings y futuras tablas de proyecto.  
+3. Middleware: sesión + rol para `/ops` y HTML legacy.  
+4. `/api/ops/*` solo servidor con `requireRole`.  
+5. `/r/[token]` sin sesión staff; autorización = token válido no filtrable a internos.  
+6. Rate limit Upstash en lead + chat.  
+7. Audit log de mutaciones y de transiciones del ciclo de vida.  
+8. Prompts/agentes/costes: nunca en JSON del portal ni de APIs públicas.
 
-**Regla:** nunca service role en HTML/admin JS.  
-Anon key en `admin-core.js` es esperable pero el **project URL** debería venir de config build, no hardcode si es evitable.
+Detalle de implementación: pendiente **Bloque 1** (aprobación separada).
 
 ---
 
-## 5. Admin
+## 4. Secretos
 
-- Rutas `/login.html`, `/dashboard.html`, … servidas como estáticos.
-- `AltivoxAdmin.requireAuth` redirige si no hay sesión — **bypassable** viendo HTML/JS; la protección real debe ser RLS + (mejor) middleware/Edge.
-- Navbar pública enlaza login → disclosure de entrada admin (aceptable si RBAC fuerte).
+Igual que antes (`SUPABASE_*`, `N8N_*`, LLM keys) + futuros: firmado de review tokens, storage de artefactos, credenciales de deploy adapters (vault / env por proyecto).
 
----
-
-## 6. Checklist hardening (orden)
-
-1. Rol `admin` en `app_metadata` + políticas RLS por rol.  
-2. Validar rol en `/api/n8n` además de “JWT válido”.  
-3. Middleware protegiendo `/dashboard.html` etc. o migrar a `/admin` SSR.  
-4. Rate limit durable (Upstash) en lead + chat.  
-5. Eliminar fallback service role en site-settings si falta anon.  
-6. Reducir CSP (`unsafe-eval` fuera cuando admin migre).  
-7. Captcha en lead.  
-8. Audit log de mutaciones CRM/settings.  
-9. Secret scanning en CI.  
-10. Presupuesto LLM + alertas.
+**Regla:** service role solo servidor OS; nunca en HTML ni en portal review.
 
 ---
 
-## 7. Cumplimiento / privacidad (mínimo)
+## 5. Checklist priorizado
 
-- Formularios: informar uso de datos (legal footer existe; revisar textos).  
-- Retención leads: definir política y job de borrado.  
-- Encargados: Supabase, Vercel, n8n, LLM providers — documentar en privacidad.
+1. RBAC + RLS (Bloque 1)  
+2. Middleware `/ops` + legacy  
+3. Rate limit durable  
+4. Quitar fallback service role lecturas públicas  
+5. Diseño seguro `review_tokens`  
+6. Audit log  
+7. CSP más estricta al migrar admin a App Router  
+8. Captcha leads (opcional)  
+9. Presupuesto LLM en OS  
 
-Detalle de flujos de datos: [`flow.md`](./flow.md), [`database.md`](./database.md).
+---
+
+## 6. Cumplimiento
+
+PII de clientes en OS; el portal review solo muestra lo necesario del entregable.  
+Retención y borrado: definir en fase dominio + legal.

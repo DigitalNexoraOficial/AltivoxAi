@@ -1,4 +1,9 @@
-# Rendimiento — Altivox AI
+# Rendimiento — Web pública (escaparate)
+
+Ámbito: **superficie 1 (web pública)**.  
+`/ops` y `/r/[token]` tendrán presupuestos propios cuando existan (Fase 8 del roadmap prioriza el escaparate; el OS no debe bloquearse por Three.js).
+
+Visión: [`product-vision.md`](./product-vision.md)
 
 ---
 

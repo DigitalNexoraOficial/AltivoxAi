@@ -1,183 +1,69 @@
-# API — Contratos Altivox AI
+# API — Altivox OS
 
-Base: `https://www.altivoxai.es` (también previews Vercel).  
-Implementación: `src/app/api/*/route.ts`.
-
----
-
-## 1. Resumen
-
-| Ruta | Auth | Público | Propósito |
-|------|------|---------|-----------|
-| `POST /api/lead` | No (público rate-limited) | Sí | Captura leads |
-| `GET /api/lead` | — | Health/info limitada | Según implementación |
-| `POST /api/chat` | No | Sí | Chat LLM |
-| `POST /api/n8n` | Secret **o** JWT Supabase | No abierto | Bridge ops |
-| `GET /api/site-settings` | No | Sí | Settings públicos |
-| `GET /api/ig-image` | No | Sí | Redirect asset IG |
-
-Todas las mutaciones relevantes aplican CORS allowlist + límites de tamaño donde aplica.
+Tres familias de API alineadas a las tres superficies.
 
 ---
 
-## 2. `POST /api/lead`
+## 1. Mapa
 
-**Archivo:** `src/app/api/lead/route.ts`
-
-### Entrada (allowlist de campos)
-
-Campos típicos: `nombre`, `email`, `telefono`, `empresa`, `mensaje`, `fuente`, `tipo_interes`, industria/metadata segura.
-
-**No** se confía en score/clasificación enviada por el cliente: el servidor calcula score/prioridad por `fuente`.
-
-### Salida
-
-- `201/200` JSON con ok + id si aplica.
-- Errores genéricos (no filtrar stack).
-
-### Side effects
-
-1. Insert en Supabase `leads` (service role preferido).
-2. Forward a `N8N_WEBHOOK_URL` con evento `lead.created` o `lead.hot`.
-
-### Fuentes conocidas (producto)
-
-`contact`, `booking`, `guia` / lead magnet, calculadora, auditoría, etc.  
-Cada fuente tiene peso de scoring distinto (ver código).
+| Familia | Prefijo | Auth | Uso |
+|---------|---------|------|-----|
+| Pública | `/api/lead`, `/api/chat`, `/api/site-settings`, `/api/ig-image` | Anónima + rate limit | Captación / marketing |
+| OS | `/api/ops/*` (objetivo) | Sesión + RBAC | Centro de operaciones |
+| Review | `/api/review/*` (objetivo) | Token de revisión | Portal `/r/[token]` |
+| Bridge | `/api/n8n` | Secret o JWT+rol | Automatización |
 
 ---
 
-## 3. `POST /api/chat`
+## 2. As-is (implementado)
 
-**Archivo:** `src/app/api/chat/route.ts`
+| Ruta | Notas |
+|------|-------|
+| `POST /api/lead` | Captura + score servidor + n8n |
+| `POST /api/chat` | Chat comercial (no OS agents) |
+| `POST /api/n8n` | Bridge; hoy JWT sin rol fino |
+| `GET /api/site-settings` | Merge settings marketing |
+| `GET /api/ig-image` | Assets IG allowlisted |
 
-### Entrada
-
-```json
-{
-  "message": "string ≤1000",
-  "agent": "asistente|investigador|diseñador|auditoría|creativo|sistemas"
-}
-```
-
-Aliases sin tilde aceptados (`disenador`, `auditoria`).
-
-### Salida
-
-```json
-{ "reply": "...", "agent": "Asistente" }
-```
-
-(forma exacta según response builder del route)
-
-### Límites
-
-- Body ≤ 16KB
-- ~10 req / IP / minuto (Map in-process — no durable)
-
-### Providers
-
-1. OpenRouter  
-2. Gemini fallback  
-
-Keys solo en env servidor.
+Detalle de campos: código en `src/app/api/*/route.ts`.
 
 ---
 
-## 4. `POST /api/n8n`
+## 3. To-be OS (no implementado)
 
-**Archivo:** `src/app/api/n8n/route.ts`
+Ejemplos de recursos (contratos a formalizar en Fase 2–4):
 
-### Auth
+- `POST /api/ops/projects` — crear proyecto (JARVIS/humano)  
+- `POST /api/ops/projects/:id/plan` — planificación  
+- `POST /api/ops/projects/:id/assign` — asignación agentes  
+- `POST /api/ops/projects/:id/runs` — disparar ejecución  
+- `POST /api/ops/projects/:id/qa` — QA  
+- `POST /api/ops/projects/:id/release-candidate` — versión  
+- `POST /api/ops/projects/:id/review-link` — emitir token  
+- `POST /api/ops/projects/:id/deliver` — ZIP  
+- `POST /api/ops/projects/:id/deploy` — solicita deploy (requiere confirmación)  
+- `GET /api/ops/agents` — catálogo privado  
+- `GET /api/ops/events` — bus/audit  
 
-- Header `x-altivox-secret: $N8N_SECRET` (timing-safe compare), **o**
-- `Authorization: Bearer <supabase_access_token>` validado
+Review:
 
-Sin auth → rechazo. No hay emit público.
+- `GET /api/review/:token` — DTO seguro del entregable  
+- `POST /api/review/:token/comments`  
+- `POST /api/review/:token/request-changes`  
+- `POST /api/review/:token/approve` | `reject`  
 
-### Acciones (allowlist)
-
-| action | Efecto |
-|--------|--------|
-| `ping` | Health |
-| `emit` | Reenvía evento a webhook n8n (si permitido) |
-| `update_lead` | Patch lead |
-| `create_cliente` | Alta cliente |
-| `update_cliente` | Patch cliente |
-
-Campos sensibles allowlisted en el route (p.ej. `telefono`, estados).
-
-### Admin client
-
-`public/assets/js/n8n-bridge.js` → setea Bearer con session token tras login.
+Respuestas review: **whitelist de campos**; nunca prompts, agent ids internos, costes, logs OS.
 
 ---
 
-## 5. `GET /api/site-settings`
+## 4. Eventos
 
-**Archivo:** `src/app/api/site-settings/route.ts`
-
-### Salida
-
-```json
-{
-  "settings": {
-    "brand": { "name", "mark", "tagline", "email", "whatsapp" },
-    "hero": { "title", "titleAccent", "cta1", "cta2", "risk" },
-    "contact": { "email", "whatsapp", "whatsappLabel" },
-    "flags": { "chatEnabled", "bookingEnabled", "leadMagnetEnabled", "stickyCtaEnabled" },
-    "social": { "linkedin", "instagram", "x" }
-  }
-}
-```
-
-Merge con defaults de código si falta clave en DB.
-
-Escritura: **no** vía esta API pública; el admin escribe `site_settings` con cliente Supabase autenticado (`ajustes.html`).
+Ver lista en [`flow.md`](./flow.md) §6. Emisión vía Event Bus interno; n8n consume subconjunto ops.
 
 ---
 
-## 6. `GET /api/ig-image?topic=`
+## 5. Deuda
 
-**Archivo:** `src/app/api/ig-image/route.ts`
-
-Redirect 302 a asset allowlisted (`chatbot|leads|agents` → `public/assets/ig/*.png`).  
-Sin open redirect.
-
----
-
-## 7. Eventos hacia n8n (salientes)
-
-Payload conceptual:
-
-```json
-{
-  "event": "lead.created|lead.hot|...",
-  "ts": "ISO-8601",
-  "data": { "lead": { "...campos CRM..." } }
-}
-```
-
-Workflows: `n8n/workflows/01-lead-created.json`, `02-ops-contacted-onboarding.json`.
-
----
-
-## 8. Deuda de API (prioridad)
-
-1. Extraer helpers compartidos (CORS, rate limit, JSON errors) → `src/server/http.ts`.
-2. Rate limit durable.
-3. OpenAPI / Zod schemas compartidos cliente-servidor.
-4. RBAC en `/api/n8n` (claim `role=admin`).
-5. Versionado `/api/v1/...` cuando haya clientes externos.
-6. Endpoint autenticado para escribir `site_settings` (en lugar de solo client SDK).
-
----
-
-## 9. Consumidores
-
-| Consumidor | APIs |
-|------------|------|
-| Landing React | lead, chat, site-settings |
-| Admin HTML | n8n, Supabase directo, chat health |
-| n8n Cloud | n8n (callback), webhooks salientes |
-| IG/tools | ig-image |
+- Helpers HTTP compartidos (`src/server`) — Bloque arquitectura/seguridad.  
+- OpenAPI cuando existan `/api/ops` y `/api/review`.  
+- Versionado `/api/v1` si hay clientes externos al OS.

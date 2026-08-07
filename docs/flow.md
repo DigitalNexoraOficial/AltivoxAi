@@ -1,174 +1,192 @@
-# Mapa de flujo — Altivox AI
+# Flujo oficial — Altivox OS
 
-Cómo funciona la web de extremo a extremo: del visitante al seguimiento CRM.
+**Este documento es la referencia obligatoria** del ciclo de vida de un proyecto.  
+Todo desarrollo futuro (APIs, UI `/ops`, agentes, review, deploy) debe mapearse a estos estados.
+
+Visión: [`product-vision.md`](./product-vision.md)
 
 ---
 
-## 1. Embudo principal
+## 1. Tres superficies en el flujo
 
 ```
-Usuario
+[Web pública]  captación
+      │
+      ▼
+[Altivox OS /ops]  inteligencia + entrega interna
+      │
+      ▼
+[/r/[token]]  revisión cliente
+      │
+      ▼
+[Altivox OS /ops]  entrega / deploy / mantenimiento
+```
+
+---
+
+## 2. Ciclo de vida oficial del proyecto
+
+```
+Lead
   │
   ▼
-Landing (/)  ─── industria, prueba social, servicios, ofertas
-  │
-  ├──► Servicios (#services)
-  ├──► Calculadoras (#calculator, AiAudit)
-  ├──► Simuladores (#simulator, NeedsQuiz, PackageComparator)
-  ├──► Insights / “Blog light” (#insights)  [sin /blog aún]
-  ├──► Casos (/casos/[slug])
+Cliente
   │
   ▼
-Contacto / Booking / WhatsApp / Chat
+Proyecto
   │
   ▼
-Conversión  ── POST /api/lead  (o interés vía /api/chat)
+Planificación
   │
   ▼
-CRM  ── tabla leads → (opcional) clientes
+Asignación de agentes
   │
   ▼
-Seguimiento  ── dashboard admin · n8n notify · WA/email humano
+Ejecución
+  │
+  ▼
+Control de calidad
+  │
+  ▼
+Versión candidata
+  │
+  ▼
+URL privada de revisión  (/r/[token])
+  │
+  ├───────────────┐
+  ▼               │
+Cambios solicitados ───► (vuelve a Ejecución o QA según política)
+  │
+  ▼
+Aprobación
+  │
+  ▼
+Entrega
+  │
+  ▼
+Despliegue opcional  (siempre con confirmación humana)
+  │
+  ▼
+Mantenimiento
 ```
+
+### Semántica de estados (dominio)
+
+| Estado | Quién actúa | Superficie |
+|--------|-------------|------------|
+| Lead | Visitante + sistema captación | Pública → OS |
+| Cliente | Equipo / conversión CRM | OS |
+| Proyecto | JARVIS crea / equipo confirma | OS |
+| Planificación | JARVIS + módulo de servicio | OS |
+| Asignación de agentes | JARVIS | OS |
+| Ejecución | Agentes privados | OS (invisible al cliente) |
+| Control de calidad | Agente QA / política / humano | OS |
+| Versión candidata | Sistema empaqueta entregable | OS |
+| URL de revisión | Cliente | `/r/[token]` |
+| Cambios solicitados | Cliente pide; OS reabre trabajo | Review → OS |
+| Aprobación | Cliente | Review |
+| Entrega | OS genera ZIP / artefactos | OS (+ descarga cliente según política) |
+| Despliegue opcional | OS adapters + confirmación | OS |
+| Mantenimiento | OS + módulos | OS |
 
 ---
 
-## 2. Journey detallado (landing)
+## 3. Captación (web pública) — as-is / to-be
 
-| Paso | Superficie | Componente / ruta | Acción |
-|------|------------|-------------------|--------|
-| 1 | Entrada | `page.tsx` + `Navbar` | Orientación + skip link |
-| 2 | Valor | `Hero` | CTA ofertas / booking |
-| 3 | Confianza | `SocialProofBar`, `CaseStudies`, `Testimonials` | Prueba social |
-| 4 | Contexto | `IndustryPicker` | Personaliza copy/hooks |
-| 5 | Oferta | `Services`, `Offers`, `GrowthSuite` | Paquetes y herramientas |
-| 6 | Educar | `Calculator`, `Simulator`, `LeadMagnet` | Engagement + lead |
-| 7 | Cerrar | `FinalCTA`, `Contact`, `StickyCTA`, `WhatsAppCTA`, `ChatWidget` | Conversión |
-| 8 | Post-lead | `/bienvenida` | Onboarding ligero |
-| 9 | Ops | `dashboard.html` / `clientes.html` | Seguimiento humano |
+### As-is (código actual)
 
-Feature flags (`site_settings.flags`) pueden apagar chat, booking, lead magnet o sticky CTA.
+```
+Landing → form/chat/WA/booking → POST /api/lead → leads → admin HTML / n8n
+```
+
+### To-be (OS)
+
+```
+Landing → form/chat comercial → Lead
+  → (OS) calificación / conversión → Cliente
+  → JARVIS puede proponer Proyecto según tipo de servicio (módulo)
+```
+
+El chat público **no** invoca el Agent Manager.
 
 ---
 
-## 3. Flujos de conversión
+## 4. Dentro de Altivox OS
 
-### 3.1 Formulario de contacto
+1. Lead visible en CRM.  
+2. Conversión a Cliente (datos contractuales mínimos).  
+3. JARVIS (o humano) crea **Proyecto** con `serviceType` del módulo.  
+4. Planificación: tareas, estimaciones, agentes sugeridos por el módulo.  
+5. Asignación: Agent Manager reserva workers.  
+6. Ejecución: runs con logs, coste, artefactos parciales.  
+7. QA: checklist del módulo; fallos → re-ejecución o escalado humano.  
+8. Versión candidata: snapshot versionado + manifest de entregables.  
+9. Emisión de `review_token` → URL `/r/[token]`.  
+10. Feedback del cliente como eventos (`review.change_requested`, `review.approved`, …).  
+11. Entrega: ZIP (código, docs, guía, env example, README).  
+12. Deploy opcional vía adapter (GitHub, Vercel, WordPress, FTP, …) **con confirmación**.  
+13. Mantenimiento: proyecto en estado `maintenance` con historial continuo.
 
-```
-Contact.tsx → POST /api/lead { fuente: contact|... }
-  → Supabase leads (service role preferido)
-  → n8n webhook lead.created | lead.hot
-  → (UX) thank / bienvenida
-```
-
-### 3.2 Lead magnet (guía PDF)
-
-```
-LeadMagnet.tsx → POST /api/lead { fuente: guia|lead_magnet }
-  → download PDF public/assets/guia/...
-```
-
-### 3.3 Calculadora / auditoría / booking
-
-```
-Calculator | AiAudit | BookingModal → POST /api/lead
-  → score server-side por fuente
-  → notify n8n si hot
-```
-
-### 3.4 WhatsApp
-
-```
-WhatsAppCTA / Contact wa.me
-  → número desde site_settings.contact.whatsapp
-    (fallback NEXT_PUBLIC_WHATSAPP_NUMBER / default código)
-  → conversación humana (fuera de CRM automático hoy)
-```
-
-### 3.5 Chat
-
-```
-ChatWidget → POST /api/chat { message, agent }
-  → OpenRouter → Gemini fallback
-  → respuesta UI
-  [hueco] no crea lead automático de forma robusta aún
-```
+Todo queda en memoria/audit log.
 
 ---
 
-## 4. Flujo CRM / admin
+## 5. Portal `/r/[token]` — reglas
 
-```
-login.html (Supabase Auth)
-  → dashboard.html  (leads: filtrar, CSV, WA, convertir)
-  → clientes.html   (CRUD clientes)
-  → chatbot.html    (monitor chat/health)
-  → jarvis.html     (reanalysis / health UI)
-  → agentes.html    (catálogo cosmético localStorage)
-  → ajustes.html    (site_settings + n8n ping)
-```
+Permitido:
 
-Conversión lead → cliente: acción en dashboard que escribe `clientes` (+ opcional `/api/n8n` create_cliente).
+- Ver entregable / preview acordado  
+- Comentarios  
+- Solicitar cambios  
+- Aprobar / rechazar  
 
----
+Prohibido:
 
-## 5. Conexiones entre componentes
+- Lista de agentes, prompts, tools, costes internos, logs de OS, otros clientes, configuración
 
-```
-                    ┌─ SiteSettingsProvider ← GET /api/site-settings
-layout.tsx providers┤─ I18nProvider ← i18n.ts
-                    ├─ IndustryProvider ← afecta Hero/WA/SocialProof
-                    └─ SmoothScrollProvider ← Lenis + GSAP reveals
-
-page.tsx
-  ├─ ScrollAIBackground → ScrollAIScene (R3F)
-  ├─ sections.* (Reveal / motion)
-  ├─ GrowthSuite → AiAudit, NeedsQuiz, PackageComparator, CrmDemo, Showreel, Guarantee
-  ├─ StickyCTA ← flags + section dataset (ScrollStorytelling)
-  ├─ ChatWidget ← flags.chatEnabled
-  └─ DeferredExtras → BrandLoader, Cursor, Sound, ScrollTop, WhatsAppCTA
-
-APIs
-  lead ──► Supabase leads ──► N8N_WEBHOOK_URL
-  n8n  ◄── admin / n8n cloud (JWT o secret)
-  chat ──► LLM providers
-```
+El token es de **alcance mínimo** (un proyecto / una versión).
 
 ---
 
-## 6. Eventos de automatización
+## 6. Eventos de dominio (objetivo)
 
-| Evento | Origen típico | Consumidor |
-|--------|---------------|------------|
-| `lead.created` | `/api/lead` | n8n 01 |
-| `lead.hot` | `/api/lead` (score) | n8n 01 rama hot |
-| `lead.updated` / `lead.contacted` | admin / n8n ops | CRM humano |
-| `cliente.created` / updates | `/api/n8n`, admin | onboarding 02 |
-| `jarvis.rescored` | jarvis UI (diseño) | ops |
-| `system.ping` | ajustes | health |
+Ejemplos (bus interno):
 
-Detalle de payloads: [`api.md`](./api.md).
+- `lead.created` · `lead.qualified`  
+- `client.created`  
+- `project.created` · `project.planning_started` · `project.agents_assigned`  
+- `agent.run.started` · `agent.run.completed` · `agent.run.failed`  
+- `qa.passed` · `qa.failed`  
+- `release.candidate_created` · `review.opened`  
+- `review.comment_added` · `review.change_requested` · `review.approved` · `review.rejected`  
+- `delivery.ready` · `deploy.requested` · `deploy.confirmed` · `deploy.completed`  
+- `project.maintenance_entered`
 
----
-
-## 7. Mapa de rutas públicas
-
-| Ruta | Indexable | Rol |
-|------|-----------|-----|
-| `/` | Sí | Landing |
-| `/casos/[slug]` | Sí | Caso |
-| `/bienvenida` | No (ideal) | Post-conversión |
-| `/portal` | No (`robots`) | Demo portal cliente |
-| `/design-system` | No | Interno |
-| `/login.html` … admin | No | Operación |
+Contratos HTTP: [`api.md`](./api.md).
 
 ---
 
-## 8. Huecos del mapa (producto)
+## 7. Mapa de pantallas OS (objetivo)
 
-1. No hay ruta `/blog` — Insights es sección, no embudo de contenido.
-2. Chat no está plenamente cableado al CRM.
-3. Portal y CrmDemo no leen datos reales.
-4. Seguimiento post-venta (tickets/SLA) no existe como entidad.
-5. Analítica de funnel incompleta (A/B local, sin warehouse).
+| Área `/ops` | Relación con el ciclo |
+|-------------|----------------------|
+| Leads / CRM | Lead → Cliente |
+| Clientes | Cliente |
+| Proyectos | Proyecto … Mantenimiento |
+| JARVIS | Planificación → Asignación → supervisión |
+| Agentes / Herramientas | Ejecución |
+| Workflows / Automatizaciones | Transiciones y side-effects |
+| Conversaciones / Memoria / Logs | Todo el ciclo |
+| Despliegues | Despliegue opcional |
+| Analíticas | Métricas por fase |
+| Configuración / Facturación | Empresa |
+
+---
+
+## 8. Compatibilidad con el código actual
+
+Hasta implementar OS:
+
+- El embudo real termina en **leads + clientes + admin HTML**.  
+- No existen estados de Proyecto ni `/r/[token]`.  
+- No se debe fingir en UI pública que los “agentes” del chat son el runtime OS.

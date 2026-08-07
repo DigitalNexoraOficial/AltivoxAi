@@ -1,79 +1,113 @@
-# TODO — Backlog priorizado Altivox AI
+# TODO — Backlog Altivox OS
 
 Leyenda: **P0** bloqueante · **P1** alto · **P2** medio · **P3** mejora  
-Estado: `open` salvo nota.  
-Regla: no implementar sin confirmación explícita (Fase 5).
+Regla: no código sin aprobación del bloque.
+
+Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](./roadmap.md)
 
 ---
 
-## P0 — Seguridad / datos
+## Bloque 0 — Docs
+
+| ID | Tarea | Estado |
+|----|-------|--------|
+| T-000 | Realineación documental Altivox OS + ADR-010 | **done** (este bloque) |
+
+---
+
+## P0 — Seguridad (Bloque 1 código)
 
 | ID | Tarea | Notas |
 |----|-------|-------|
-| T-001 | RBAC admin + RLS por rol | Ver security.md |
-| T-002 | Rate limit durable lead+chat | Upstash u equivalente |
-| T-003 | Validar rol en `/api/n8n` | No basta JWT válido |
-| T-004 | Sincronizar WhatsApp en `site_settings` prod | Si seed antiguo |
-| T-005 | Quitar fallback service role en site-settings | |
+| T-001 | RBAC SuperAdmin/Admin/Editor/Agent/User | OS + legacy admin |
+| T-002 | Rate limit durable lead + chat público | Upstash |
+| T-003 | Authz servidor en `/api/n8n` por rol | |
+| T-005 | Quitar fallback service role site-settings | |
+| T-006 | Middleware rutas OS/admin legacy | |
+| T-004 | Sync WhatsApp site_settings prod | Ops manual |
 
-## P1 — Arquitectura / deuda
+---
 
-| ID | Tarea | Notas |
-|----|-------|-------|
-| T-010 | Extraer `src/server/http` (CORS, errors, rate) | DRY APIs |
-| T-011 | Dominio Lead/Cliente/Events | domain layer |
-| T-012 | Deduplicar n8n-bridge TS/JS | Un contrato |
-| T-013 | Deduplicar SQL leads | Eliminar o reexport root |
-| T-014 | Eliminar dead Three/FX/`clsx` | Tras confirmación |
-| T-015 | Gate `ScrollAIBackground` en móvil | performance.md |
-| T-016 | Documentar/actualizar README → `/docs` | |
-
-## P1 — Producto agentes
+## P0/P1 — Dominio ciclo de vida (Fase 2)
 
 | ID | Tarea | Notas |
 |----|-------|-------|
-| T-020 | Spec JARVIS orchestrator | agents.md |
-| T-021 | `agent_definitions` table | No localStorage |
-| T-022 | Cablear agentes.html → servidor | O retirar UI engañosa |
-| T-023 | Chat → create_lead tool | bots.md |
+| T-100 | Schema `projects` + estados oficiales | flow.md |
+| T-101 | `project_versions` + artefactos | |
+| T-102 | `review_tokens` | |
+| T-103 | `agent_definitions` + `agent_runs` | privados |
+| T-104 | Event log / audit | |
+| T-105 | Interfaces módulo de servicio | core vs plugins |
 
-## P2 — Admin / UX
+---
 
-| ID | Tarea | Notas |
-|----|-------|-------|
-| T-030 | Plan migración admin → App Router | roadmap Fase D |
-| T-031 | Labels a11y en Contact | WCAG |
-| T-032 | Focus trap modales | Booking/Services |
-| T-033 | Unificar motion stack | Framer vs GSAP |
-
-## P2 — SEO / contenido
+## P1 — Altivox OS UI (Fase 3)
 
 | ID | Tarea | Notas |
 |----|-------|-------|
-| T-040 | OG image 1200×630 | seo.md |
-| T-041 | `generateMetadata` casos | |
-| T-042 | FAQPage JSON-LD | |
-| T-043 | sitemap dinámico | |
-| T-044 | Ruta `/blog` | cmsPosts |
+| T-200 | Shell `/ops` App Router | Centro operaciones |
+| T-201 | Migrar leads/clientes desde HTML | gradual |
+| T-202 | Pantallas Proyectos / JARVIS stub | |
 
-## P3 — CRM / ops
+---
+
+## P1 — JARVIS + agentes (Fases 4–5)
 
 | ID | Tarea | Notas |
 |----|-------|-------|
-| T-050 | Actividades en clientes | |
-| T-051 | Tickets atención | |
-| T-052 | Portal real vs demo | Decidir producto |
-| T-053 | CI lint+build+e2e smoke | |
-| T-054 | Vercel Analytics / Speed Insights | |
+| T-300 | JARVIS Core módulos + interfaces | no chatbot |
+| T-301 | Agent Manager registro en caliente | |
+| T-302 | Primer service module plugin | |
+| T-303 | Retirar o relabel `agentes.html` cosmético | sin engañar |
 
-## Hecho recientemente (historial corto)
+---
+
+## P1 — Review + entrega (Fases 6–7)
+
+| ID | Tarea | Notas |
+|----|-------|-------|
+| T-400 | `/r/[token]` | sin internos |
+| T-401 | ZIP delivery pipeline | |
+| T-402 | Deploy adapters + confirmación | |
+
+---
+
+## P2 — Escaparate público
+
+| ID | Tarea | Notas |
+|----|-------|-------|
+| T-015 | Gate Three móvil | perf |
+| T-014 | Dead code Three/FX/clsx | |
+| T-040–T-044 | SEO | seo.md |
+| T-031–T-032 | a11y forms/modales | |
+
+---
+
+## P3
+
+| ID | Tarea | Notas |
+|----|-------|-------|
+| T-053 | CI lint+build+smoke | |
+| T-500 | Facturación stub | |
+| T-054 | Analytics | |
+
+---
+
+## Obsoleto (no hacer)
+
+| ID antiguo | Motivo |
+|------------|--------|
+| T-023 Chat → tools agentes OS | Viola aislamiento público/OS |
+| Plataforma agentes pública | ADR-010 |
+| JARVIS respuesta unificada al visitante | ADR-010 |
+| Portal demo como producto cliente IA | Sustituido por `/r/[token]` |
+
+---
+
+## Hecho reciente
 
 | Ítem | Ref |
 |------|-----|
-| Admin premium + site_settings | main `b8ca1b8` |
-| Hardening APIs pre-prod | `67a1ae9` |
-| Mobile FAB / sticky CTA | `fe3fa7f` |
-| Docs arquitectura Fases 1–4 | este PR |
-| WhatsApp número (rama separada) | PR phone si aplica |
-
-Actualizar este archivo en cada PR relevante (no como diario; solo ítems accionables).
+| Docs pre-pivot | PR #5 base |
+| Bloque 0 Altivox OS docs | este cambio |
+| WhatsApp número | PR #4 (paralelo) |

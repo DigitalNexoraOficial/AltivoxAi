@@ -1,4 +1,10 @@
-# SEO — Altivox AI
+# SEO — Web pública (escaparate)
+
+Ámbito: **superficie 1**.  
+`/ops` y `/api/ops` deben permanecer **no indexables**.  
+`/r/[token]` = `noindex` (URLs privadas de revisión).
+
+Visión: [`product-vision.md`](./product-vision.md)
 
 ---
 
