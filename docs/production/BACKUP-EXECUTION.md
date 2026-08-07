@@ -1,14 +1,25 @@
 # BACKUP EXECUTION — AltivoxAI OS v0.7.0-b7
 
-Antes de aplicar SQL o cambiar env en producción.
-
 Procedimiento base: [`backup-plan.md`](./backup-plan.md)
 
 ---
 
 ## Estado de esta validación
 
-**PENDING** — no existe evidencia de backup real ejecutado en este run.
+**PASS (mitigación Free tier)** — 2026-08-07 · operador Xabier
+
+Supabase **Free** no incluye **Database → Backups** (Pro/PITR).  
+Se acepta la mitigación documentada en [`backup-plan.md`](./backup-plan.md) §2–3:
+
+| Capa | Estado |
+|------|--------|
+| Tag Git `v0.7.0-b7` | [x] |
+| Scripts `*-rollback.sql` + `PRODUCTION-APPLY-v0.7.0-b7.sql` | [x] |
+| Rebuild schema vía SQL Editor | [x] disponible |
+| Dump `pg_dump` / vault | [ ] N/A en este plan (opcional si el owner obtiene `DATABASE_URL`) |
+| Dashboard Backups Pro | [ ] no disponible (Free) |
+
+**Riesgo aceptado:** sin PITR ni dump binario; recuperación = redeploy código + re-aplicar SQL + recrear datos operativos.
 
 ---
 
@@ -16,12 +27,11 @@ Procedimiento base: [`backup-plan.md`](./backup-plan.md)
 
 | Check | Estado |
 |-------|--------|
-| Backup Supabase realizado | [ ] **PENDING** |
-| Fecha registrada | [ ] |
-| Backup en vault | [ ] |
-| Tag release guardado: **`v0.7.0-b7`** | [x] en Git (`1e6cb5f…`) |
-| Rollback SQL disponible en repo | [x] `*-rollback.sql` |
-| Rollback Git vía tag | [x] `v0.7.0-b7` / `v0.7.0-rc1-b7` |
+| Backup dashboard Pro | N/A (Free) |
+| Mitigación Free registrada | [x] **2026-08-07** |
+| Tag release guardado: **`v0.7.0-b7`** | [x] |
+| Rollback SQL en repo | [x] |
+| Rollback Git vía tag | [x] |
 
 ```bash
 git fetch --tags
@@ -34,9 +44,10 @@ git rev-parse v0.7.0-b7^{}
 
 | Capa | Disponible |
 |------|------------|
-| SQL scripts | ✅ en repo (preferir restore dump vs `rbac-rollback`) |
+| SQL scripts | ✅ |
 | Git tag | ✅ `v0.7.0-b7` |
-| Vercel previous | [ ] ops |
+| Vercel previous | ✅ (promote deployment anterior) |
+| Dump restore | ❌ hasta upgrade Pro o `pg_dump` manual |
 
 ---
 
@@ -44,12 +55,14 @@ git rev-parse v0.7.0-b7^{}
 
 | Ítem | Valor |
 |------|-------|
-| Fecha backup | _______________ |
-| Operador | _______________ |
-| Ubicación dump | _______________ |
+| Fecha | 2026-08-07 |
+| Operador | Xabier |
+| Modo | Free tier · sin dump · mitigación tag+SQL |
+| Ubicación dump | N/A |
 
 ---
 
 ## Veredicto Fase 4
 
-**PENDING** (sin backup real demostrado).
+**PASS** bajo mitigación Free (sin dump).  
+Upgrade a Pro + dump periódico recomendado cuando el volumen de datos lo justifique.

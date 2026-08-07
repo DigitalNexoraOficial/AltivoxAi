@@ -7,13 +7,13 @@ Documentación de **preparación para lanzamiento real**.
 
 | Documento | Contenido |
 |-----------|-----------|
-| [`PRODUCTION-ACTIVATION-REPORT.md`](./PRODUCTION-ACTIVATION-REPORT.md) | **Informe activación** · smoke PASS · **PENDING backup** → ACTIVE |
+| [`PRODUCTION-ACTIVATION-REPORT.md`](./PRODUCTION-ACTIVATION-REPORT.md) | **Informe activación** · **ACTIVE** (Free backup mitigation) |
 | [`FINAL-ENV-VALIDATION.md`](./FINAL-ENV-VALIDATION.md) | Env final · **PASS** (smoke) |
 | [`FINAL-SQL-VALIDATION.md`](./FINAL-SQL-VALIDATION.md) | SQL final · **PASS** (smoke) |
 | [`ENV-ACTIVATION-CHECK.md`](./ENV-ACTIVATION-CHECK.md) | Variables · prohibido memory stores |
 | [`SUPABASE-ACTIVATION.md`](./SUPABASE-ACTIVATION.md) | Orden SQL (no auto) |
 | [`SECURITY-PRODUCTION-CHECK.md`](./SECURITY-PRODUCTION-CHECK.md) | Security prod |
-| [`BACKUP-EXECUTION.md`](./BACKUP-EXECUTION.md) | Backup + rollback |
+| [`BACKUP-EXECUTION.md`](./BACKUP-EXECUTION.md) | Backup · **PASS Free mitigation** |
 | [`SMOKE-TEST-RESULT.md`](./SMOKE-TEST-RESULT.md) | Smoke A+B **PASS** (live 2026-08-07) |
 
 ## Release v0.7.0-b7
@@ -56,4 +56,4 @@ Documentación de **preparación para lanzamiento real**.
 
 Visión: [`../deployment.md`](../deployment.md).
 
-**Estado:** código **RELEASED** (`v0.7.0-b7`) · smoke live **PASS** · **ACTIVE** bloqueado solo por backup — [`PRODUCTION-ACTIVATION-REPORT.md`](./PRODUCTION-ACTIVATION-REPORT.md).
+**Estado:** código **RELEASED** (`v0.7.0-b7`) · producción live **ACTIVE** (mitigación backup Free) — [`PRODUCTION-ACTIVATION-REPORT.md`](./PRODUCTION-ACTIVATION-REPORT.md).

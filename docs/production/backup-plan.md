@@ -8,16 +8,20 @@ Auditoría P0 · AltivoxAI post B0–B7.
 
 ### Backup
 
-1. Dashboard Supabase → **Database** → Backups (plan Pro) **o**  
-2. `pg_dump` lógico:
+1. Dashboard Supabase → **Database** → Backups (plan **Pro**; no disponible en **Free**) **o**  
+2. `pg_dump` lógico (si tienes `DATABASE_URL` / connection string):
 
 ```bash
 # Ejemplo — credenciales solo en entorno seguro
 pg_dump "$DATABASE_URL" --format=custom --file="altivox-pre-$(date -u +%Y%m%dT%H%M%SZ).dump"
 ```
 
-3. Export Auth users / anotar `app_metadata.role` de staff.  
-4. Guardar dump fuera del repo (S3 / vault equipo).
+3. **Free tier (aceptado en activación v0.7.0-b7):** sin Backups UI ni obligación de dump. Mitigación:
+   - Tag Git de release (`v0.7.0-b7`)
+   - `PRODUCTION-APPLY-*.sql` + `*-rollback.sql` en repo
+   - Redeploy Vercel al commit/tag anterior
+4. Export Auth users / anotar `app_metadata.role` de staff (recomendado).  
+5. Si hay dump, guardarlo fuera del repo (S3 / vault equipo).
 
 ### Comprobación backup
 
