@@ -83,18 +83,17 @@ Contrato: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md).
 
 ---
 
-## P1 — Bloque 6 — Review Engine
+## P1 — Bloque 6 — Review Engine · **cerrado**
 
-Contrato: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md). Prebloque **B6-A done**.  
-**Código:** bloqueado hasta «OK implementar Bloque 6».
+Contrato: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md).
 
 | ID | Tarea | Estado |
 |----|-------|--------|
-| T-400 | Review Engine + sesiones (proyecto/versión/deliverables) | pendiente (ADR-016) |
-| T-400b | `review_tokens` + emisión/revocación Ops (`review.create` / `review.revoke`) | pendiente |
-| T-400c | Portal `/r/[token]` + acciones cliente | pendiente |
-| T-400d | APIs review + persistencia propia | pendiente |
-| T-400e | JARVIS caller create/revoke (sin exponer agentes) | pendiente |
+| T-400 | Review Engine + sesiones (proyecto/versión/deliverables) | **done** |
+| T-400b | `review_tokens` + emisión/revocación Ops (`review.create` / `review.revoke`) | **done** |
+| T-400c | Portal `/r/[token]` + acciones cliente | **done** |
+| T-400d | APIs review + persistencia propia | **done** |
+| T-400e | JARVIS caller create/revoke (sin exponer agentes) | **done** |
 
 **Fuera de B6:** Deploy · ZIP · hosting · vendors · Workflow runtime · CRM · chat · agentes al cliente · marketplace · reabrir PE/Security/Ops · agente revisor.
 
@@ -152,4 +151,5 @@ Contrato: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md). Prebloque **B6-A
 | Bloque 4 JARVIS + fronteras | ADR-014 · cerrado |
 | Prebloque B5-A | ADR-015 · sync docs |
 | Bloque 5 Agent Runtime + módulo web | ADR-015 · cerrado |
-| **Prebloque B6-A** | **ADR-016 · sync docs** |
+| Prebloque B6-A | ADR-016 · sync docs |
+| **Bloque 6** Review Engine + `/r/[token]` | **ADR-016 · cerrado** |

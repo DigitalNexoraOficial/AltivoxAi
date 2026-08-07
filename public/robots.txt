@@ -3,6 +3,8 @@ Allow: /
 
 Disallow: /ops
 Disallow: /ops/
+Disallow: /r
+Disallow: /r/
 Disallow: /login.html
 Disallow: /dashboard.html
 Disallow: /clientes.html

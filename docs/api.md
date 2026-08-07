@@ -10,7 +10,7 @@ Tres familias alineadas a las tres superficies.
 |---------|---------|------|-----|
 | Pública | `/api/lead`, `/api/chat`, `/api/site-settings`, `/api/ig-image` | Anónima + rate limit | Captación |
 | OS | `/api/ops/*` | Sesión + `can()` | Centro de operaciones |
-| Review | `/api/review/*` | Token de review | **Contrato ADR-016 · no implementado** |
+| Review | `/api/review/*` | Token de review | **Implementado** (ADR-016) |
 | Bridge | `/api/n8n` | Secret o JWT+perm | Automatización |
 
 ---
@@ -56,10 +56,24 @@ Agentes = **solo OS**. No hay APIs de agentes en superficie Review ni pública.
 |--------|----------|------|
 | **4 · cerrado** | ADR-014 | Ninguna API nueva (caller in-process) |
 | **5 · cerrado** | ADR-015 | `/api/ops/agents*` · `/api/ops/agent-runs*` (implementado) |
-| **6** | ADR-016 | `/api/review/*` + emisión/revocación desde Ops — **no implementado**; rutas concretas en bloque de código |
+| **6 · cerrado** | ADR-016 | `/api/ops/reviews*` · `/api/review/[token]*` |
 | **7** | Deploy | endpoints de deploy/ZIP — **fuera de B6** |
 
-**Fuera de B6:** Workflow run completo · Tool vendors de entrega · deploy · ZIP · agentes en portal.
+### 3.1 Review (Bloque 6)
+
+| Ruta | Auth | Notas |
+|------|------|-------|
+| `POST /api/ops/reviews` | Ops + `review.create` | Crea sesión + token (una vez) |
+| `GET /api/ops/reviews?projectId=` | Ops + `project.read` | Lista |
+| `GET /api/ops/reviews/[id]` | Ops + `project.read` | Detalle |
+| `POST /api/ops/reviews/[id]` | Ops + `review.revoke` | Revoca |
+| `GET /api/review/[token]` | Token | Vista cliente (→ viewed) |
+| `POST /api/review/[token]/comments` | Token | Comentar |
+| `POST /api/review/[token]/changes` | Token | Solicitar cambios |
+| `POST /api/review/[token]/approve` | Token | Aprobar (no muta PE) |
+| `POST /api/review/[token]/reject` | Token | Rechazar (no muta PE) |
+
+**Fuera de B6:** Workflow run · Tool vendors · deploy · ZIP · agentes en portal.
 
 Detalle: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md) · [`flow.md`](./flow.md).
 
@@ -69,4 +83,4 @@ Detalle: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md) · [`flow.md`](./f
 
 Dominio PE: [`flow.md`](./flow.md) §7.  
 Técnico: `audit_events`.  
-Review (B6): persistencia propia del Review Engine — **aún no**.
+Review: `review_events` (B6).

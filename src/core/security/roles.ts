@@ -199,6 +199,7 @@ export const MACHINE_PERMISSION_CEILINGS: Record<
     "tool.execute",
     "deliverable.generate",
     "review.create",
+    "review.revoke",
     "deploy.preview",
     "credentials.use",
   ],

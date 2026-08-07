@@ -2,7 +2,7 @@
 
 Ámbito: **superficie 1**.  
 `/ops` y `/api/ops` deben permanecer **no indexables**.  
-`/r/[token]` = `noindex` + disallow (URLs privadas de revisión · **ADR-016**; superficie 3, no marketing).
+`/r/[token]` = `noindex` + disallow (implementado · ADR-016; superficie 3, no marketing).
 
 Visión: [`product-vision.md`](./product-vision.md) · Seguridad review: [`security.md`](./security.md)
 
@@ -21,7 +21,7 @@ Visión: [`product-vision.md`](./product-vision.md) · Seguridad review: [`secur
 | Casos SSG | `src/app/casos/[slug]` | `generateStaticParams` |
 | i18n | ES default + EN dictionary | `lang="es"` |
 
-Cuando exista `/r` (B6): reforzar `noindex` en layout/metadata de la ruta y disallow `/r` en robots (además de política actual de portal).
+`/r/[token]`: metadata `robots: noindex` en layout + `Disallow: /r` en `public/robots.txt`.
 
 ---
 
@@ -73,7 +73,7 @@ OG pipeline ← /og default + por página
 | Insights | Sección | Posts MDX `/blog` |
 | Guía PDF | Lead magnet | Landing `/recursos/guia` indexable opcional |
 | Local | areaServed ES | Reforzar LocalBusiness si hay NAP real |
-| `/r/[token]` | N/A | **Nunca** indexar (ADR-016) |
+| `/r/[token]` | noindex + disallow | **Nunca** indexar (ADR-016) |
 
 ---
 
@@ -86,7 +86,7 @@ OG pipeline ← /og default + por página
 - [ ] Medir indexación GSC (cobertura, CWV)
 - [ ] Unificar idioma visible ES-first
 - [ ] Evitar thin pages (`/portal` ya en noindex)
-- [ ] Al implementar B6: `noindex` + disallow `/r`
+- [x] B6: `noindex` + disallow `/r`
 
 ---
 

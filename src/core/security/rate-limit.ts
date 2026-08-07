@@ -10,7 +10,8 @@ export type RateLimitBucket =
   | "chat"
   | "login"
   | "n8n"
-  | "ops";
+  | "ops"
+  | "review";
 
 type LimitResult = { success: boolean; reason?: string };
 
@@ -55,6 +56,7 @@ const LIMITS: Record<
   login: { max: 10, windowMs: 15 * 60 * 1000, prefix: "rl:login" },
   n8n: { max: 60, windowMs: 60 * 1000, prefix: "rl:n8n" },
   ops: { max: 120, windowMs: 60 * 1000, prefix: "rl:ops" },
+  review: { max: 60, windowMs: 60 * 1000, prefix: "rl:review" },
 };
 
 let redis: Redis | null = null;

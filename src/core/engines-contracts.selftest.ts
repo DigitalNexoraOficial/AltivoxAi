@@ -51,6 +51,23 @@ function main() {
     }
   }
 
+  // Review Engine must not import agents / tools / memory / deploy
+  const reviewDir = join(coreRoot, "review-engine");
+  const reviewFiles = readdirSync(reviewDir, { recursive: true }) as string[];
+  for (const f of reviewFiles) {
+    if (!String(f).endsWith(".ts")) continue;
+    if (String(f).includes("selftest")) continue;
+    const src = readFileSync(join(reviewDir, String(f)), "utf8");
+    assert(!src.includes("agent-runtime"), `review/${f}: no agent-runtime`);
+    assert(!src.includes("tool-registry"), `review/${f}: no tool-registry`);
+    assert(!src.includes("memory-engine"), `review/${f}: no memory-engine`);
+    assert(!src.includes("deploy.production"), `review/${f}: no deploy`);
+    assert(
+      !src.includes("project-engine/internal"),
+      `review/${f}: no PE internal`
+    );
+  }
+
   console.log("engines-contracts.selftest: ok");
 }
 

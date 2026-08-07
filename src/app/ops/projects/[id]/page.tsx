@@ -10,6 +10,9 @@ import {
   createVersion,
   getProject,
   listTimeline,
+  listReviews,
+  createReview,
+  revokeReview,
   OpsApiError,
   OPS_PROJECT_STATUSES,
   registerDeliverable,
@@ -19,6 +22,7 @@ import {
   type OpsProject,
   type OpsVersion,
   type OpsDeliverable,
+  type OpsReviewSession,
 } from "@/lib/ops-api";
 
 export default function OpsProjectDetailPage() {
@@ -32,6 +36,8 @@ export default function OpsProjectDetailPage() {
   const [deliverablesLocal, setDeliverablesLocal] = useState<OpsDeliverable[]>(
     []
   );
+  const [reviews, setReviews] = useState<OpsReviewSession[]>([]);
+  const [lastPortalPath, setLastPortalPath] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -52,12 +58,14 @@ export default function OpsProjectDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const [p, timeline] = await Promise.all([
+      const [p, timeline, reviewList] = await Promise.all([
         getProject(id),
         listTimeline(id),
+        listReviews(id).catch(() => [] as OpsReviewSession[]),
       ]);
       setProject(p);
       setEvents(timeline);
+      setReviews(reviewList);
       setName(p.name);
       setServiceType(p.serviceType);
       setDescription(p.description || "");
@@ -172,6 +180,57 @@ export default function OpsProjectDetailPage() {
       setEvents(timeline);
     } catch (err) {
       setError(mapErr(err, "No se pudo registrar entregable"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onCreateReview(e: FormEvent) {
+    e.preventDefault();
+    if (!project) return;
+    const versionId =
+      delVersionId.trim() || versionsLocal[0]?.id || "";
+    if (!versionId) {
+      setError("Se necesita versionId (crea una versión o indícala en Deliverable)");
+      return;
+    }
+    if (deliverablesLocal.length === 0) {
+      setError("Registra al menos un deliverable local para el snapshot");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    setLastPortalPath(null);
+    try {
+      const result = await createReview({
+        projectId: project.id,
+        versionId,
+        deliverables: deliverablesLocal.map((d) => ({
+          deliverableId: d.id,
+          title: d.title,
+          kind: d.kind,
+          uri: d.uri,
+        })),
+      });
+      setReviews((prev) => [result.review, ...prev]);
+      if (result.portalPath) setLastPortalPath(result.portalPath);
+    } catch (err) {
+      setError(mapErr(err, "No se pudo crear review"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onRevokeReview(reviewId: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await revokeReview(reviewId);
+      setReviews((prev) =>
+        prev.map((r) => (r.id === reviewId ? result.review : r))
+      );
+    } catch (err) {
+      setError(mapErr(err, "No se pudo revocar review"));
     } finally {
       setBusy(false);
     }
@@ -396,6 +455,57 @@ export default function OpsProjectDetailPage() {
               ))}
             </ul>
           ) : null}
+        </section>
+
+        <section className="ops-panel">
+          <h2>Review cliente (B6)</h2>
+          <p className="ops-muted">
+            Emite un enlace <code>/r/[token]</code>. La aprobación del cliente{" "}
+            <strong>no</strong> cambia el estado PE automáticamente.
+          </p>
+          {can("review.create") ? (
+            <form className="ops-form" onSubmit={(e) => void onCreateReview(e)}>
+              <div className="ops-form-actions">
+                <button
+                  className="ops-btn"
+                  type="submit"
+                  disabled={busy || deliverablesLocal.length === 0}
+                >
+                  Emitir review (snapshot deliverables locales)
+                </button>
+              </div>
+            </form>
+          ) : (
+            <p className="ops-muted">Sin permiso review.create</p>
+          )}
+          {lastPortalPath ? (
+            <p className="ops-mono" style={{ marginTop: "0.75rem" }}>
+              Portal (mostrar una vez): {lastPortalPath}
+            </p>
+          ) : null}
+          {reviews.length > 0 ? (
+            <ul className="ops-timeline" style={{ marginTop: "0.75rem" }}>
+              {reviews.map((r) => (
+                <li key={r.id}>
+                  <strong>{r.status}</strong>
+                  <span className="ops-mono"> {r.id}</span>
+                  {r.status !== "revoked" && can("review.revoke") ? (
+                    <button
+                      type="button"
+                      className="ops-btn ops-btn-ghost"
+                      style={{ marginLeft: 8 }}
+                      disabled={busy}
+                      onClick={() => void onRevokeReview(r.id)}
+                    >
+                      Revocar
+                    </button>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="ops-muted">Sin reviews aún.</p>
+          )}
         </section>
 
         <section className="ops-panel">

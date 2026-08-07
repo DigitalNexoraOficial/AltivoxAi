@@ -21,26 +21,26 @@ Review (contrato): [`adr/ADR-016-bloque-6-review-engine.md`](./adr/ADR-016-bloqu
 1. Ejecutar `audit-events.sql` y `rbac.sql` en Supabase.  
 2. Ejecutar `project-engine.sql` (Bloque 2; incluye guards/RPC).  
 3. Ejecutar `agent-runtime.sql` (Bloque 5) si el entorno usa agentes.  
-4. Ejecutar `assign-superadmin.sql` con tu email.  
-5. Logout/login para refrescar JWT.  
-6. Configurar Upstash en Vercel (prod).
+4. Ejecutar `review.sql` (Bloque 6).  
+5. Ejecutar `assign-superadmin.sql` con tu email.  
+6. Logout/login para refrescar JWT.  
+7. Configurar Upstash en Vercel (prod).
 
 Notas RBAC (B2 post-auditoría): `operator` y techo `jarvis` incluyen `project.approve` para completar `review → approved` en el camino OPS/orquestación, sin elevar otros permisos.  
 
-## Review Engine (Bloque 6 · ADR-016 · no implementado)
-
-Contrato de seguridad (cuando exista código):
+## Review Engine (Bloque 6 · ADR-016 · implementado)
 
 | Superficie | Regla |
 |------------|--------|
 | Ops | `review.create` · `review.revoke` vía `can()` |
-| Portal `/r/[token]` | Auth por **token** seguro; sin sesión staff |
+| Portal `/api/review/*` + `/r/[token]` | Auth por **token** (hash SHA-256 en DB); sin sesión staff |
 | Frontend | Sin `service_role` |
-| Tokens | Revocables + con expiración |
-| SEO | `/r` fuera de indexación |
-| Aislamiento | Sin agentes, prompts, Memory/Tools internas en el portal |
+| Tokens | Revocables + con expiración; plaintext solo una vez al crear |
+| SEO | `/r` `noindex` + disallow en `robots.txt` |
+| Aislamiento | Sin agentes, prompts, Memory/Tools en el portal |
+| Rate limit | bucket `review` |
 
-JARVIS puede solicitar create/revoke como caller; **no** es superadmin (ADR-012).
+JARVIS techo incluye `review.create` + `review.revoke`; **no** es superadmin (ADR-012).
 
 ## Rollback
 
@@ -48,4 +48,4 @@ JARVIS puede solicitar create/revoke como caller; **no** es superadmin (ADR-012)
 
 ## Diferido
 
-client_credentials · **review_tokens (B6 código)** · approval_requests UI · Memory Engine completo · Tool Registry de vendors · HITL UI · Deploy (B7).
+client_credentials · approval_requests UI · Memory Engine completo · Tool Registry de vendors · HITL UI · Deploy (B7).
