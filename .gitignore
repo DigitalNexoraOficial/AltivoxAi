@@ -5,6 +5,8 @@
 Clave*/
 **/Clave*/
 *token*
+!*[token]*
+!**/[token]/**
 *secret*
 *credential*
 *.pem
