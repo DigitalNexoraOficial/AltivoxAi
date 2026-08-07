@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { OpsBreadcrumbs } from "@/components/ops/OpsBreadcrumbs";
 import { useOpsSession } from "@/components/ops/OpsSessionProvider";
@@ -29,6 +30,21 @@ const SERVICES: OpsEncargoService[] = [
   },
 ];
 
+const STATUS_ES: Record<string, string> = {
+  draft: "Borrador",
+  ready: "Listo",
+  awaiting_approval: "Esperando tu OK",
+  running: "Ejecutando",
+  completed: "Completado",
+  cancelled: "Cancelado",
+  pending: "Pendiente",
+  proposed: "Propuesta lista",
+  approved: "Aprobado",
+  done: "Hecho",
+  rejected: "Rechazado",
+  failed: "Falló",
+};
+
 function guessServiceKey(text: string): string {
   const t = text.toLowerCase();
   if (/chat|bot|whatsapp|asistente/.test(t)) return "chatbot";
@@ -45,6 +61,10 @@ function roleLabel(role: string): string {
     qa: "4 · QA",
   };
   return map[role] || role;
+}
+
+function statusLabel(s: string): string {
+  return STATUS_ES[s] || s;
 }
 
 export default function OpsEncargosPage() {
@@ -218,136 +238,123 @@ export default function OpsEncargosPage() {
       />
       <h1 className="ops-page-title">Encargos</h1>
       <p className="ops-lede">
-        Elige cliente, servicio y brief. Los agentes proponen; tú das el OK
-        antes de cada implementación.
+        Cliente → servicio → brief. Los agentes proponen; nada se implementa
+        sin tu OK.
       </p>
 
       {error ? <div className="ops-error">{error}</div> : null}
 
       <ul className="ops-wizard-steps">
-        <li className={phase === "brief" ? "is-active" : "is-done"}>
-          Brief
-        </li>
+        <li className={phase === "brief" ? "is-active" : "is-done"}>Brief</li>
         <li className={phase === "run" ? "is-active" : ""}>Agentes</li>
       </ul>
 
       {phase === "brief" ? (
-        <div className="ops-stack">
-          <section className="ops-panel">
-            <h2>Cliente</h2>
-            <div className="ops-form-row">
-              <label htmlFor="enc-search">Buscar</label>
-              <input
-                id="enc-search"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                placeholder="Nombre, empresa o email"
-              />
-            </div>
-            {filteredClients.length === 0 ? (
-              <p className="ops-muted">
-                No hay clientes. Créalos en Clientes (menú) y vuelve aquí.
-              </p>
-            ) : (
-              <div style={{ overflowX: "auto", marginTop: "0.75rem" }}>
-                <table className="ops-table">
-                  <thead>
-                    <tr>
-                      <th>Nombre</th>
-                      <th>Empresa</th>
-                      <th>Email</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredClients.map((c) => (
-                      <tr
-                        key={c.id}
-                        className={
-                          selectedClientId === c.id ? "is-selected" : ""
-                        }
-                        onClick={() => setSelectedClientId(c.id)}
-                      >
-                        <td>
-                          <strong>{c.nombre}</strong>
-                        </td>
-                        <td>{c.empresa || "—"}</td>
-                        <td className="ops-mono">{c.email || "—"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
+        <section className="ops-panel">
+          <h2>Nuevo encargo</h2>
 
-          <section className="ops-panel">
-            <h2>Servicio</h2>
-            {!selectedClient ? (
-              <p className="ops-muted">Selecciona un cliente arriba.</p>
-            ) : (
-              <>
-                <p className="ops-help">
-                  Cliente: <strong>{selectedClient.nombre}</strong>
-                  {detectedService
-                    ? ` · sugerido: ${detectedService}`
-                    : " · elige el servicio"}
-                </p>
-                <div className="ops-form-row">
-                  <label htmlFor="enc-service">Qué vamos a entregar</label>
-                  <select
-                    id="enc-service"
-                    value={serviceKey}
-                    onChange={(e) => setServiceKey(e.target.value)}
-                    disabled={busy}
-                  >
-                    <option value="">Seleccionar…</option>
-                    {SERVICES.map((s) => (
-                      <option key={s.key} value={s.key}>
-                        {s.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </>
-            )}
-          </section>
+          <div className="ops-form-row">
+            <label htmlFor="enc-search">Cliente</label>
+            <input
+              id="enc-search"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Buscar por nombre, empresa o email"
+            />
+          </div>
 
-          <section className="ops-panel">
-            <h2>Descripción</h2>
-            <p className="ops-help">
-              Comentario del cliente (lead/chat) o lo que indiques tú.
+          {filteredClients.length === 0 ? (
+            <p className="ops-muted">
+              No hay clientes. Créalos en Clientes y vuelve aquí.
             </p>
-            <div className="ops-form-row">
-              <label htmlFor="enc-desc">Brief</label>
-              <textarea
-                id="enc-desc"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                disabled={busy || !selectedClientId}
-                rows={5}
-                placeholder="Qué necesita, estilo, secciones, tono…"
-              />
+          ) : (
+            <div className="ops-table-wrap">
+              <table className="ops-table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Empresa</th>
+                    <th>Email</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredClients.map((c) => (
+                    <tr
+                      key={c.id}
+                      className={
+                        selectedClientId === c.id ? "is-selected" : ""
+                      }
+                      onClick={() => setSelectedClientId(c.id)}
+                    >
+                      <td>
+                        <strong>{c.nombre}</strong>
+                      </td>
+                      <td>{c.empresa || "—"}</td>
+                      <td className="ops-mono">{c.email || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </section>
+          )}
 
-          <section className="ops-panel">
-            <div className="ops-form-actions">
-              <button
-                type="button"
-                className="ops-btn ops-btn-go"
-                disabled={!canContinue || !can("project.create")}
-                onClick={() => void onContinue()}
-              >
-                {busy ? "Iniciando…" : "Continuar"}
-              </button>
-            </div>
-            {!canContinue && selectedClientId ? (
+          <div className="ops-form-row" style={{ marginTop: "1rem" }}>
+            <label htmlFor="enc-service">Servicio</label>
+            <select
+              id="enc-service"
+              value={serviceKey}
+              onChange={(e) => setServiceKey(e.target.value)}
+              disabled={busy || !selectedClientId}
+            >
+              <option value="">
+                {selectedClientId ? "Seleccionar…" : "Elige un cliente antes"}
+              </option>
+              {SERVICES.map((s) => (
+                <option key={s.key} value={s.key}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+            {selectedClient && detectedService ? (
               <p className="ops-field-hint">
-                Completa servicio y una descripción de al menos 8 caracteres.
+                Sugerido por el lead/notas: {detectedService}
               </p>
             ) : null}
-          </section>
-        </div>
+          </div>
+
+          <div className="ops-form-row">
+            <label htmlFor="enc-desc">Qué hay que hacer</label>
+            <textarea
+              id="enc-desc"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={busy || !selectedClientId}
+              rows={5}
+              maxLength={8000}
+              placeholder="Brief del cliente o el tuyo: objetivo, estilo, secciones…"
+            />
+          </div>
+
+          <div className="ops-form-actions">
+            <button
+              type="button"
+              className="ops-btn ops-btn-go"
+              disabled={!canContinue || !can("project.create")}
+              onClick={() => void onContinue()}
+            >
+              {busy ? "Iniciando…" : "Continuar"}
+            </button>
+          </div>
+          {!can("project.create") ? (
+            <p className="ops-field-hint">
+              Tu rol no tiene project.create — no puedes iniciar encargos.
+            </p>
+          ) : !canContinue && selectedClientId ? (
+            <p className="ops-field-hint">
+              Elige servicio y escribe al menos 8 caracteres en el brief.
+            </p>
+          ) : null}
+        </section>
       ) : (
         <div className="ops-stack">
           <section className="ops-panel">
@@ -355,18 +362,26 @@ export default function OpsEncargosPage() {
               {view?.encargo.clientName} · {view?.encargo.serviceLabel}
             </h2>
             <p className="ops-help">
-              Estado: <span className="ops-status">{view?.encargo.status}</span>
+              Estado:{" "}
+              <span className="ops-status">
+                {statusLabel(view?.encargo.status || "")}
+              </span>
               {view?.encargo.projectId ? (
                 <>
                   {" "}
-                  · Proyecto{" "}
-                  <span className="ops-mono">{view.encargo.projectId}</span>
+                  ·{" "}
+                  <Link
+                    href={`/ops/projects/${view.encargo.projectId}`}
+                    className="ops-inline-link"
+                  >
+                    Abrir proyecto
+                  </Link>
                 </>
               ) : null}
             </p>
             <p className="ops-callout">
-              Nada se implementa sin pulsar <strong>Aprobar</strong>. Rechazar
-              pide una nueva propuesta.
+              Revisa cada propuesta. Solo <strong>Aprobar</strong> ejecuta al
+              agente. <strong>Rechazar</strong> pide otra propuesta.
             </p>
             <div className="ops-form-actions" style={{ marginTop: "0.75rem" }}>
               <button
@@ -395,9 +410,10 @@ export default function OpsEncargosPage() {
                     : "")
               }
             >
-              <strong>
-                {roleLabel(s.role)} · {s.status}
-              </strong>
+              <div className="ops-step-head">
+                <strong>{roleLabel(s.role)}</strong>
+                <span className="ops-status">{statusLabel(s.status)}</span>
+              </div>
               {s.proposal ? (
                 <pre className="ops-console" style={{ marginTop: "0.65rem" }}>
                   {s.proposal}
@@ -413,7 +429,7 @@ export default function OpsEncargosPage() {
                   <>
                     <button
                       type="button"
-                      className="ops-btn ops-btn-go"
+                      className="ops-btn ops-btn-primary"
                       disabled={busy || !can("agent.execute")}
                       onClick={() => void onApprove(s.id)}
                     >

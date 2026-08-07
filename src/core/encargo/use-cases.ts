@@ -102,6 +102,62 @@ function implementPrompt(
     .join("\n\n");
 }
 
+const MAX_DESCRIPTION = 8000;
+
+async function resolveClientFromCrm(clientId: string): Promise<{
+  nombre: string;
+  leadId: string | null;
+}> {
+  // Selftests / memory mode: skip live CRM lookup.
+  if (
+    process.env.ALTIVOX_SELFTEST === "1" ||
+    process.env.ALTIVOX_ENCARGO_STORE === "memory"
+  ) {
+    return { nombre: "", leadId: null };
+  }
+
+  const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
+  const base =
+    process.env.SUPABASE_URL || "https://soeyfivsuwohuuzgfqar.supabase.co";
+  if (!key) {
+    throw new EncargoError("persistence_error", "missing_service_role", 500);
+  }
+
+  const url = new URL(`${base}/rest/v1/clientes`);
+  url.searchParams.set("select", "id,nombre,lead_id");
+  url.searchParams.set("id", `eq.${clientId}`);
+  url.searchParams.set("limit", "1");
+
+  const res = await fetch(url.toString(), {
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+    },
+    cache: "no-store",
+  });
+  const text = await res.text();
+  if (!res.ok) {
+    throw new EncargoError(
+      "persistence_error",
+      `client_lookup_failed:${res.status}`,
+      500
+    );
+  }
+  const rows = text ? (JSON.parse(text) as Record<string, unknown>[]) : [];
+  if (!rows.length) {
+    throw new EncargoError("invalid_input", "client_not_found", 400);
+  }
+  const row = rows[0];
+  const nombre = String(row.nombre || "").trim();
+  if (!nombre) {
+    throw new EncargoError("invalid_input", "client_name_empty", 400);
+  }
+  return {
+    nombre,
+    leadId: row.lead_id ? String(row.lead_id) : null,
+  };
+}
+
 export async function createEncargoDraft(
   subject: Subject,
   input: {
@@ -114,21 +170,36 @@ export async function createEncargoDraft(
 ): Promise<EncargoView> {
   assertCan(subject, "project.create");
   const clientId = String(input.clientId || "").trim();
-  const clientName = String(input.clientName || "").trim();
+  let clientName = String(input.clientName || "").trim().slice(0, 200);
   const description = String(input.description || "").trim();
   const serviceKey = String(input.serviceKey || "").trim();
   if (!clientId) throw new EncargoError("invalid_input", "client_id_required");
-  if (!clientName) throw new EncargoError("invalid_input", "client_name_required");
   if (!description) throw new EncargoError("invalid_input", "description_required");
+  if (description.length < 8) {
+    throw new EncargoError("invalid_input", "description_too_short");
+  }
+  if (description.length > MAX_DESCRIPTION) {
+    throw new EncargoError("invalid_input", "description_too_long");
+  }
   if (!isEncargoServiceKey(serviceKey)) {
     throw new EncargoError("invalid_input", "service_key_invalid");
+  }
+
+  let leadId = input.leadId ? String(input.leadId).slice(0, 120) : null;
+  const crm = await resolveClientFromCrm(clientId);
+  if (crm.nombre) {
+    // Never trust clientName from the browser in production.
+    clientName = crm.nombre;
+    if (!leadId && crm.leadId) leadId = crm.leadId;
+  } else if (!clientName) {
+    throw new EncargoError("invalid_input", "client_name_required");
   }
 
   const store = getEncargoStore();
   const encargo = await store.createEncargo({
     clientId,
     clientName,
-    leadId: input.leadId ? String(input.leadId) : null,
+    leadId,
     serviceKey: serviceKey as EncargoServiceKey,
     description,
     actorId: subject.id,
