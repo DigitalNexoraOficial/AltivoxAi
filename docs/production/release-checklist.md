@@ -8,11 +8,11 @@ Post B0–B7 · sin B8. Complementa [`../deployment.md`](../deployment.md).
 
 ### Git (Release Engineer)
 
-- [x] RC `v0.7.0-rc1-b7` / `cursor/go-live-execution-4521` completo  
-- [x] `npm run test:core` PASS  
-- [x] Diff audit PASS ([`RELEASE-DIFF-REPORT.md`](./RELEASE-DIFF-REPORT.md))  
-- [ ] **Release PR mergeado a `main`** (espera confirmación owner)  
-- [ ] Tag `v0.7.0-b7` creado **después** del merge  
+- [x] RC `v0.7.0-rc1-b7` / release branch completo  
+- [x] `npm run test:core` PASS (pre y post merge)  
+- [x] Diff audit PASS  
+- [x] **Release mergeado a `main`**  
+- [x] Tag `v0.7.0-b7` creado  
 
 ### Ops
 

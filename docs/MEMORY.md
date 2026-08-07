@@ -128,15 +128,16 @@ Spec: [`core-engines.md`](./core-engines.md).
 | 2026-08 | **Hardening post B0–B7:** sync ADR-014…017 · encapsulación Agent Runtime · lead anon+RLS · legacy/ · `.env.example` | hardening |
 | 2026-08 | **P0 production readiness:** docs/production/* (SQL/env/smoke/backup/release/security) | ops docs |
 | 2026-08 | **Go-live execution:** checklists + FINAL-RELEASE-REPORT (NO-GO hasta merge/ops) | go-live |
+| 2026-08 | **Release v0.7.0-b7:** merge release → `main` + tag oficial | release |
 
 ---
 
 ## 8. Pendiente de implementación (no docs)
 
 Ver [`todo.md`](./todo.md) y [`roadmap.md`](./roadmap.md).  
-**Bloques 0–7 cerrados.** Hardening de cierre aplicado.  
-**Producción:** ver [`production/FINAL-RELEASE-REPORT.md`](./production/FINAL-RELEASE-REPORT.md) — **NO-GO** real hasta merge PRs → `main` + SQL/env/Upstash/smoke.  
-**Próximo tras GO ops:** fases 8–9 (perf/SEO · analítica/facturación) — **sin B8 de motores**.  
+**Bloques 0–7 cerrados.** Código en **`main`** · tag **`v0.7.0-b7`**.  
+**Producción ops:** env · SQL · Upstash · backup · smoke HTTP — [`production/RELEASE-CLOSURE-REPORT.md`](./production/RELEASE-CLOSURE-REPORT.md).  
+**Próximo tras ops GO:** fases 8–9 (perf/SEO · analítica/facturación) — **sin B8 de motores**.  
 Deploy Engine **implementado** (ZIP interno; sin providers). Review = B6. Agent Runtime interno.  
 Ops entorno: SQL B1/B2/B5 + `review.sql` + `deploy.sql` + Upstash.  
 Migración CRM UI = backlog UI aparte.

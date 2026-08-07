@@ -1,8 +1,8 @@
 # FINAL GO-LIVE REPORT — AltivoxAI
 
-**Fecha informe:** 2026-08-07  
-**Release Candidate:** `v0.7.0-rc1-b7` (`5c7d0e7`)  
-**Target tag prod:** `v0.7.0-b7` (**aún no creado** — espera merge)
+**Fecha:** 2026-08-07  
+**Version:** `v0.7.0-b7`  
+**Status Git:** **RELEASED on main**
 
 ---
 
@@ -10,9 +10,9 @@
 
 | Campo | Valor |
 |-------|-------|
-| Version (objetivo) | `v0.7.0-b7` |
-| Version (actual Git) | RC `v0.7.0-rc1-b7` · **`main` sin OS** |
-| Status | **AWAITING MERGE CONFIRMATION** |
+| Version | `v0.7.0-b7` |
+| Main | Contiene B0–B7 |
+| Tag | `v0.7.0-b7` |
 
 ---
 
@@ -20,41 +20,23 @@
 
 | Área | Resultado | Notas |
 |------|-----------|-------|
-| Architecture | **PASS** | B0–B7 + ADR en RC |
-| Security | **PASS** | Código + selftests; ver `final-security-check.md` |
-| Tests | **PASS** | `npm run test:core` completo |
-| Database | **PENDING** | Scripts listos; **no** ejecutados por agente |
-| Environment | **PENDING** | Vercel/Upstash no verificados aquí |
-| Smoke Test HTTP | **PENDING** | Selftests PASS; E2E HTTP = ops |
-| Git `main` | **PENDING** | Release PR listo; merge **bloqueado** hasta OK owner |
+| Architecture | **PASS** | Motores separados · ADR intactos |
+| Security | **PASS** | Código + selftests |
+| Tests | **PASS** | `test:core` en main |
+| Database | **PENDING OPS** | Scripts en repo |
+| Environment | **PENDING OPS** | Vercel / Upstash |
+| Smoke Test HTTP | **PENDING OPS** | Selftests PASS |
 
 ---
 
 ## FINAL STATUS
 
-### Código / Release Candidate
+### Git / código
 
-**PRODUCTION READY (candidate)** — GO para integrar.
+**PRODUCTION RELEASE** — `main` + tag `v0.7.0-b7`.
 
-### Producción real (deploy live)
+### Entorno live
 
-**NOT PRODUCTION READY** hasta:
+**GO condicionado** a checklist ops (env · SQL · Upstash · backup · smoke HTTP).
 
-1. Confirmación explícita → merge RC → `main`  
-2. Tag `v0.7.0-b7`  
-3. Env + Upstash (sin `ALTIVOX_*_STORE=memory`)  
-4. SQL B1–B7 + backup  
-5. Smoke HTTP E2E  
-
-Cuando eso complete → actualizar este doc a:
-
-```text
-FINAL STATUS: PRODUCTION READY
-Version: v0.7.0-b7
-```
-
----
-
-## Fuera de alcance (respetado)
-
-B8 · CRM · Marketplace · agentes públicos · chat OS · Workflow runtime · deploy providers.
+Cuando ops complete → entorno **PRODUCTION READY** operacional.

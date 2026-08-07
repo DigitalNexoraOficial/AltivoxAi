@@ -7,11 +7,16 @@ Documentación de **preparación para lanzamiento real**.
 
 | Documento | Contenido |
 |-----------|-----------|
-| [`FINAL-GO-LIVE-REPORT.md`](./FINAL-GO-LIVE-REPORT.md) | Status producción (awaiting merge) |
+| [`FINAL-RELEASE-v0.7.0-b7.md`](./FINAL-RELEASE-v0.7.0-b7.md) | Documento oficial de release |
+| [`RELEASE-CLOSURE-REPORT.md`](./RELEASE-CLOSURE-REPORT.md) | Cierre · estado RELEASED |
+| [`FINAL-GO-LIVE-REPORT.md`](./FINAL-GO-LIVE-REPORT.md) | Status producción |
+| [`PRE-MERGE-RELEASE-CHECK.md`](./PRE-MERGE-RELEASE-CHECK.md) | Auditoría pre-merge |
 | [`RELEASE-AUDIT.md`](./RELEASE-AUDIT.md) | Auditoría Git RC vs main |
 | [`RELEASE-DIFF-REPORT.md`](./RELEASE-DIFF-REPORT.md) | Diff + secrets + architecture |
 | [`final-security-check.md`](./final-security-check.md) | Security final |
 | [`go-live-supabase-runbook.md`](./go-live-supabase-runbook.md) | SQL orden (no auto-run) |
+
+**Estado:** código **RELEASED** en `main` · tag **`v0.7.0-b7`** · ops env/SQL/smoke **pendiente**.
 
 ## Go-live checklists
 

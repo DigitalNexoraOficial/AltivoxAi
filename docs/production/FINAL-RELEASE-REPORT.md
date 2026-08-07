@@ -16,12 +16,12 @@
 | `npm run test:core` | **PASS** |
 | Security código | **PASS** |
 | SEO `/r` + legacy | **PASS** |
-| Merge a `main` | **PENDIENTE CONFIRMACIÓN** — Release PR RC→main (ver [`RELEASE-AUDIT.md`](./RELEASE-AUDIT.md)) |
+| Merge a `main` | **DONE** — fast-forward release → `main` |
+| Tag `v0.7.0-b7` | **DONE** (ver tag git) |
 | Env Vercel / Upstash | **PENDING_OPS** |
 | SQL aplicado en Supabase prod | **PENDING_OPS** |
 | Smoke HTTP real | **PENDING_OPS** |
 | Backup Supabase | **PENDING_OPS** |
-| Tag `v0.7.0-b7` | **NO CREADO** (solo RC `v0.7.0-rc1-b7`) |
 
 ---
 
