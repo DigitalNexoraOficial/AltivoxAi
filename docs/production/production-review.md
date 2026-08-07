@@ -1,6 +1,10 @@
 # Revisión de producción P0 (rendimiento · seguridad · SEO · logs)
 
-Auditoría **read-only** de código · 2026-08-07. Sin cambios de motores.
+Auditoría **read-only** de código · actualizado release RC `v0.7.0-rc1-b7` (2026-08-07).
+
+**Estado release:** candidate READY · `main` sin merge · ver [`FINAL-GO-LIVE-REPORT.md`](./FINAL-GO-LIVE-REPORT.md).
+
+Sin cambios de motores.
 
 ---
 

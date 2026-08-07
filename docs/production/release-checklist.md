@@ -6,19 +6,28 @@ Post B0–B7 · sin B8. Complementa [`../deployment.md`](../deployment.md).
 
 ## Antes del lanzamiento
 
+### Git (Release Engineer)
+
+- [x] RC `v0.7.0-rc1-b7` / `cursor/go-live-execution-4521` completo  
+- [x] `npm run test:core` PASS  
+- [x] Diff audit PASS ([`RELEASE-DIFF-REPORT.md`](./RELEASE-DIFF-REPORT.md))  
+- [ ] **Release PR mergeado a `main`** (espera confirmación owner)  
+- [ ] Tag `v0.7.0-b7` creado **después** del merge  
+
+### Ops
+
 - [ ] Migraciones aplicadas ([`sql-checklist.md`](./sql-checklist.md))  
-- [ ] Variables configuradas ([`env-checklist.md`](./env-checklist.md))  
+- [ ] Variables configuradas ([`env-checklist.md`](./env-checklist.md)) — **sin** `ALTIVOX_*_STORE=memory`  
 - [ ] Tests OK — `npm run test:core`  
 - [ ] Smoke test OK ([`smoke-test.md`](./smoke-test.md))  
 - [ ] Backup realizado ([`backup-plan.md`](./backup-plan.md))  
 - [ ] Rollback disponible (scripts + tag + Vercel previous)  
-- [ ] Security revisada ([`security-audit.md`](./security-audit.md))  
+- [ ] Security revisada ([`final-security-check.md`](./final-security-check.md))  
 - [ ] RLS revisada (anon/staff; no re-aplicar scripts legacy post-rbac)  
 - [ ] Dominio configurado (DNS · Vercel · `ALLOWED_ORIGINS` lead si aplica)  
 - [ ] Upstash rate limit en prod  
 - [ ] `assign-superadmin` / roles staff OK  
 - [ ] SEO: `/r` noindex · `/legacy` disallow · sitemap limpio  
-- [ ] Tag release git  
 
 ---
 

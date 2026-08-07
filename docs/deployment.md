@@ -80,18 +80,21 @@ Aplicar `supabase/sql/deploy.sql` en el entorno.
 
 ## Antes de producción
 
-Detalle go-live: [`docs/production/FINAL-RELEASE-REPORT.md`](./production/FINAL-RELEASE-REPORT.md).
+Detalle go-live: [`docs/production/FINAL-GO-LIVE-REPORT.md`](./production/FINAL-GO-LIVE-REPORT.md) · audit: [`RELEASE-AUDIT.md`](./production/RELEASE-AUDIT.md).
 
+**Version objetivo:** `v0.7.0-b7` · **RC actual:** `v0.7.0-rc1-b7`.
+
+- [ ] Release PR mergeado a `main` (confirmación owner)  
+- [ ] Tag `v0.7.0-b7`  
 - [ ] Ejecutar migraciones SQL B1-B7  
-- [ ] Revisar variables entorno  
+- [ ] Revisar variables entorno (sin `ALTIVOX_*_STORE=memory`)  
+- [ ] Upstash configurado  
 - [ ] Ejecutar tests  
 - [ ] Ejecutar smoke test APIs  
 - [ ] Verificar RLS  
 - [ ] Verificar permisos `can()`  
 - [ ] Backup Supabase  
 - [ ] Rollback disponible  
-- [ ] **Merge cadena B5–B7 + hardening + P0 a `main`**  
-- [ ] Tag release + deploy Vercel  
 
 Detalle SQL típico: `rbac.sql` · `audit-events.sql` · `project-engine.sql` · `agent-runtime.sql` · `review.sql` · `deploy.sql` (+ `assign-superadmin.sql`).
 
