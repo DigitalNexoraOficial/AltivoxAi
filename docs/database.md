@@ -58,10 +58,12 @@ Detalle: [`ADR-013`](./adr/ADR-013-project-engine.md), [`flow.md`](./flow.md).
 
 ---
 
-## 3. Horizonte (fuera de B2 — no implementar ahora)
+## 3. Horizonte (fuera de B2 — y fuera de B4)
+
+Bloque 4 (**ADR-014**) es corte de **interfaces / fronteras**: **no** añade tablas nuevas.
 
 Capability Registry, Workflow, Tool Registry, Memory, agents, review tokens, deployments — ver [`core-engines.md`](./core-engines.md).  
-Se añadirán en sus bloques sin reescribir el core de `projects`.
+Runtimes y persistencia asociada: Bloques **5–7**, sin reescribir el core de `projects`.
 
 ---
 

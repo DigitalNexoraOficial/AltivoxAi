@@ -60,15 +60,26 @@ Lead → Cliente → Proyecto → Planificación → Capabilities → Agentes
   → Entrega → Deploy opcional → Mantenimiento
 ```
 
-### Fase Bloque 2 (Project Engine)
+### Fase Bloque 2 (Project Engine) — cerrada
 
 Estados en dominio: `draft|planning|in_progress|qa|review|approved|delivered|maintenance|cancelled|archived`.
 
-- Transiciones **manuales vía OPS** hasta Workflow/JARVIS/agentes.  
-- `review` = fase; sin portal/tokens aún.  
+- Transiciones **manuales vía OPS** hasta Workflow/JARVIS operativos con runtimes.  
+- `review` = fase; sin portal/tokens aún (portal = Bloque 6).  
 - Sin deploy ni capabilities en el proyecto.
 
-Detalle: [`flow.md`](./flow.md), [`core-engines.md`](./core-engines.md), [`ADR-013`](./adr/ADR-013-project-engine.md).
+### Fase Bloque 4 (interfaces) — contrato ADR-014
+
+- JARVIS + resto de motores del núcleo = **fronteras de orquestación / responsabilidad**.  
+- **No** Agent Runtime, **no** runtimes de motores, **no** Review, **no** Deploy, **no** service modules.
+
+| Bloque | Producto |
+|--------|----------|
+| 5 | Agent runtime + service modules |
+| 6 | Review Engine + `/r/[token]` |
+| 7 | Entrega ZIP + Deployment Engine |
+
+Detalle: [`flow.md`](./flow.md), [`core-engines.md`](./core-engines.md), [`ADR-013`](./adr/ADR-013-project-engine.md), [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md).
 
 ---
 
@@ -89,9 +100,9 @@ Mínimo funcional a medio plazo:
 
 ### Años 1 — Cimientos del OS
 
-- RBAC sólido; dominio Proyectos; shell `/ops`; JARVIS orquestador mínimo.
-- Un puñado de módulos de servicio (p.ej. web, chatbot, automatización).
-- Review URL + entrega ZIP; deploy asistido con confirmación.
+- RBAC sólido; dominio Proyectos; shell `/ops`; fronteras JARVIS + motores (B4); Agent runtime y módulos (B5).
+- Un puñado de módulos de servicio (p.ej. web, chatbot, automatización) — tras B5.
+- Review URL + entrega ZIP; deploy asistido con confirmación — B6/B7.
 - Memoria y event bus persistentes; auditoría completa del ciclo de vida.
 
 ### Años 2–3 — Empresa multi-cliente
@@ -127,6 +138,7 @@ Mínimo funcional a medio plazo:
 
 Hoy existen: landing Next.js, admin HTML (`public/*.html`, temporal ADR-001), APIs lead/chat/n8n, CRM ligero Supabase, **Security (B1)**, **Project Engine (B2)** y **shell `/ops` App Router (B3)** con UI de proyectos.
 
-**Aún no:** portal `/r/[token]`, JARVIS runtime, motores Workflow/Tool/Memory/Capability, Agent Runtime, CRM App Router.
+**Aún no:** portal `/r/[token]`, JARVIS operativo, runtimes de Workflow/Tool/Memory/Capability, Agent Runtime, CRM App Router.  
+**Contrato B4 (docs):** [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) — fronteras; sin runtimes ni código hasta OK explícito.
 
 Esta visión es la **fuente oficial de verdad** para el diseño; la implementación sigue el [`roadmap.md`](./roadmap.md) bloque a bloque.
