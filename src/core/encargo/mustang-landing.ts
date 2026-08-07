@@ -20,10 +20,11 @@ const MODEL = {
 
 /** Prefer CDN (blob preview has no /assets origin), then prod, then relative. */
 function modelUrlCandidates(file: string): string[] {
-  const branch = "cursor/encargo-landing-mustang-fix-4521";
+  /** Pinned commit so blob-preview CDN resolves before Vercel deploys /assets. */
+  const pin = "c13f3ac";
   const repo = "digitalnexoraoficial/altivoxai";
   return [
-    `https://cdn.jsdelivr.net/gh/${repo}@${branch}/public/assets/encargos/mustang/${file}`,
+    `https://cdn.jsdelivr.net/gh/${repo}@${pin}/public/assets/encargos/mustang/${file}`,
     `https://www.altivoxai.es/assets/encargos/mustang/${file}`,
     `/assets/encargos/mustang/${file}`,
   ];
