@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { EncargoDeliverablePreview } from "@/components/ops/EncargoDeliverablePreview";
 import { OpsBreadcrumbs } from "@/components/ops/OpsBreadcrumbs";
 import { useOpsSession } from "@/components/ops/OpsSessionProvider";
 import {
@@ -501,7 +502,12 @@ export default function OpsEncargosPage() {
               ) : null}
               {s.output ? (
                 <pre className="ops-console" style={{ marginTop: "0.65rem" }}>
-                  {s.output}
+                  {s.role === "code"
+                    ? s.output.slice(0, 600) +
+                      (s.output.length > 600
+                        ? "\n… (preview y descarga abajo)"
+                        : "")
+                    : s.output}
                 </pre>
               ) : null}
               <div className="ops-form-actions" style={{ marginTop: "0.65rem" }}>
@@ -538,6 +544,27 @@ export default function OpsEncargosPage() {
               </div>
             </section>
           ))}
+
+          {(() => {
+            const codeDone = view.steps.find(
+              (s) => s.role === "code" && s.status === "done" && s.output
+            );
+            if (!codeDone) return null;
+            return (
+              <section className="ops-panel">
+                <h2>Entregable final</h2>
+                <p className="ops-help">
+                  Preview y descarga del servicio ({view.encargo.serviceLabel}
+                  ).
+                </p>
+                <EncargoDeliverablePreview
+                  output={codeDone.output}
+                  serviceKey={view.encargo.serviceKey}
+                  clientName={view.encargo.clientName}
+                />
+              </section>
+            );
+          })()}
         </div>
       ) : null}
     </>

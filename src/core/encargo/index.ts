@@ -13,6 +13,15 @@ export {
 export { EncargoError, type EncargoErrorCode } from "./errors";
 
 export {
+  extractPrimaryArtifact,
+  artifactLabel,
+  type EncargoArtifact,
+  type EncargoArtifactKind,
+} from "./artifacts";
+
+export { buildLocalImplementation } from "./local-artifact";
+
+export {
   createEncargoDraft,
   continueEncargo,
   getEncargoView,

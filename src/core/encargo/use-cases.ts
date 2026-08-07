@@ -14,6 +14,8 @@ import { createAgentRun, executeAgentRun } from "@/core/agent-runtime";
 import { completeLlm } from "@/core/tool-registry";
 import { EncargoError } from "./errors";
 import { getEncargoStore } from "./internal/store";
+import { extractPrimaryArtifact } from "./artifacts";
+import { buildLocalImplementation } from "./local-artifact";
 import {
   isEncargoServiceKey,
   type EncargoServiceKey,
@@ -95,7 +97,17 @@ function implementPrompt(
     proposal.slice(0, 4000),
     prior ? `Salidas previas:\n${prior.slice(0, 4000)}` : "",
     role === "code"
-      ? `Genera el código principal (completo o por archivos) alineado al brief.`
+      ? [
+          `Genera UN ÚNICO archivo entregable completo, listo para preview y descarga.`,
+          `Servicio ${serviceKey}:`,
+          serviceKey === "chatbot"
+            ? `- HTML autocontenido (CSS+JS) con widget de chat usable.`
+            : serviceKey === "automation"
+              ? `- JSON de flujo (n8n-like) válido.`
+              : `- HTML autocontenido de landing/web.`,
+          `Obligatorio: envuelve el archivo en un bloque markdown \`\`\`html o \`\`\`json.`,
+          `No digas solo el plan: incluye el código completo.`,
+        ].join("\n")
       : `Ejecuta tu especialidad y entrega el resultado final estructurado.`,
   ]
     .filter(Boolean)
@@ -419,9 +431,29 @@ export async function approveStep(
         ? String((executed.result as { text: string }).text)
         : JSON.stringify(executed.result ?? {});
 
+    // If code agent returned prose without an embeddable file, synthesize one.
+    let finalText = text;
+    if (step.role === "code") {
+      const art = extractPrimaryArtifact(
+        text,
+        encargo.serviceKey,
+        encargo.clientName
+      );
+      if (!art) {
+        finalText = buildLocalImplementation({
+          role: "code",
+          serviceKey: encargo.serviceKey,
+          clientName: encargo.clientName,
+          description: encargo.description,
+          proposal: step.proposal,
+          reason: "llm_output_without_artifact",
+        });
+      }
+    }
+
     await store.updateStep(step.id, {
       status: "done",
-      output: text,
+      output: finalText,
       runId: executed.id,
     });
   } catch (err) {
@@ -433,14 +465,14 @@ export async function approveStep(
       message === "llm_provider_error" ||
       message === "llm_not_configured"
     ) {
-      const local =
-        `[Implementación local — LLM no disponible]\n` +
-        `Rol: ${step.role} · Servicio: ${encargo.serviceKey}\n` +
-        `Brief: ${encargo.description.slice(0, 800)}\n\n` +
-        `Propuesta aprobada:\n${step.proposal.slice(0, 2000)}\n\n` +
-        `Entregable borrador: documentar/ejecutar el plan de ${step.role} ` +
-        `alineado al brief. Revisar en el proyecto vinculado.\n` +
-        `(${message.slice(0, 200)})`;
+      const local = buildLocalImplementation({
+        role: step.role,
+        serviceKey: encargo.serviceKey,
+        clientName: encargo.clientName,
+        description: encargo.description,
+        proposal: step.proposal,
+        reason: message.slice(0, 200),
+      });
       await store.updateStep(step.id, {
         status: "done",
         output: local,
