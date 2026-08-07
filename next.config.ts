@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
       "font-src 'self' data: https://fonts.gstatic.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net",
-      "connect-src 'self' https://*.supabase.co https://openrouter.ai https://generativelanguage.googleapis.com https://*.vercel.app wss://*.supabase.co",
+      "connect-src 'self' https://*.supabase.co https://openrouter.ai https://generativelanguage.googleapis.com https://*.vercel.app wss://*.supabase.co https://upload.wikimedia.org https://cdn.jsdelivr.net",
       "worker-src 'self' blob:",
       "media-src 'self' blob:",
       "frame-src 'self' https://cal.com https://*.cal.com https://calendly.com https://*.calendly.com",

@@ -107,10 +107,14 @@ async function main() {
   });
   const mustangArt = extractPrimaryArtifact(localMustang, "web", "Xabier");
   assert(mustangArt?.kind === "html", "mustang local html");
-  assert(mustangArt.content.includes("jsdelivr.net"), "three via jsdelivr (CSP)");
   assert(
-    /Ford Mustang|puertas|hood|scroll/i.test(mustangArt.content),
-    "scroll car beats present"
+    mustangArt.content.includes("jsdelivr.net") ||
+      mustangArt.content.includes("wikimedia"),
+    "three + photo sources"
+  );
+  assert(
+    /Ford Mustang|wikimedia|encargos\/mustang/i.test(mustangArt.content),
+    "real Mustang photo landing"
   );
 
   setLlmCompleterForTests(null);
