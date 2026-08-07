@@ -3,6 +3,17 @@
 Documentación de **preparación para lanzamiento real**.  
 **No** es B8. **No** añade motores ni features.
 
+## Production activation (v0.7.0-b7)
+
+| Documento | Contenido |
+|-----------|-----------|
+| [`PRODUCTION-ACTIVATION-REPORT.md`](./PRODUCTION-ACTIVATION-REPORT.md) | **Informe activación** · PENDING/ACTIVE |
+| [`ENV-ACTIVATION-CHECK.md`](./ENV-ACTIVATION-CHECK.md) | Variables · prohibido memory stores |
+| [`SUPABASE-ACTIVATION.md`](./SUPABASE-ACTIVATION.md) | Orden SQL (no auto) |
+| [`SECURITY-PRODUCTION-CHECK.md`](./SECURITY-PRODUCTION-CHECK.md) | Security prod |
+| [`BACKUP-EXECUTION.md`](./BACKUP-EXECUTION.md) | Backup + rollback |
+| [`SMOKE-TEST-RESULT.md`](./SMOKE-TEST-RESULT.md) | Smoke A PASS · B ops |
+
 ## Release v0.7.0-b7
 
 | Documento | Contenido |

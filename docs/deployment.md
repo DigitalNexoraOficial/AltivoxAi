@@ -82,7 +82,9 @@ Aplicar `supabase/sql/deploy.sql` en el entorno.
 
 Detalle go-live: [`docs/production/FINAL-GO-LIVE-REPORT.md`](./production/FINAL-GO-LIVE-REPORT.md) · audit: [`RELEASE-AUDIT.md`](./production/RELEASE-AUDIT.md).
 
-**Version:** `v0.7.0-b7` · **Status:** PRODUCTION RELEASE (código en `main`).
+Activación: [`docs/production/PRODUCTION-ACTIVATION-REPORT.md`](./production/PRODUCTION-ACTIVATION-REPORT.md).
+
+**Version:** `v0.7.0-b7` · **Status código:** PRODUCTION RELEASE · **Status entorno:** PENDING ops.
 
 - [x] Release mergeado a `main`  
 - [x] Tag `v0.7.0-b7`  
