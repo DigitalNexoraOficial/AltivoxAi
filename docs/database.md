@@ -65,13 +65,19 @@ Se añadirán en sus bloques sin reescribir el core de `projects`.
 
 ---
 
-## 4. RLS (B2)
+## 4. RLS + integridad (B2)
 
-- Staff: políticas por rol alineadas a permisos `project.*` / `deliverable.generate` (como leads/clientes).  
+- Staff: políticas por rol alineadas a permisos `project.*` / `deliverable.generate`.  
 - Sin acceso anon a tablas PE.  
 - `project_events`: select + insert staff; sin update/delete autenticado (append-only).  
-- Review por token: N/A hasta Review Engine.  
-- APIs del PE persisten con **service role** tras `can()`; RLS protege acceso directo con JWT de usuario.
+- **`projects.status`:** no actualizable por `UPDATE` directo.  
+  - Grants de columna a `authenticated` excluyen `status`.  
+  - Trigger `trg_projects_status_guard` bloquea cambios salvo flag de sesión.  
+  - Único camino: RPC `altivox_pe_transition` (lock optimista `WHERE status = from` + evento en la misma TX).  
+- **Deliverables:** trigger exige `version_id` del mismo `project_id`.  
+- Mutaciones de dominio atómicas vía RPC (`altivox_pe_create_project`, `_update_meta`, `_transition`, `_create_version`, `_register_deliverable`).  
+- APIs del PE llaman RPC con **service role** tras `can()`; RLS sigue protegiendo acceso JWT directo.  
+- Review por token: N/A hasta Review Engine.
 
 ---
 

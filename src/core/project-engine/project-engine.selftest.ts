@@ -13,6 +13,7 @@ import {
   actionForTransition,
   projectResource,
   ProjectEngineError,
+  createProject,
 } from "./index";
 import { normalizeCreateInput, normalizeMetaPatch } from "./project";
 import { can, type HumanSubject } from "../security";
@@ -74,13 +75,29 @@ function main() {
   assert(!can(editor, "project.create").allowed, "editor deny create");
   assert(can(operator, "project.transition").allowed, "operator transition");
   assert(
-    !can(operator, "project.approve").allowed,
-    "operator deny approve (cannot enter approved alone)"
+    can(operator, "project.approve").allowed,
+    "operator approve (review→approved on OPS happy path)"
   );
   assert(can(operator, "deliverable.generate").allowed, "operator deliverable");
   assert(!can(operator, "project.create").allowed, "operator deny create");
   assert(can(admin, "project.create").allowed, "admin create");
   assert(can(admin, "project.approve").allowed, "admin approve");
+  assert(
+    can(
+      { type: "machine", id: "jarvis:1", principalType: "jarvis" },
+      "project.approve"
+    ).allowed,
+    "jarvis approve ceiling"
+  );
+
+  // Optimistic-lock conflict is surfaced as Engine conflict (not deny)
+  const stale = new ProjectEngineError(
+    "conflict",
+    "transition_conflict",
+    409
+  );
+  assert(stale.code === "conflict" && stale.status === 409, "conflict shape");
+  assert(typeof createProject === "function", "public createProject use-case");
 
   const created = normalizeCreateInput({
     name: "  Demo  ",

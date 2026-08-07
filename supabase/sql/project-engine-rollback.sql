@@ -1,5 +1,16 @@
 -- Rollback Bloque 2 — Project Engine
--- Elimina tablas PE y sus políticas. No toca helpers RBAC ni audit_events.
+-- Elimina RPCs, triggers, tablas PE. No toca helpers RBAC ni audit_events.
+
+drop trigger if exists trg_projects_status_guard on public.projects;
+drop trigger if exists trg_deliverables_version_guard on public.deliverables;
+
+drop function if exists public.altivox_pe_create_project(text, text, uuid, text, text, jsonb, text, text);
+drop function if exists public.altivox_pe_update_meta(uuid, text, text, text, text, uuid, boolean, text, boolean, text, jsonb, boolean);
+drop function if exists public.altivox_pe_transition(uuid, text, text, text, text, text, jsonb);
+drop function if exists public.altivox_pe_create_version(uuid, text, text, jsonb, text, text);
+drop function if exists public.altivox_pe_register_deliverable(uuid, text, text, text, uuid, jsonb, text, text);
+drop function if exists public.altivox_pe_status_guard();
+drop function if exists public.altivox_pe_deliverable_version_guard();
 
 drop policy if exists "project_events_select_staff" on public.project_events;
 drop policy if exists "project_events_insert_staff" on public.project_events;

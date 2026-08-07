@@ -74,7 +74,7 @@ export async function handleEngineError(
         ? "deny"
         : err.code === "persistence_error"
           ? "error"
-          : "deny";
+          : "rejected";
     await writeAuditEvent({
       actorType: ctx.user ? "human" : "anonymous",
       actorId: ctx.user?.id,
@@ -83,7 +83,7 @@ export async function handleEngineError(
       permission: ctx.permission,
       resourceType: "project",
       resourceId: ctx.projectId,
-      result: err.code === "forbidden" ? "deny" : result === "error" ? "error" : "deny",
+      result,
       ip: ctx.ip,
       errorCode: err.code,
       metadata: { message: err.message },

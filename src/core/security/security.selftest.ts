@@ -53,6 +53,7 @@ async function main() {
     "explicit bags"
   );
   assert(can(jarvis, "project.create").allowed, "jarvis project.create");
+  assert(can(jarvis, "project.approve").allowed, "jarvis project.approve");
   assert(
     !can(jarvis, "deploy.production").allowed,
     "jarvis deny deploy.production"

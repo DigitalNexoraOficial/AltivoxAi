@@ -1,6 +1,11 @@
 /**
- * Persistence for Project Engine via Supabase REST (service role).
- * Authorization is enforced in use-cases via can() before any call.
+ * @internal Project Engine persistence — NOT part of the public API.
+ *
+ * Do not import this module from Route Handlers or future engines.
+ * Call use-cases from `@/core/project-engine` instead (they enforce can()).
+ *
+ * Mutating writes go through SECURITY DEFINER RPCs so project row +
+ * project_events commit atomically; status changes require altivox_pe_transition.
  */
 
 import type {
@@ -13,10 +18,10 @@ import type {
   ProjectVersion,
   RegisterDeliverableInput,
   UpdateProjectMetaInput,
-} from "./types";
-import { ProjectEngineError } from "./types";
-import type { ProjectStatus } from "./states";
-import { isProjectStatus } from "./states";
+} from "../types";
+import { ProjectEngineError } from "../types";
+import type { ProjectStatus } from "../states";
+import { isProjectStatus } from "../states";
 
 const SUPABASE_URL =
   process.env.SUPABASE_URL || "https://soeyfivsuwohuuzgfqar.supabase.co";
@@ -110,6 +115,47 @@ async function rest<T>(
   return { ok: res.ok, status: res.status, data, text };
 }
 
+function rpcMessage(data: unknown, text: string): string {
+  if (data && typeof data === "object" && "message" in data) {
+    return String((data as { message: unknown }).message || "");
+  }
+  return text;
+}
+
+function throwRpcError(data: unknown, text: string, httpStatus: number): never {
+  const msg = rpcMessage(data, text);
+  if (msg.includes("transition_conflict")) {
+    throw new ProjectEngineError(
+      "conflict",
+      "transition_conflict",
+      409
+    );
+  }
+  if (msg.includes("project_not_found")) {
+    throw new ProjectEngineError("not_found", "project_not_found", 404);
+  }
+  if (msg.includes("version_label_exists")) {
+    throw new ProjectEngineError("conflict", "version_label_exists", 409);
+  }
+  if (msg.includes("version_not_found")) {
+    throw new ProjectEngineError("not_found", "version_not_found", 404);
+  }
+  if (msg.includes("version_project_mismatch")) {
+    throw new ProjectEngineError("invalid_input", "version_project_mismatch");
+  }
+  if (msg.includes("status_change_forbidden")) {
+    throw new ProjectEngineError(
+      "persistence_error",
+      "status_change_forbidden",
+      502
+    );
+  }
+  throw new ProjectEngineError(
+    "persistence_error",
+    "rpc_failed:" + httpStatus + ":" + msg.slice(0, 160)
+  );
+}
+
 export function mapProject(row: DbProject): Project {
   if (!isProjectStatus(row.status)) {
     throw new ProjectEngineError(
@@ -171,66 +217,143 @@ function mapEvent(row: DbEvent): ProjectEvent {
   };
 }
 
-export type DomainEventInsert = {
-  projectId: string;
-  eventType: string;
-  actorType?: string | null;
-  actorId?: string | null;
-  payload?: Record<string, unknown>;
+export type ActorRef = {
+  actorType: "human" | "machine";
+  actorId: string;
 };
 
-export async function insertDomainEvent(
-  event: DomainEventInsert
-): Promise<ProjectEvent> {
-  const { ok, status, data, text } = await rest<DbEvent[]>("project_events", {
-    method: "POST",
-    prefer: "return=representation",
-    body: JSON.stringify({
-      project_id: event.projectId,
-      event_type: event.eventType,
-      actor_type: event.actorType || null,
-      actor_id: event.actorId || null,
-      payload: event.payload || {},
-    }),
-  });
-  if (!ok || !data?.[0]) {
-    throw new ProjectEngineError(
-      "persistence_error",
-      "event_insert_failed:" + status + ":" + text.slice(0, 120)
-    );
-  }
-  return mapEvent(data[0]);
+export async function createProjectAtomic(
+  input: CreateProjectInput,
+  actor: ActorRef
+): Promise<Project> {
+  const { ok, status, data, text } = await rest<DbProject>(
+    "rpc/altivox_pe_create_project",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        p_name: input.name,
+        p_service_type: input.serviceType,
+        p_client_id: input.clientId || null,
+        p_lead_id: input.leadId || null,
+        p_description: input.description || "",
+        p_metadata: input.metadata || {},
+        p_actor_type: actor.actorType,
+        p_actor_id: actor.actorId,
+      }),
+    }
+  );
+  if (!ok || !data) throwRpcError(data, text, status);
+  return mapProject(data);
 }
 
-export async function insertProject(
-  input: CreateProjectInput,
-  actorId: string
+export async function updateProjectMetaAtomic(
+  projectId: string,
+  patch: UpdateProjectMetaInput,
+  actor: ActorRef
 ): Promise<Project> {
-  const now = new Date().toISOString();
-  const { ok, status, data, text } = await rest<DbProject[]>("projects", {
-    method: "POST",
-    prefer: "return=representation",
-    body: JSON.stringify({
-      name: input.name,
-      service_type: input.serviceType,
-      status: "draft",
-      client_id: input.clientId || null,
-      lead_id: input.leadId || null,
-      description: input.description || "",
-      metadata: input.metadata || {},
-      created_by: actorId,
-      updated_by: actorId,
-      created_at: now,
-      updated_at: now,
-    }),
-  });
-  if (!ok || !data?.[0]) {
-    throw new ProjectEngineError(
-      "persistence_error",
-      "project_insert_failed:" + status + ":" + text.slice(0, 120)
-    );
-  }
-  return mapProject(data[0]);
+  const { ok, status, data, text } = await rest<DbProject>(
+    "rpc/altivox_pe_update_meta",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        p_project_id: projectId,
+        p_actor_type: actor.actorType,
+        p_actor_id: actor.actorId,
+        p_name: patch.name ?? null,
+        p_service_type: patch.serviceType ?? null,
+        p_client_id:
+          patch.clientId === undefined || patch.clientId === null
+            ? null
+            : patch.clientId,
+        p_clear_client_id: patch.clientId === null,
+        p_lead_id:
+          patch.leadId === undefined || patch.leadId === null
+            ? null
+            : patch.leadId,
+        p_clear_lead_id: patch.leadId === null,
+        p_description: patch.description ?? null,
+        p_metadata: patch.metadata ?? null,
+        p_has_metadata: patch.metadata !== undefined,
+      }),
+    }
+  );
+  if (!ok || !data) throwRpcError(data, text, status);
+  return mapProject(data);
+}
+
+export async function transitionProjectAtomic(
+  projectId: string,
+  fromStatus: ProjectStatus,
+  toStatus: ProjectStatus,
+  eventType: string,
+  actor: ActorRef,
+  payload: Record<string, unknown>
+): Promise<Project> {
+  const { ok, status, data, text } = await rest<DbProject>(
+    "rpc/altivox_pe_transition",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        p_project_id: projectId,
+        p_from_status: fromStatus,
+        p_to_status: toStatus,
+        p_actor_type: actor.actorType,
+        p_actor_id: actor.actorId,
+        p_event_type: eventType,
+        p_payload: payload,
+      }),
+    }
+  );
+  if (!ok || !data) throwRpcError(data, text, status);
+  return mapProject(data);
+}
+
+export async function createVersionAtomic(
+  projectId: string,
+  input: CreateVersionInput,
+  actor: ActorRef
+): Promise<ProjectVersion> {
+  const { ok, status, data, text } = await rest<DbVersion>(
+    "rpc/altivox_pe_create_version",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        p_project_id: projectId,
+        p_label: input.label,
+        p_notes: input.notes || "",
+        p_metadata: input.metadata || {},
+        p_actor_type: actor.actorType,
+        p_actor_id: actor.actorId,
+      }),
+    }
+  );
+  if (!ok || !data) throwRpcError(data, text, status);
+  return mapVersion(data);
+}
+
+export async function registerDeliverableAtomic(
+  projectId: string,
+  input: RegisterDeliverableInput,
+  actor: ActorRef
+): Promise<Deliverable> {
+  const { ok, status, data, text } = await rest<DbDeliverable>(
+    "rpc/altivox_pe_register_deliverable",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        p_project_id: projectId,
+        p_title: input.title,
+        p_kind: input.kind || "artifact",
+        p_uri: input.uri ?? null,
+        p_version_id: input.versionId || null,
+        p_metadata: input.metadata || {},
+        p_actor_type: actor.actorType,
+        p_actor_id: actor.actorId,
+      }),
+    }
+  );
+  if (!ok || !data) throwRpcError(data, text, status);
+  return mapDeliverable(data);
 }
 
 export async function fetchProjectById(id: string): Promise<Project | null> {
@@ -252,7 +375,12 @@ export async function listProjects(
 ): Promise<Project[]> {
   const limit = Math.min(Math.max(filter.limit ?? 50, 1), 200);
   const offset = Math.max(filter.offset ?? 0, 0);
-  const parts = ["select=*", "order=created_at.desc", `limit=${limit}`, `offset=${offset}`];
+  const parts = [
+    "select=*",
+    "order=created_at.desc",
+    `limit=${limit}`,
+    `offset=${offset}`,
+  ];
   if (filter.status) {
     parts.push("status=eq." + encodeURIComponent(filter.status));
   }
@@ -269,73 +397,6 @@ export async function listProjects(
     );
   }
   return data.map(mapProject);
-}
-
-export async function updateProjectRow(
-  id: string,
-  patch: UpdateProjectMetaInput & {
-    status?: ProjectStatus;
-    updatedBy: string;
-  }
-): Promise<Project> {
-  const body: Record<string, unknown> = {
-    updated_at: new Date().toISOString(),
-    updated_by: patch.updatedBy,
-  };
-  if (patch.name !== undefined) body.name = patch.name;
-  if (patch.serviceType !== undefined) body.service_type = patch.serviceType;
-  if (patch.clientId !== undefined) body.client_id = patch.clientId;
-  if (patch.leadId !== undefined) body.lead_id = patch.leadId;
-  if (patch.description !== undefined) body.description = patch.description;
-  if (patch.metadata !== undefined) body.metadata = patch.metadata;
-  if (patch.status !== undefined) body.status = patch.status;
-
-  const { ok, status, data, text } = await rest<DbProject[]>(
-    "projects?id=eq." + encodeURIComponent(id),
-    {
-      method: "PATCH",
-      prefer: "return=representation",
-      body: JSON.stringify(body),
-    }
-  );
-  if (!ok || !data?.[0]) {
-    throw new ProjectEngineError(
-      "persistence_error",
-      "project_update_failed:" + status + ":" + text.slice(0, 120)
-    );
-  }
-  return mapProject(data[0]);
-}
-
-export async function insertVersion(
-  projectId: string,
-  input: CreateVersionInput,
-  actorId: string
-): Promise<ProjectVersion> {
-  const { ok, status, data, text } = await rest<DbVersion[]>(
-    "project_versions",
-    {
-      method: "POST",
-      prefer: "return=representation",
-      body: JSON.stringify({
-        project_id: projectId,
-        label: input.label,
-        notes: input.notes || "",
-        metadata: input.metadata || {},
-        created_by: actorId,
-      }),
-    }
-  );
-  if (!ok || !data?.[0]) {
-    if (status === 409 || text.toLowerCase().includes("duplicate")) {
-      throw new ProjectEngineError("conflict", "version_label_exists", 409);
-    }
-    throw new ProjectEngineError(
-      "persistence_error",
-      "version_insert_failed:" + status + ":" + text.slice(0, 120)
-    );
-  }
-  return mapVersion(data[0]);
 }
 
 export async function fetchVersion(
@@ -357,36 +418,6 @@ export async function fetchVersion(
   }
   if (!data?.[0]) return null;
   return mapVersion(data[0]);
-}
-
-export async function insertDeliverable(
-  projectId: string,
-  input: RegisterDeliverableInput,
-  actorId: string
-): Promise<Deliverable> {
-  const { ok, status, data, text } = await rest<DbDeliverable[]>(
-    "deliverables",
-    {
-      method: "POST",
-      prefer: "return=representation",
-      body: JSON.stringify({
-        project_id: projectId,
-        version_id: input.versionId || null,
-        kind: input.kind || "artifact",
-        title: input.title,
-        uri: input.uri ?? null,
-        metadata: input.metadata || {},
-        created_by: actorId,
-      }),
-    }
-  );
-  if (!ok || !data?.[0]) {
-    throw new ProjectEngineError(
-      "persistence_error",
-      "deliverable_insert_failed:" + status + ":" + text.slice(0, 120)
-    );
-  }
-  return mapDeliverable(data[0]);
 }
 
 export async function listTimeline(

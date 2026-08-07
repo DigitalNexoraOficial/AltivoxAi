@@ -11,7 +11,7 @@ export type AuditEventInput = {
   permission?: string;
   resourceType?: string;
   resourceId?: string;
-  result: "ok" | "deny" | "error" | "rate_limited";
+  result: "ok" | "deny" | "error" | "rate_limited" | "rejected";
   ip?: string;
   userAgent?: string;
   metadata?: Record<string, unknown>;

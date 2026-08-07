@@ -11,7 +11,7 @@ import {
   projectResource,
 } from "../permissions";
 import { normalizeCreateInput, normalizeMetaPatch } from "../project";
-import * as repo from "../repository";
+import * as repo from "../internal/repository";
 import { canTransition, isProjectStatus, type ProjectStatus } from "../states";
 import type {
   CreateProjectInput,
@@ -26,12 +26,8 @@ import type {
 } from "../types";
 import { ProjectEngineError } from "../types";
 
-function actorId(subject: Subject): string {
-  return subject.id;
-}
-
-function actorType(subject: Subject): "human" | "machine" {
-  return subject.type;
+function actor(subject: Subject): repo.ActorRef {
+  return { actorType: subject.type, actorId: subject.id };
 }
 
 function assertCan(
@@ -51,19 +47,7 @@ export async function createProject(
 ): Promise<Project> {
   assertCan(subject, actionForOp("create"));
   const normalized = normalizeCreateInput(input);
-  const project = await repo.insertProject(normalized, actorId(subject));
-  await repo.insertDomainEvent({
-    projectId: project.id,
-    eventType: "project.created",
-    actorType: actorType(subject),
-    actorId: actorId(subject),
-    payload: {
-      name: project.name,
-      serviceType: project.serviceType,
-      status: project.status,
-    },
-  });
-  return project;
+  return repo.createProjectAtomic(normalized, actor(subject));
 }
 
 export async function listProjects(
@@ -106,18 +90,7 @@ export async function updateProjectMeta(
     );
   }
   const patch = normalizeMetaPatch(input);
-  const updated = await repo.updateProjectRow(projectId, {
-    ...patch,
-    updatedBy: actorId(subject),
-  });
-  await repo.insertDomainEvent({
-    projectId,
-    eventType: "project.updated",
-    actorType: actorType(subject),
-    actorId: actorId(subject),
-    payload: { patch },
-  });
-  return updated;
+  return repo.updateProjectMetaAtomic(projectId, patch, actor(subject));
 }
 
 export async function transitionProject(
@@ -142,18 +115,29 @@ export async function transitionProject(
     );
   }
 
-  const updated = await repo.updateProjectRow(projectId, {
-    status: to,
-    updatedBy: actorId(subject),
-  });
-  await repo.insertDomainEvent({
-    projectId,
-    eventType: eventTypeForStatusChange(to),
-    actorType: actorType(subject),
-    actorId: actorId(subject),
-    payload: { from: existing.status, to },
-  });
-  return updated;
+  try {
+    return await repo.transitionProjectAtomic(
+      projectId,
+      existing.status,
+      to,
+      eventTypeForStatusChange(to),
+      actor(subject),
+      { from: existing.status, to }
+    );
+  } catch (err) {
+    if (
+      err instanceof ProjectEngineError &&
+      err.code === "conflict" &&
+      err.message === "transition_conflict"
+    ) {
+      throw new ProjectEngineError(
+        "conflict",
+        `cannot_transition:${existing.status}->${to}:stale`,
+        409
+      );
+    }
+    throw err;
+  }
 }
 
 export async function createVersion(
@@ -179,7 +163,7 @@ export async function createVersion(
       "project_immutable_in_status:" + existing.status
     );
   }
-  const version = await repo.insertVersion(
+  return repo.createVersionAtomic(
     projectId,
     {
       label,
@@ -191,16 +175,8 @@ export async function createVersion(
           ? input.metadata
           : {},
     },
-    actorId(subject)
+    actor(subject)
   );
-  await repo.insertDomainEvent({
-    projectId,
-    eventType: "project.version_created",
-    actorType: actorType(subject),
-    actorId: actorId(subject),
-    payload: { versionId: version.id, label: version.label },
-  });
-  return version;
 }
 
 export async function registerDeliverable(
@@ -230,7 +206,7 @@ export async function registerDeliverable(
       throw new ProjectEngineError("not_found", "version_not_found", 404);
     }
   }
-  const deliverable = await repo.insertDeliverable(
+  return repo.registerDeliverableAtomic(
     projectId,
     {
       title,
@@ -244,20 +220,8 @@ export async function registerDeliverable(
           ? input.metadata
           : {},
     },
-    actorId(subject)
+    actor(subject)
   );
-  await repo.insertDomainEvent({
-    projectId,
-    eventType: "project.deliverable_registered",
-    actorType: actorType(subject),
-    actorId: actorId(subject),
-    payload: {
-      deliverableId: deliverable.id,
-      title: deliverable.title,
-      versionId: deliverable.versionId,
-    },
-  });
-  return deliverable;
 }
 
 export async function listTimeline(
