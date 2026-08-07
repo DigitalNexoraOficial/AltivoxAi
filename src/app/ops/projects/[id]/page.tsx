@@ -195,17 +195,31 @@ export default function OpsProjectDetailPage() {
     }
   }
 
+  function resolveVersionUuid(raw: string): string | null {
+    const t = raw.trim();
+    const uuidRe =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidRe.test(t)) return t;
+    if (!t && versionsLocal[0]) return versionsLocal[0].id;
+    const byLabel = versionsLocal.find(
+      (v) => v.label.toLowerCase() === t.toLowerCase()
+    );
+    if (byLabel) return byLabel.id;
+    if (delVersionId.trim() && uuidRe.test(delVersionId.trim())) {
+      return delVersionId.trim();
+    }
+    return null;
+  }
+
   async function onCreateReview(e: FormEvent) {
     e.preventDefault();
     if (!project) return;
-    const versionId =
-      reviewVersionId.trim() ||
-      delVersionId.trim() ||
-      versionsLocal[0]?.id ||
-      "";
+    const versionId = resolveVersionUuid(
+      reviewVersionId || versionsLocal[0]?.id || ""
+    );
     if (!versionId) {
       setError(
-        "Se necesita versionId (pega el uuid de la versión v1 o créala en esta sesión)"
+        'versionId debe ser el UUID (ej. 65ccbac6-…), no el label "v1". Crea la versión en esta sesión o pégalo desde la lista.'
       );
       return;
     }
@@ -408,7 +422,15 @@ export default function OpsProjectDetailPage() {
               {versionsLocal.map((v) => (
                 <li key={v.id}>
                   <strong>{v.label}</strong>
-                  <span className="ops-mono"> {v.id}</span>
+                  <span className="ops-mono"> {v.id}</span>{" "}
+                  <button
+                    type="button"
+                    className="ops-btn ops-btn-ghost"
+                    disabled={busy}
+                    onClick={() => setReviewVersionId(v.id)}
+                  >
+                    Usar en review
+                  </button>
                 </li>
               ))}
             </ul>
@@ -483,16 +505,35 @@ export default function OpsProjectDetailPage() {
           {can("review.create") ? (
             <form className="ops-form" onSubmit={(e) => void onCreateReview(e)}>
               <div className="ops-form-row">
-                <label htmlFor="review-ver">versionId</label>
-                <input
-                  id="review-ver"
-                  value={reviewVersionId}
-                  onChange={(e) => setReviewVersionId(e.target.value)}
-                  disabled={busy}
-                  placeholder="uuid de versión (obligatorio)"
-                  required
-                />
+                <label htmlFor="review-ver">Versión (UUID, no el label)</label>
+                {versionsLocal.length > 0 ? (
+                  <select
+                    id="review-ver"
+                    value={reviewVersionId || versionsLocal[0]?.id || ""}
+                    onChange={(e) => setReviewVersionId(e.target.value)}
+                    disabled={busy}
+                  >
+                    {versionsLocal.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {v.label} — {v.id}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    id="review-ver"
+                    value={reviewVersionId}
+                    onChange={(e) => setReviewVersionId(e.target.value)}
+                    disabled={busy}
+                    placeholder="65ccbac6-7787-483b-b894-… (uuid, no v1)"
+                    required
+                  />
+                )}
               </div>
+              <p className="ops-muted">
+                Si escribes solo &quot;v1&quot; fallará: hace falta el uuid de la
+                versión.
+              </p>
               <div className="ops-form-actions">
                 <button
                   className="ops-btn"

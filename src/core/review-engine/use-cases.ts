@@ -150,6 +150,18 @@ export async function createReview(
   const versionId = String(input.versionId || "").trim();
   if (!projectId) throw new ReviewError("invalid_input", "project_id_required");
   if (!versionId) throw new ReviewError("invalid_input", "version_id_required");
+  // Reject labels like "v1" before PostgREST (uuid columns).
+  const uuidRe =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRe.test(projectId)) {
+    throw new ReviewError("invalid_input", "project_id_must_be_uuid");
+  }
+  if (!uuidRe.test(versionId)) {
+    throw new ReviewError(
+      "invalid_input",
+      "version_id_must_be_uuid_not_label"
+    );
+  }
 
   await getProjectGate()(subject, projectId);
 
