@@ -1,8 +1,8 @@
 /**
- * JARVIS Core caller — orchestrator only (Bloque 4–6 · ADR-014/015/016).
+ * JARVIS Core caller — orchestrator only (Bloque 4–7 · ADR-014…017).
  *
- * Chain: JARVIS → Subject → can() (inside use-cases) → PE / Agent Runtime / Review.
- * Does not call LLM / Tool Registry directly. Not a client portal.
+ * Chain: JARVIS → Subject → can() (inside use-cases) → PE / Agent / Review / Deploy.
+ * Does not call LLM / Tool Registry / ZIP builder directly.
  */
 
 import {
@@ -28,6 +28,12 @@ import {
   resolveAgentsByCapability,
 } from "@/core/agent-manager";
 import { createReview, revokeReview } from "@/core/review-engine";
+import {
+  cancelDeployment,
+  configureDeployment,
+  createDeployment,
+  executeDeployment,
+} from "@/core/deploy-engine";
 import type { Subject } from "@/core/security";
 import { JarvisError, type JarvisIntention } from "./types";
 
@@ -84,6 +90,14 @@ export async function executeIntention(
       return createReview(s, intention.input);
     case "review.revoke":
       return revokeReview(s, intention.reviewId);
+    case "deploy.create":
+      return createDeployment(s, intention.input);
+    case "deploy.execute":
+      return executeDeployment(s, intention.deploymentId);
+    case "deploy.cancel":
+      return cancelDeployment(s, intention.deploymentId);
+    case "deploy.configure":
+      return configureDeployment(s, intention.deploymentId, intention.input);
     default: {
       const _exhaustive: never = intention;
       void _exhaustive;

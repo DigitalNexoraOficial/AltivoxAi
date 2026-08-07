@@ -68,6 +68,23 @@ function main() {
     );
   }
 
+  // Deploy Engine isolation (ADR-017)
+  const deployDir = join(coreRoot, "deploy-engine");
+  const deployFiles = readdirSync(deployDir, { recursive: true }) as string[];
+  for (const f of deployFiles) {
+    if (!String(f).endsWith(".ts")) continue;
+    if (String(f).includes("selftest")) continue;
+    const src = readFileSync(join(deployDir, String(f)), "utf8");
+    assert(!src.includes("agent-runtime"), `deploy/${f}: no agent-runtime`);
+    assert(!src.includes("review-engine"), `deploy/${f}: no review-engine`);
+    assert(!src.includes("workflow-engine"), `deploy/${f}: no workflow`);
+    assert(
+      !src.includes("project-engine/internal"),
+      `deploy/${f}: no PE internal`
+    );
+    assert(!/vercel|netlify/i.test(src), `deploy/${f}: no vendor adapters`);
+  }
+
   console.log("engines-contracts.selftest: ok");
 }
 
