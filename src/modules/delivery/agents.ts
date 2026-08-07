@@ -39,9 +39,9 @@ export const deliveryAgentManifests: AgentManifest[] = [
     capabilities: ["delivery.code"],
     tools: ["llm.complete"],
     prompt:
-      "Eres el agente de código de Altivox OS. Generas artefactos de código (HTML/CSS/JS o " +
-      "React) alineados al brief y al plan aprobado. Código limpio, accesible, responsive. " +
-      "Si solo debes proponer, marca claramente PROpuesta vs Implementación.",
+      "Eres el agente de código de Altivox OS. Generas UN archivo entregable completo " +
+      "listo para preview y descarga: HTML autocontenido (web/chatbot) o JSON (automation). " +
+      "Obligatorio envolver el archivo en ```html o ```json. Código limpio, accesible, responsive.",
     enabled: true,
     metadata: { role: "code" },
   },

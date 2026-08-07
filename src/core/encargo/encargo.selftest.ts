@@ -67,8 +67,35 @@ async function main() {
   assert(view.steps[0].status === "done", "first done after OK");
   assert(view.steps[1].status === "proposed", "second auto-proposed");
 
+  // Approve through design + code to verify code artifact is previewable
+  view = await approveStep(a, view.encargo.id, view.steps[1].id);
+  assert(view.steps[1].status === "done", "design done");
+  view = await approveStep(a, view.encargo.id, view.steps[2].id);
+  assert(view.steps[2].status === "done", "code done");
+  const { extractPrimaryArtifact } = await import("./artifacts");
+  const art = extractPrimaryArtifact(
+    view.steps[2].output,
+    view.encargo.serviceKey,
+    view.encargo.clientName
+  );
+  assert(art && art.kind === "html", "code output yields html artifact");
+  assert(art.content.includes("<html"), "html document present");
+
   const again = await getEncargoView(a, view.encargo.id);
   assert(again.steps[0].output.length > 0, "output stored");
+
+  // Local artifact builder for chatbot
+  const { buildLocalImplementation } = await import("./local-artifact");
+  const localChat = buildLocalImplementation({
+    role: "code",
+    serviceKey: "chatbot",
+    clientName: "Lucia",
+    description: "Chatbot LuBot interfaz blanca bordes cian botón flotante",
+    proposal: "widget",
+  });
+  const chatArt = extractPrimaryArtifact(localChat, "chatbot", "Lucia");
+  assert(chatArt?.kind === "html", "chatbot local html");
+  assert(chatArt.content.includes("LuBot") || chatArt.content.includes("chat"), "chatbot widget");
 
   setLlmCompleterForTests(null);
   console.log("encargo.selftest: ok");
