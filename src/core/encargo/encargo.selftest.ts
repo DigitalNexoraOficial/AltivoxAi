@@ -108,13 +108,13 @@ async function main() {
   const mustangArt = extractPrimaryArtifact(localMustang, "web", "Xabier");
   assert(mustangArt?.kind === "html", "mustang local html");
   assert(
-    mustangArt.content.includes("GLTFLoader") ||
-      mustangArt.content.includes("foxbody"),
-    "gltf mustang landing"
+    mustangArt.content.includes("sketchfab.com") ||
+      mustangArt.content.includes("GLTFLoader"),
+    "sketchfab embed or gltf landing"
   );
   assert(
-    /Ford Mustang|DoorLPivot|foxbody/i.test(mustangArt.content),
-    "foxbody 3d parts present"
+    /Ford Mustang|Fastback|DoorLPivot|foxbody/i.test(mustangArt.content),
+    "mustang landing content"
   );
 
   setLlmCompleterForTests(null);

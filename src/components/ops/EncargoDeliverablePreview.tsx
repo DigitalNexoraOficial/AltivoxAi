@@ -84,8 +84,8 @@ export function EncargoDeliverablePreview({
         <iframe
           className="ops-deliverable-frame"
           title={`Preview ${artifact.filename}`}
-          sandbox="allow-scripts allow-forms allow-same-origin"
-          allow="fullscreen"
+          sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+          allow="fullscreen; autoplay; xr-spatial-tracking"
           src={tabUrl}
         />
       ) : artifact.previewHtml ? (
