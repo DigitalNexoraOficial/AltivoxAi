@@ -1,7 +1,7 @@
 # Roadmap — Altivox OS
 
 Orden por dependencias. Visión: [`product-vision.md`](./product-vision.md) · Flujo: [`flow.md`](./flow.md)  
-B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md) · B6: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md)
+B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md) · B6: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md) · B7: [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md)
 
 ---
 
@@ -20,7 +20,8 @@ B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`AD
 | **5** | Agent runtime + service modules | **Cerrado** (ADR-015) |
 | **B6-A** | Sync docs Review Engine | Completado (ADR-016) |
 | **6** | Review Engine + `/r/[token]` | **Cerrado** (ADR-016 · Review Engine + portal `/r/[token]`) |
-| **7** | Entrega ZIP + Deployment Engine | Pendiente (después de B6) |
+| **B7-A** | Sync docs Deploy Engine | **Completado** (ADR-017) |
+| **7** | Entrega ZIP + Deployment Engine | Pendiente de código (ADR-017 · requiere OK explícito) |
 
 ---
 
@@ -74,9 +75,13 @@ APIs `/api/ops/projects*` · sin review/deploy/capabilities/agents.
 
 ## Fase 7 — Entrega ZIP + Deployment Engine
 
-- Empaquetado / entrega.  
-- Deployment Engine **vía Tool Registry** (ampliado; no el mínimo LLM de B5).  
-- Consume **únicamente entregables aprobados** (habilitado por B6).
+**Contrato:** [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md) · Prebloque **B7-A completado**.
+
+**Incluye (cuando haya OK de código):** Deploy Engine independiente · validar artefactos approved · crear deployments · ZIP pipeline · estados `draft|queued|building|packaged|deploying|deployed|failed|cancelled` · historial · APIs Ops · JARVIS caller · PE/Review solo por use-cases públicos.
+
+**No es Fase 7 (inicial):** providers externos (Vercel/Netlify/AWS/GitHub Deploy/FTP) · auto-deploy tras Review · portal `/r` como deploy · Agent Runtime como deployer · Workflow · CRM · marketplace · reabrir B0–B6.
+
+**Estado:** **no implementado**.
 
 ---
 

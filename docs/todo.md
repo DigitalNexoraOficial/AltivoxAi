@@ -4,7 +4,7 @@ Leyenda: **P0** bloqueante · **P1** alto · **P2** medio · **P3** mejora
 Regla: no código sin aprobación del bloque.
 
 Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](./roadmap.md)  
-B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md) · B6: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md)
+B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md) · B6: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md) · B7: [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md)
 
 ---
 
@@ -18,6 +18,7 @@ B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`AD
 | T-000d | Prebloque B4-A sync docs + ADR-014 | **done** |
 | T-000e | Prebloque B5-A sync docs + ADR-015 | **done** |
 | T-000f | Prebloque B6-A sync docs + ADR-016 | **done** |
+| T-000g | Prebloque B7-A sync docs + ADR-017 | **done** |
 
 ---
 
@@ -101,10 +102,18 @@ Contrato: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md).
 
 ## P1 — Bloque 7 — Entrega + Deployment
 
-| ID | Tarea | Notas |
-|----|-------|-------|
-| T-401 | ZIP delivery pipeline | **No** B6 · solo tras B6 |
-| T-402 | Deploy adapters + confirmación | **No** B6 · solo tras B6 |
+Contrato: [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md). Prebloque **B7-A done**.  
+**Código:** bloqueado hasta «OK implementar Bloque 7».
+
+| ID | Tarea | Estado |
+|----|-------|--------|
+| T-401 | ZIP pipeline (entrada approved → artefacto interno) | pendiente (ADR-017) |
+| T-402 | Deploy Engine + estados + historial/eventos | pendiente |
+| T-402b | APIs Ops `/api/ops/deployments*` + acciones `deploy.*` | pendiente |
+| T-402c | JARVIS caller create/execute/cancel | pendiente |
+| T-402d | Adapters providers externos | **fuera del recorte B7 inicial** (posterior) |
+
+**Fuera de B7 inicial:** Vercel/Netlify/AWS/GitHub Deploy/FTP · auto-deploy · deploy en `/r` · agentes deployer · Workflow · CRM · marketplace · reabrir B0–B6.
 
 ---
 
@@ -141,6 +150,8 @@ Contrato: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md).
 | Portal demo como producto cliente IA | `/r/[token]` = B6 (sin agentes) |
 | Review Engine dentro de PE o Agent Runtime | ADR-016 = motor/superficie independientes |
 | Deploy dentro de B6 | ADR-016 → B7 |
+| Deploy Engine dentro de PE/Review/Agent Runtime | ADR-017 = motor independiente |
+| Auto-publish sin confirmación humana | Prohibido ADR-017 |
 
 ---
 
@@ -153,3 +164,4 @@ Contrato: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md).
 | Bloque 5 Agent Runtime + módulo web | ADR-015 · cerrado |
 | Prebloque B6-A | ADR-016 · sync docs |
 | **Bloque 6** Review Engine + `/r/[token]` | **ADR-016 · cerrado** |
+| **Prebloque B7-A** | **ADR-017 · sync docs** |

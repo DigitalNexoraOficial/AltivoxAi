@@ -42,10 +42,24 @@ Notas RBAC (B2 post-auditoría): `operator` y techo `jarvis` incluyen `project.a
 
 JARVIS techo incluye `review.create` + `review.revoke`; **no** es superadmin (ADR-012).
 
+## Deploy Engine (Bloque 7 · ADR-017 · no implementado)
+
+Contrato de seguridad (cuando exista código):
+
+| Superficie | Regla |
+|------------|--------|
+| Ops | `deploy.create` · `deploy.execute` · `deploy.cancel` · `deploy.configure` vía `can()` |
+| Catálogo B1 | Existen `deploy.preview` / `deploy.production` históricos; B7 alinea al contrato anterior sin reabrir ADR-012 |
+| Frontend | Sin `service_role` |
+| Cliente `/r` | Sin APIs de deploy |
+| JARVIS | Solo orquesta (caller) |
+| Agent | **No** ejecuta deployment directo |
+| Aislamiento | Sin credenciales expuestas; sin bypass; con auditoría |
+
 ## Rollback
 
 `rbac-rollback.sql` + revert de deployment.
 
 ## Diferido
 
-client_credentials · approval_requests UI · Memory Engine completo · Tool Registry de vendors · HITL UI · Deploy (B7).
+client_credentials · approval_requests UI · Memory Engine completo · Tool Registry de vendors (hasta B7 código) · HITL UI · **Deploy Engine código (B7)**.

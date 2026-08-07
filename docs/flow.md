@@ -2,7 +2,7 @@
 
 **Referencia obligatoria** del ciclo de vida.  
 Visión: [`product-vision.md`](./product-vision.md) · Motores: [`core-engines.md`](./core-engines.md)  
-PE: [`ADR-013`](./adr/ADR-013-project-engine.md) · B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md) · B6: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md)
+PE: [`ADR-013`](./adr/ADR-013-project-engine.md) · B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md) · B6: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md) · B7: [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md)
 
 ---
 
@@ -18,7 +18,7 @@ PE: [`ADR-013`](./adr/ADR-013-project-engine.md) · B4: [`ADR-014`](./adr/ADR-01
 [/r/[token]]       revisión cliente  ← implementado (Review Engine · Bloque 6)
       │
       ▼
-[Altivox OS /ops]  entrega / deploy / mantenimiento  ← diferido (Bloque 7)
+[Altivox OS /ops]  entrega / deploy / mantenimiento  ← contrato ADR-017 · código pendiente (Bloque 7)
 ```
 
 ---
@@ -34,7 +34,7 @@ Lead → Cliente → Proyecto → Planificación → Capabilities → Agentes
 Ese ciclo completo requiere Capability Registry (runtime), Agent Runtime, Review Engine, Tool Registry (runtime), Workflow runtime y JARVIS operativo con agentes.  
 **Cubierto en código:** PE (B2) · `/ops` (B3) · JARVIS Core (B4) · Agent Runtime + módulo web + Tool/Memory/Capability mínimos (B5).  
 **B6 (ADR-016 · cerrado):** Review Engine + `/r/[token]` — **implementado**.  
-**B7:** Deploy / ZIP. Workflow runtime ≠ B5 ni B6.
+**Contrato B7 (ADR-017 · B7-A):** Deploy Engine + ZIP — **no implementado**. Workflow runtime ≠ B5–B7.
 
 ---
 
@@ -90,7 +90,7 @@ Deployments · Workflow runtime · Memory KB corporativa · Tool vendors de entr
 | **4 · cerrado** | JARVIS Core caller + fronteras; sin ejecución de agentes |
 | **5 · cerrado** | Agent Runtime + service module; OPS/JARVIS lanzan runs **internos** |
 | **6 · cerrado** | Review Engine + tokens + portal cliente |
-| **7** | Entrega ZIP + deploy opcional (solo entregables aprobados) |
+| **7 · ADR-017** | Entrega ZIP + Deploy Engine (código pendiente; solo approved) |
 
 La fase PE `review` puede existir **sin** portal. El portal es B6. Deploy es **solo** B7.
 
@@ -120,6 +120,21 @@ Chat público ≠ Agent Runtime ≠ Review Engine.
 
 ---
 
+## 6b. Deploy Engine — Bloque 7 (contrato ADR-017)
+
+Cuando exista (tras OK de código):
+
+- Solo consume deliverables / reviews **approved** (nunca auto-deploy).  
+- ZIP pipeline → artefacto interno.  
+- Estados: `draft|queued|building|packaged|deploying|deployed|failed|cancelled`.  
+- **Sin** providers externos en el recorte inicial (adapters = posterior).  
+- JARVIS caller; Agent Runtime **no** ejecuta deploy.  
+- PE/Review solo por use-cases públicos.
+
+Detalle: [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md).
+
+---
+
 ## 7. Eventos de dominio (Project Engine B2)
 
 Ejemplos válidos en `project_events`:
@@ -133,7 +148,7 @@ Ejemplos válidos en `project_events`:
 
 Eventos de agentes → B5 (persistencia Agent Runtime).  
 Eventos de review → `review_events` (B6).  
-Eventos de deploy → B7.
+Eventos de deploy → B7 (`deployments` / eventos Deploy — aún no).
 
 ---
 
@@ -145,5 +160,5 @@ Eventos de deploy → B7.
 - **JARVIS Core:** implementado (B4) — caller PE (+ agentes B5); **no** chatbot.  
 - **Agent Runtime:** **implementado** (ADR-015) — **interno**; aislado del portal.  
 - **Review Engine:** **implementado** (ADR-016) — portal `/r/[token]`.  
-- Deploy: diferido B7.  
+- **Deploy Engine:** **no** implementado — contrato ADR-017 (B7-A).  
 - No fingir en la web pública que el chat son agentes OS.
