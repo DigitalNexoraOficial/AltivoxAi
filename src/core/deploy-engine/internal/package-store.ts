@@ -1,10 +1,14 @@
 /**
  * Package blob store for deployment ZIPs (Bloque 7 · ADR-017).
  * Memory for selftests; filesystem when not in selftest (no vendors).
+ *
+ * Prefer OS temp dir: serverless runtimes mount the app dir read-only
+ * (e.g. cwd `/var/task`), so mkdir under process.cwd() fails.
  */
 
 import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync, existsSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DeployError } from "../errors";
 
@@ -25,8 +29,9 @@ function useMemory(): boolean {
 
 function packageRoot(): string {
   const override = String(process.env.ALTIVOX_DEPLOY_PACKAGE_DIR || "").trim();
-  // Statically scoped under cwd so Turbopack does not trace the whole project.
-  return override || join(/*turbopackIgnore: true*/ process.cwd(), ".altivox-packages");
+  if (override) return override;
+  // Writable on local + serverless. App cwd is often read-only in lambdas.
+  return join(/*turbopackIgnore: true*/ tmpdir(), "altivox-packages");
 }
 
 export function storePackageBlob(
