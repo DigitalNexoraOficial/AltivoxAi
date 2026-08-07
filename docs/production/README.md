@@ -54,4 +54,4 @@ Documentación de **preparación para lanzamiento real**.
 
 Visión: [`../deployment.md`](../deployment.md).
 
-**Estado:** código **RELEASED** en `main` · tag **`v0.7.0-b7`** · checklist ops pendiente — [`RELEASE-CLOSURE-REPORT.md`](./RELEASE-CLOSURE-REPORT.md).
+**Estado:** código **RELEASED** (`v0.7.0-b7`) · producción live **PENDING** — [`PRODUCTION-ACTIVATION-REPORT.md`](./PRODUCTION-ACTIVATION-REPORT.md).
