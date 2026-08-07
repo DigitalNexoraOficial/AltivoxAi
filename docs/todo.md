@@ -55,17 +55,17 @@ Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](.
 
 ---
 
-## P1 — Bloque 4 — JARVIS + motores (interfaces)
+## P1 — Bloque 4 — JARVIS + motores (interfaces) · **cerrado**
 
 Contrato: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md).  
-**Sin código** hasta OK explícito de implementación.
+Código: `src/core/jarvis` + fronteras TypeScript de motores (sin runtimes/APIs/UI).
 
-| ID | Tarea | Notas |
-|----|-------|-------|
-| T-300 | Frontera JARVIS (orquestador / caller de motores) | Solo interfaces / responsabilidades; no runtime de agentes |
-| T-301 | Fronteras del resto de motores del núcleo | Workflow · Tool Registry · Memory · Capability Registry · Agent Manager (registro) — **sin** runtimes |
+| ID | Tarea | Estado |
+|----|-------|--------|
+| T-300 | JARVIS Core (orquestador / caller → PE use-cases) | **done** |
+| T-301 | Fronteras del resto de motores del núcleo | **done** (Workflow · Tool Registry · Memory · Capability Registry · Agent Manager boundary — **sin** runtimes) |
 
-**Fuera de B4 (explícito):** Agent Runtime · runtimes de motores · Review Engine · Deployment Engine · service modules · tablas nuevas · APIs nuevas · stubs · simulaciones · chatbot público · reabrir B0–B3.
+**Fuera de B4 (sigue pendiente en B5+):** Agent Runtime · Agent Manager runtime · Workflows ejecutables · Review Engine · Deployment Engine · service modules · tablas/APIs nuevas · stubs · chatbot público · reabrir B0–B3.
 
 ---
 
@@ -137,3 +137,4 @@ Contrato: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md).
 | Bloque 2 Project Engine | ADR-013 |
 | Bloque 3 Ops Shell | `/ops` + proyectos UI |
 | Prebloque B4-A | ADR-014 · sync docs |
+| **Bloque 4** JARVIS Core + fronteras motores | ADR-014 · `src/core/jarvis` · **cerrado** |

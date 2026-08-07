@@ -15,7 +15,7 @@ Contrato Bloque 4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.
 | **2** | Project Engine | **Cerrado** (ADR-013 · código + harden post-auditoría) |
 | **3** | Shell `/ops` App Router | **Cerrado** (UI Proyectos + puente HTML legacy) |
 | **B4-A** | Sync docs JARVIS + motores (interfaces) | **Completado** (ADR-014) |
-| **4** | JARVIS + resto de motores (interfaces) | Pendiente de **aprobación de implementación** |
+| **4** | JARVIS + resto de motores (interfaces) | **Cerrado** (ADR-014 · JARVIS Core caller + fronteras TypeScript) |
 | **5** | Agent runtime + service modules | Pendiente (después de B4) |
 | **6** | Review Engine + `/r/[token]` | Pendiente (después de B5) |
 | **7** | Entrega ZIP + Deployment Engine | Pendiente (después de B6) |
@@ -38,27 +38,24 @@ APIs `/api/ops/projects*` · sin review/deploy/capabilities/agents.
 
 ---
 
-## Fase 4 — JARVIS + resto de motores (interfaces)
+## Fase 4 — JARVIS + resto de motores (interfaces) · **cerrada**
 
 **Contrato:** [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md)
 
-**Qué significa (sin cambiar el orden del roadmap):**
+**Implementado:**
 
-- Fronteras de orquestación de **JARVIS** (director / caller de motores).  
-- Resto de motores del núcleo (**Workflow**, **Tool Registry**, **Memory**, **Capability Registry**) + **Agent Manager** como fronteras nombradas.  
-- «Interfaces» = contratos de responsabilidad entre piezas — **no** runtimes.
+- **JARVIS Core** (`src/core/jarvis`) — orquestador/caller; delega en use-cases públicos del Project Engine.  
+- Fronteras TypeScript: **Workflow**, **Tool Registry**, **Memory**, **Capability Registry** + **Agent Manager** (boundary, sin runtime).  
+- «Interfaces» = contratos de responsabilidad — **no** runtimes.
 
-**No es Fase 4:** Agent runtime · runtimes de motores · Review · Deploy · service modules · tablas/APIs nuevas · stubs.
-
-*Implementación de código: solo tras OK explícito. B4-A solo sincronizó docs.*
-
+**No es Fase 4 (sigue fuera):** Agent runtime · runtimes de motores · Review · Deploy · service modules · tablas/APIs nuevas · UI JARVIS · stubs.
 ---
 
 ## Fase 5 — Agent runtime + service modules
 
 - Ejecución de agentes (Agent Runtime).  
 - Primeros **service modules** / plugins.  
-- Depende de fronteras B4; no anticipar en B4.
+- Fronteras B4 ya existen; **no** anticipar runtimes en B4 (cerrado).
 
 ---
 

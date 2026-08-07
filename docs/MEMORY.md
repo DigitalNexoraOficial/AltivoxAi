@@ -49,7 +49,7 @@
 | ADR-011 | Cinco motores del núcleo | Aceptado |
 | ADR-012 | Security foundation | Aceptado — [`adr/ADR-012-security-foundation.md`](./adr/ADR-012-security-foundation.md) |
 | **ADR-013** | **Project Engine B2 (recorte)** | **Aceptado · implementado** — [`adr/ADR-013-project-engine.md`](./adr/ADR-013-project-engine.md) |
-| **ADR-014** | **Bloque 4 — JARVIS + motores (interfaces)** | **Aceptado · contrato documental** — [`adr/ADR-014-bloque-4-jarvis-motores-interfaces.md`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) |
+| **ADR-014** | **Bloque 4 — JARVIS + motores (interfaces)** | **Aceptado · implementado** — [`adr/ADR-014-bloque-4-jarvis-motores-interfaces.md`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) |
 
 ### ADR-005 (enmienda 2026-08-07)
 
@@ -76,7 +76,8 @@ Nuevos servicios = módulos con interfaces (capabilities, workflows, QA, entrega
 Visión: cinco motores.  
 **Dominio en código:** Project Engine recortado (ADR-013 · Bloque 2 cerrado).  
 **UI OS:** shell `/ops` (Bloque 3) consume PE; CRM sigue en HTML temporal.  
-**Bloque 4:** solo fronteras / interfaces de JARVIS + resto de motores (ADR-014) — **sin** runtimes ni Agent Runtime.  
+**Bloque 4 (cerrado · ADR-014):** JARVIS Core (`src/core/jarvis`) = orquestador/caller interno → use-cases PE.  
+Motores Workflow / Tool Registry / Memory / Capability (+ Agent Manager boundary) = **solo interfaces TypeScript** — **sin** runtimes ni Agent Runtime.  
 **Bloque 5+:** Agent runtime, service modules, Review, Deploy.  
 Spec: [`core-engines.md`](./core-engines.md).
 
@@ -89,7 +90,7 @@ Spec: [`core-engines.md`](./core-engines.md).
 | Pública | `src/app/(public)`, sections | Marketing + Frontend |
 | OS | `src/app/ops` | OS + Frontend |
 | Review | `src/app/r` (futuro) | Delivery |
-| Core | `src/core/security`, `src/core/project-engine` | Arquitectura |
+| Core | `src/core/security`, `src/core/project-engine`, `src/core/jarvis` (+ fronteras motores) | Arquitectura |
 | Módulos | `src/modules` (futuro) | Por servicio |
 | Admin legacy | `public/*.html` | Temporal |
 | Docs | `docs/` | CTO / arquitectura |
@@ -110,15 +111,15 @@ Spec: [`core-engines.md`](./core-engines.md).
 | 2026-08 | Bloque 3 Ops Shell `/ops` + UI proyectos | cerrado |
 | 2026-08-07 | Prebloque B4-A: sync docs + ADR-014 (corte B4) | ADR-014 |
 | 2026-08-07 | Sync residual B4-A: bots/deployment/performance/MEMORY/api | GO docs |
+| 2026-08 | **Bloque 4:** JARVIS Core caller + fronteras motores (ADR-014) | cerrado |
 
 ---
 
 ## 8. Pendiente de implementación (no docs)
 
 Ver [`todo.md`](./todo.md) y [`roadmap.md`](./roadmap.md).  
-**Prebloque B4-A cerrado** (ADR-014).  
-**Próximo bloque oficial de código:** Bloque 4 (JARVIS + motores · interfaces) — solo tras OK explícito de implementación.  
-Alcance B4 ≠ Agent runtime / Review / Deploy / módulos (eso es B5–B7).  
+**Bloque 4 cerrado** (ADR-014 aplicado · JARVIS Core orquestador interno · motores en fase interfaz).  
+**Próximo bloque oficial de código:** Bloque 5 — Agent Runtime + service modules (requiere OK explícito).  
 Migración CRM UI = backlog UI aparte; **no** es el siguiente bloque oficial.  
 Ops entorno: aplicar SQL B1/B2 + Upstash en producción.
 
