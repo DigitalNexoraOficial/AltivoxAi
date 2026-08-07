@@ -2,7 +2,7 @@
 
 ---
 
-## 1. As-is (producción + Bloque 1 + Bloque 2)
+## 1. As-is (producción + Bloques 1–5)
 
 ```
 auth.users (+ app_metadata.role)
@@ -14,15 +14,17 @@ projects              ← dominio PE (Bloque 2)
 project_versions
 deliverables
 project_events        ← dominio PE (no mezclar con audit)
++ persistencia Agent Runtime / Memory mínima de runs (Bloque 5 · agent-runtime.sql)
 ```
 
 SQL relevante:
 
 - B1: `supabase/sql/rbac.sql`, `audit-events.sql`, …  
 - B2: `supabase/sql/project-engine.sql` (rollback: `project-engine-rollback.sql`)  
+- B5: `supabase/sql/agent-runtime.sql` (rollback: `agent-runtime-rollback.sql`)  
 - B2 **requiere** helpers `altivox_is_staff` / `altivox_role_in` del Bloque 1.
 
-Orden de aplicación en un entorno nuevo: `audit-events.sql` → `rbac.sql` → `project-engine.sql` (más `assign-superadmin.sql` según ops).
+Orden de aplicación en un entorno nuevo: `audit-events.sql` → `rbac.sql` → `project-engine.sql` → `agent-runtime.sql` (más `assign-superadmin.sql` según ops).
 
 ---
 
@@ -50,6 +52,8 @@ clientes / leads
 Estados `projects.status`:  
 `draft` · `planning` · `in_progress` · `qa` · `review` · `approved` · `delivered` · `maintenance` · `cancelled` · `archived`  
 
+`review` = **fase** del proyecto. **No** implica tablas de portal ni tokens (ADR-016).
+
 Detalle: [`ADR-013`](./adr/ADR-013-project-engine.md), [`flow.md`](./flow.md).
 
 ### Explicitamente NO en Bloque 2
@@ -58,19 +62,19 @@ Detalle: [`ADR-013`](./adr/ADR-013-project-engine.md), [`flow.md`](./flow.md).
 
 ---
 
-## 3. Horizonte por bloque (sin inventar tablas)
+## 3. Horizonte por bloque (sin inventar schemas)
 
 | Bloque | Persistencia |
 |-------|----------------|
 | **4 · cerrado** | ADR-014: **ninguna** tabla nueva |
-| **5** | ADR-015: si hace falta persistir agentes/runs/manifests, se define **en implementación** bajo el recorte — **sin** `review_tokens` ni `deployments` |
-| **6** | `review_tokens` / comentarios — **fuera de B5** |
-| **7** | `deployments` / artefactos de publish — **fuera de B5** |
+| **5 · cerrado** | ADR-015: Agent Runtime / Memory mínima de runs (`agent-runtime.sql`) — **sin** `review_tokens` ni `deployments` |
+| **6** | ADR-016: persistencia **propia** de Review (`review_tokens`, comentarios/decisiones de sesión, …) — **no implementado**; schema concreto en bloque de código |
+| **7** | `deployments` / artefactos de publish — **fuera de B6** |
 
-**Fuera de B5 también:** Workflow runtime store · Tool Registry de vendors · `required_capabilities` en `projects` · Memory KB corporativa.
+**Fuera de B6 también:** Workflow runtime store · Tool Registry de vendors · `required_capabilities` en `projects` · Memory KB corporativa · reescritura del PE.
 
-Ver [`core-engines.md`](./core-engines.md) · [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md).  
-Sin reescribir el core de `projects` (ADR-013).
+Ver [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md).  
+Sin reescribir el core de `projects` (ADR-013). Agent Runtime permanece aislado (ADR-015).
 
 ---
 
@@ -86,7 +90,7 @@ Sin reescribir el core de `projects` (ADR-013).
 - **Deliverables:** trigger exige `version_id` del mismo `project_id`.  
 - Mutaciones de dominio atómicas vía RPC (`altivox_pe_create_project`, `_update_meta`, `_transition`, `_create_version`, `_register_deliverable`).  
 - APIs del PE llaman RPC con **service role** tras `can()`; RLS sigue protegiendo acceso JWT directo.  
-- Review por token: N/A hasta Review Engine.
+- Review por token: **N/A** hasta implementación B6 (ADR-016). Emisión Ops vía `review.create` / `review.revoke`.
 
 ---
 
@@ -96,3 +100,5 @@ Sin reescribir el core de `projects` (ADR-013).
 |-------|-----|
 | `project_events` | Dominio del proyecto |
 | `audit_events` | Técnico (authz, API, rate limit, errores) |
+| Persistencia Review (B6) | Sesión cliente / tokens / comentarios — **aún no** |
+| Persistencia Agent Runtime (B5) | Runs / facts mínimos — **interno** |

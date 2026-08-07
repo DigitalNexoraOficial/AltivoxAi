@@ -10,12 +10,14 @@ Tres familias alineadas a las tres superficies.
 |---------|---------|------|-----|
 | Pública | `/api/lead`, `/api/chat`, `/api/site-settings`, `/api/ig-image` | Anónima + rate limit | Captación |
 | OS | `/api/ops/*` | Sesión + `can()` | Centro de operaciones |
-| Review | `/api/review/*` | Token | **Diferido** (Review Engine) |
+| Review | `/api/review/*` | Token de review | **Contrato ADR-016 · no implementado** |
 | Bridge | `/api/n8n` | Secret o JWT+perm | Automatización |
 
 ---
 
-## 2. As-is (implementado · Bloque 1 + Bloque 2)
+## 2. As-is (implementado · Bloques 1–5)
+
+### 2.1 Público + sesión + PE
 
 | Ruta | Notas |
 |------|-------|
@@ -37,26 +39,34 @@ Tres familias alineadas a las tres superficies.
 Mutaciones PE: use-cases en `src/core/project-engine` + `can(subject, action, resource)`.  
 Dominio → `project_events`. Técnico → `audit_events`.
 
-**No en B2 ni en B4:** `/api/review/*`, deploy endpoints, agent runs, workflows ejecutables.
+### 2.2 Agent Runtime (Bloque 5 · ADR-015)
+
+| Ruta | Notas |
+|------|-------|
+| `/api/ops/agents*` | registro/resolución Agent Manager · `can()` |
+| `/api/ops/agent-runs*` | ciclo de vida de runs · `can()` |
+
+Agentes = **solo OS**. No hay APIs de agentes en superficie Review ni pública.
 
 ---
 
-## 3. Horizonte por bloque (sin inventar rutas)
+## 3. Horizonte por bloque
 
 | Bloque | Contrato | APIs |
 |--------|----------|------|
-| **4 · cerrado** | ADR-014 | **Ninguna** API nueva (solo caller in-process) |
-| **5** | ADR-015 | Si la implementación necesita APIs ops de agentes/runs/módulos, se definen **en el bloque de código** bajo el recorte — **no** aquí |
-| **6** | Review | `/api/review/*` — **fuera de B5** |
-| **7** | Deploy | endpoints de deploy/ZIP — **fuera de B5** |
+| **4 · cerrado** | ADR-014 | Ninguna API nueva (caller in-process) |
+| **5 · cerrado** | ADR-015 | `/api/ops/agents*` · `/api/ops/agent-runs*` (implementado) |
+| **6** | ADR-016 | `/api/review/*` + emisión/revocación desde Ops — **no implementado**; rutas concretas en bloque de código |
+| **7** | Deploy | endpoints de deploy/ZIP — **fuera de B6** |
 
-Workflow run completo · Tool Registry de vendors · review tokens · deploy ≠ B5.
+**Fuera de B6:** Workflow run completo · Tool vendors de entrega · deploy · ZIP · agentes en portal.
 
-Detalle: [`core-engines.md`](./core-engines.md) · [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md).
+Detalle: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md) · [`flow.md`](./flow.md).
 
 ---
 
 ## 4. Eventos
 
 Dominio PE: [`flow.md`](./flow.md) §7.  
-Técnico: `audit_events`.
+Técnico: `audit_events`.  
+Review (B6): persistencia propia del Review Engine — **aún no**.
