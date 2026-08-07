@@ -10,11 +10,13 @@ import {
   createEncargo,
   getEncargo,
   listClients,
+  listEncargos,
   listLeads,
   OpsApiError,
   proposeEncargoStep,
   rejectEncargoStep,
   type OpsClient,
+  type OpsEncargo,
   type OpsEncargoService,
   type OpsEncargoView,
   type OpsLead,
@@ -67,10 +69,24 @@ function statusLabel(s: string): string {
   return STATUS_ES[s] || s;
 }
 
+function readQueryId(): string {
+  if (typeof window === "undefined") return "";
+  return new URLSearchParams(window.location.search).get("id") || "";
+}
+
+function writeQueryId(id: string | null) {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  if (id) url.searchParams.set("id", id);
+  else url.searchParams.delete("id");
+  window.history.replaceState({}, "", url.pathname + url.search);
+}
+
 export default function OpsEncargosPage() {
   const { can, loading: sessionLoading } = useOpsSession();
   const [clients, setClients] = useState<OpsClient[]>([]);
   const [leads, setLeads] = useState<OpsLead[]>([]);
+  const [recent, setRecent] = useState<OpsEncargo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -115,13 +131,36 @@ export default function OpsEncargosPage() {
     selectedClientId && serviceKey && description.trim().length >= 8 && !busy
   );
 
+  function syncView(next: OpsEncargoView) {
+    setView(next);
+    setPhase("run");
+    writeQueryId(next.encargo.id);
+  }
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [c, l] = await Promise.all([listClients(), listLeads()]);
+      const resumeId = readQueryId();
+      const [c, l, listed] = await Promise.all([
+        listClients(),
+        listLeads(),
+        listEncargos().catch(() => ({ encargos: [] as OpsEncargo[] })),
+      ]);
       setClients(c);
       setLeads(l);
+      setRecent(listed.encargos.slice(0, 8));
+
+      if (resumeId) {
+        try {
+          syncView(await getEncargo(resumeId));
+        } catch (e) {
+          writeQueryId(null);
+          if (e instanceof OpsApiError) {
+            setError(`No se pudo reabrir el encargo: ${e.message}`);
+          }
+        }
+      }
     } catch (e) {
       if (e instanceof OpsApiError) setError(`${e.code}: ${e.message}`);
       else setError("No se pudo cargar clientes");
@@ -150,10 +189,6 @@ export default function OpsEncargosPage() {
     if (msg) setDescription(msg);
   }, [selectedClientId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function syncView(next: OpsEncargoView) {
-    setView(next);
-  }
-
   async function onContinue() {
     if (!canContinue || !selectedClient) return;
     setBusy(true);
@@ -168,7 +203,6 @@ export default function OpsEncargosPage() {
       });
       const continued = await continueEncargo(created.encargo.id);
       syncView(continued);
-      setPhase("run");
     } catch (e) {
       if (e instanceof OpsApiError) setError(`${e.code}: ${e.message}`);
       else setError("No se pudo iniciar el encargo");
@@ -224,8 +258,26 @@ export default function OpsEncargosPage() {
     }
   }
 
-  if (sessionLoading || loading) {
-    return <p className="ops-muted">Cargando Encargos…</p>;
+  async function openRecent(id: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      syncView(await getEncargo(id));
+    } catch (e) {
+      if (e instanceof OpsApiError) setError(`${e.code}: ${e.message}`);
+      else setError("No se pudo abrir el encargo");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (sessionLoading) {
+    return (
+      <>
+        <h1 className="ops-page-title">Encargos</h1>
+        <p className="ops-muted">Comprobando sesión…</p>
+      </>
+    );
   }
 
   return (
@@ -243,130 +295,157 @@ export default function OpsEncargosPage() {
       </p>
 
       {error ? <div className="ops-error">{error}</div> : null}
+      {loading ? <p className="ops-muted">Cargando clientes…</p> : null}
 
       <ul className="ops-wizard-steps">
         <li className={phase === "brief" ? "is-active" : "is-done"}>Brief</li>
         <li className={phase === "run" ? "is-active" : ""}>Agentes</li>
       </ul>
 
-      {phase === "brief" ? (
-        <section className="ops-panel">
-          <h2>Nuevo encargo</h2>
-
-          <div className="ops-form-row">
-            <label htmlFor="enc-search">Cliente</label>
-            <input
-              id="enc-search"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              placeholder="Buscar por nombre, empresa o email"
-            />
-          </div>
-
-          {filteredClients.length === 0 ? (
-            <p className="ops-muted">
-              No hay clientes. Créalos en Clientes y vuelve aquí.
-            </p>
-          ) : (
-            <div className="ops-table-wrap">
-              <table className="ops-table">
-                <thead>
-                  <tr>
-                    <th>Nombre</th>
-                    <th>Empresa</th>
-                    <th>Email</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredClients.map((c) => (
-                    <tr
-                      key={c.id}
-                      className={
-                        selectedClientId === c.id ? "is-selected" : ""
-                      }
-                      onClick={() => setSelectedClientId(c.id)}
+      {phase === "brief" && !loading ? (
+        <div className="ops-stack">
+          {recent.length > 0 ? (
+            <section className="ops-panel">
+              <h2>Recientes</h2>
+              <ul className="ops-recent-list">
+                {recent.map((e) => (
+                  <li key={e.id}>
+                    <button
+                      type="button"
+                      className="ops-btn ops-btn-ghost"
+                      disabled={busy}
+                      onClick={() => void openRecent(e.id)}
                     >
-                      <td>
-                        <strong>{c.nombre}</strong>
-                      </td>
-                      <td>{c.empresa || "—"}</td>
-                      <td className="ops-mono">{c.email || "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                      {e.clientName} · {e.serviceLabel} · {statusLabel(e.status)}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
-          <div className="ops-form-row" style={{ marginTop: "1rem" }}>
-            <label htmlFor="enc-service">Servicio</label>
-            <select
-              id="enc-service"
-              value={serviceKey}
-              onChange={(e) => setServiceKey(e.target.value)}
-              disabled={busy || !selectedClientId}
-            >
-              <option value="">
-                {selectedClientId ? "Seleccionar…" : "Elige un cliente antes"}
-              </option>
-              {SERVICES.map((s) => (
-                <option key={s.key} value={s.key}>
-                  {s.label}
+          <section className="ops-panel">
+            <h2>Nuevo encargo</h2>
+
+            <div className="ops-form-row">
+              <label htmlFor="enc-search">Cliente</label>
+              <input
+                id="enc-search"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                placeholder="Buscar por nombre, empresa o email"
+              />
+            </div>
+
+            {filteredClients.length === 0 ? (
+              <p className="ops-muted">
+                No hay clientes. Créalos en Clientes y vuelve aquí.
+              </p>
+            ) : (
+              <div className="ops-table-wrap">
+                <table className="ops-table">
+                  <thead>
+                    <tr>
+                      <th>Nombre</th>
+                      <th>Empresa</th>
+                      <th>Email</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredClients.map((c) => (
+                      <tr
+                        key={c.id}
+                        className={
+                          selectedClientId === c.id ? "is-selected" : ""
+                        }
+                        onClick={() => setSelectedClientId(c.id)}
+                      >
+                        <td>
+                          <strong>{c.nombre}</strong>
+                        </td>
+                        <td>{c.empresa || "—"}</td>
+                        <td className="ops-mono">{c.email || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="ops-form-row" style={{ marginTop: "1rem" }}>
+              <label htmlFor="enc-service">Servicio</label>
+              <select
+                id="enc-service"
+                value={serviceKey}
+                onChange={(e) => setServiceKey(e.target.value)}
+                disabled={busy || !selectedClientId}
+              >
+                <option value="">
+                  {selectedClientId
+                    ? "Seleccionar…"
+                    : "Elige un cliente antes"}
                 </option>
-              ))}
-            </select>
-            {selectedClient && detectedService ? (
+                {SERVICES.map((s) => (
+                  <option key={s.key} value={s.key}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+              {selectedClient && detectedService ? (
+                <p className="ops-field-hint">
+                  Sugerido por el lead/notas: {detectedService}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="ops-form-row">
+              <label htmlFor="enc-desc">Qué hay que hacer</label>
+              <textarea
+                id="enc-desc"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={busy || !selectedClientId}
+                rows={5}
+                maxLength={8000}
+                placeholder="Brief del cliente o el tuyo: objetivo, estilo, secciones…"
+              />
+            </div>
+
+            <div className="ops-form-actions">
+              <button
+                type="button"
+                className="ops-btn ops-btn-go"
+                disabled={!canContinue || !can("project.create")}
+                onClick={() => void onContinue()}
+              >
+                {busy ? "Iniciando…" : "Continuar"}
+              </button>
+            </div>
+            {!can("project.create") ? (
               <p className="ops-field-hint">
-                Sugerido por el lead/notas: {detectedService}
+                Tu rol no tiene project.create — no puedes iniciar encargos.
+              </p>
+            ) : !canContinue && selectedClientId ? (
+              <p className="ops-field-hint">
+                Elige servicio y escribe al menos 8 caracteres en el brief.
               </p>
             ) : null}
-          </div>
+          </section>
+        </div>
+      ) : null}
 
-          <div className="ops-form-row">
-            <label htmlFor="enc-desc">Qué hay que hacer</label>
-            <textarea
-              id="enc-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={busy || !selectedClientId}
-              rows={5}
-              maxLength={8000}
-              placeholder="Brief del cliente o el tuyo: objetivo, estilo, secciones…"
-            />
-          </div>
-
-          <div className="ops-form-actions">
-            <button
-              type="button"
-              className="ops-btn ops-btn-go"
-              disabled={!canContinue || !can("project.create")}
-              onClick={() => void onContinue()}
-            >
-              {busy ? "Iniciando…" : "Continuar"}
-            </button>
-          </div>
-          {!can("project.create") ? (
-            <p className="ops-field-hint">
-              Tu rol no tiene project.create — no puedes iniciar encargos.
-            </p>
-          ) : !canContinue && selectedClientId ? (
-            <p className="ops-field-hint">
-              Elige servicio y escribe al menos 8 caracteres en el brief.
-            </p>
-          ) : null}
-        </section>
-      ) : (
+      {phase === "run" && view ? (
         <div className="ops-stack">
           <section className="ops-panel">
             <h2>
-              {view?.encargo.clientName} · {view?.encargo.serviceLabel}
+              {view.encargo.clientName} · {view.encargo.serviceLabel}
             </h2>
             <p className="ops-help">
               Estado:{" "}
               <span className="ops-status">
-                {statusLabel(view?.encargo.status || "")}
+                {statusLabel(view.encargo.status)}
               </span>
-              {view?.encargo.projectId ? (
+              {view.encargo.projectId ? (
                 <>
                   {" "}
                   ·{" "}
@@ -391,6 +470,7 @@ export default function OpsEncargosPage() {
                 onClick={() => {
                   setPhase("brief");
                   setView(null);
+                  writeQueryId(null);
                 }}
               >
                 ← Nuevo encargo
@@ -398,7 +478,7 @@ export default function OpsEncargosPage() {
             </div>
           </section>
 
-          {view?.steps.map((s) => (
+          {view.steps.map((s) => (
             <section
               key={s.id}
               className={
@@ -433,7 +513,7 @@ export default function OpsEncargosPage() {
                       disabled={busy || !can("agent.execute")}
                       onClick={() => void onApprove(s.id)}
                     >
-                      Aprobar
+                      {busy ? "Trabajando…" : "Aprobar"}
                     </button>
                     <button
                       type="button"
@@ -459,7 +539,7 @@ export default function OpsEncargosPage() {
             </section>
           ))}
         </div>
-      )}
+      ) : null}
     </>
   );
 }

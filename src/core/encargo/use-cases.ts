@@ -391,18 +391,20 @@ export async function approveStep(
 
   await store.updateStep(step.id, { status: "running" });
 
+  const implementBody = implementPrompt(
+    step.role,
+    encargo.serviceKey,
+    encargo.description,
+    step.proposal,
+    prior
+  );
+
   try {
     const run = await createAgentRun(subject, {
       agentId: step.agentId,
       projectId: encargo.projectId,
       input: {
-        prompt: implementPrompt(
-          step.role,
-          encargo.serviceKey,
-          encargo.description,
-          step.proposal,
-          prior
-        ),
+        prompt: implementBody,
         encargoId,
         stepId: step.id,
         role: step.role,
@@ -424,14 +426,36 @@ export async function approveStep(
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "step_failed";
-    await store.updateStep(step.id, {
-      status: "failed",
-      output: message,
-    });
-    await store.updateEncargo(encargoId, { status: "awaiting_approval" });
-    throw err instanceof EncargoError
-      ? err
-      : new EncargoError("persistence_error", message);
+    // Degraded path: LLM down must not brick the human OK gate.
+    // Keep a usable local artifact so the operator can continue the pipeline.
+    if (
+      message.includes("llm_") ||
+      message === "llm_provider_error" ||
+      message === "llm_not_configured"
+    ) {
+      const local =
+        `[Implementación local — LLM no disponible]\n` +
+        `Rol: ${step.role} · Servicio: ${encargo.serviceKey}\n` +
+        `Brief: ${encargo.description.slice(0, 800)}\n\n` +
+        `Propuesta aprobada:\n${step.proposal.slice(0, 2000)}\n\n` +
+        `Entregable borrador: documentar/ejecutar el plan de ${step.role} ` +
+        `alineado al brief. Revisar en el proyecto vinculado.\n` +
+        `(${message.slice(0, 200)})`;
+      await store.updateStep(step.id, {
+        status: "done",
+        output: local,
+        runId: null,
+      });
+    } else {
+      await store.updateStep(step.id, {
+        status: "failed",
+        output: message,
+      });
+      await store.updateEncargo(encargoId, { status: "awaiting_approval" });
+      throw err instanceof EncargoError
+        ? err
+        : new EncargoError("persistence_error", message);
+    }
   }
 
   // Auto-propose next pending step (still needs human OK)
