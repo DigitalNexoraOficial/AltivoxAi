@@ -43,24 +43,22 @@ Mismo repositorio permitido; **límites de seguridad** por ruta y rol, no por �
 - Shell `/ops` App Router (**Bloque 3 cerrado**) + `/api/ops/*` (PE + agentes)  
 - Admin estático en `public/*.html` (CRM/legacy temporal)  
 - Portal `/r/[token]`: **implementado** (ADR-016)  
-- Deployment Engine de proyectos cliente: **contrato ADR-017 · no implementado** (B7-A)
+- Deployment Engine (ZIP interno): **implementado** (ADR-017 · sin providers externos)
 
 ---
 
-## 4. To-be entregables de **proyectos cliente** (Fase 7 · ADR-017)
+## 4. Entregables de **proyectos cliente** (Fase 7 · ADR-017 · cerrado)
 
-**Contrato:** [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md). Prebloque B7-A (docs only).
+**Contrato:** [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md).
 
-No confundir con deploy de Altivox ni con Review (B6):
+1. **ZIP pipeline** — packaging interno reproducible (`packaged`).  
+2. Deploy Engine — estados ADR-017; execute: `draft→queued→building→packaged`.  
+3. Persistencia: `deployments` · `deployment_events`.  
+4. **Sin providers externos** en este recorte.  
+5. **Prohibido** auto-deploy tras Review.  
+6. APIs Ops `/api/ops/deployments*`; nunca `/api/public/deploy`.
 
-1. **ZIP pipeline** — entrada: deliverables/versiones **approved**; salida: artefacto interno.  
-2. Deploy Engine — estados `draft|queued|building|packaged|deploying|deployed|failed|cancelled`.  
-3. Persistencia futura: `deployments` · eventos · artifacts · configs.  
-4. **Sin providers externos en B7 inicial** (Vercel/Netlify/AWS/GitHub Deploy/FTP = posterior vía adapters).  
-5. **Prohibido** auto-deploy tras aprobación Review.  
-6. APIs futuras solo Ops (`/api/ops/deployments*`); nunca `/api/public/deploy`.
-
-**Código B7 bloqueado** hasta «OK implementar Bloque 7».
+Aplicar `supabase/sql/deploy.sql` en el entorno.
 
 ---
 

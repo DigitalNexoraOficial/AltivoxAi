@@ -100,18 +100,17 @@ Contrato: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md).
 
 ---
 
-## P1 — Bloque 7 — Entrega + Deployment
+## P1 — Bloque 7 — Entrega + Deployment · **cerrado**
 
-Contrato: [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md). Prebloque **B7-A done**.  
-**Código:** bloqueado hasta «OK implementar Bloque 7».
+Contrato: [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md).
 
 | ID | Tarea | Estado |
 |----|-------|--------|
-| T-401 | ZIP pipeline (entrada approved → artefacto interno) | pendiente (ADR-017) |
-| T-402 | Deploy Engine + estados + historial/eventos | pendiente |
-| T-402b | APIs Ops `/api/ops/deployments*` + acciones `deploy.*` | pendiente |
-| T-402c | JARVIS caller create/execute/cancel | pendiente |
-| T-402d | Adapters providers externos | **fuera del recorte B7 inicial** (posterior) |
+| T-401 | ZIP pipeline (artefacto interno) | **done** |
+| T-402 | Deploy Engine + estados + historial/eventos | **done** |
+| T-402b | APIs Ops `/api/ops/deployments*` + acciones `deploy.*` | **done** |
+| T-402c | JARVIS caller create/execute/cancel/configure | **done** |
+| T-402d | Adapters providers externos | **fuera** (posterior) |
 
 **Fuera de B7 inicial:** Vercel/Netlify/AWS/GitHub Deploy/FTP · auto-deploy · deploy en `/r` · agentes deployer · Workflow · CRM · marketplace · reabrir B0–B6.
 
@@ -164,4 +163,5 @@ Contrato: [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md). Prebloque **B7-A
 | Bloque 5 Agent Runtime + módulo web | ADR-015 · cerrado |
 | Prebloque B6-A | ADR-016 · sync docs |
 | **Bloque 6** Review Engine + `/r/[token]` | **ADR-016 · cerrado** |
-| **Prebloque B7-A** | **ADR-017 · sync docs** |
+| Prebloque B7-A | ADR-017 · sync docs |
+| **Bloque 7** Deploy Engine + ZIP | **ADR-017 · cerrado** |
