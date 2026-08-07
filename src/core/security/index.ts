@@ -36,4 +36,5 @@ export {
   setOpsCookie,
   clearOpsCookie,
   isOpsProtectedPath,
+  type ResolvedOpsUser,
 } from "./session";

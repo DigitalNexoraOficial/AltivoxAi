@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:security": "npx --yes tsx src/core/security/security.selftest.ts",
+    "test:project-engine": "npx --yes tsx src/core/project-engine/project-engine.selftest.ts",
+    "test:core": "npm run test:security && npm run test:project-engine"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",

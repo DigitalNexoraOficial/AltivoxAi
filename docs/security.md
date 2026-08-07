@@ -17,9 +17,12 @@ Ver ADR: [`adr/ADR-012-security-foundation.md`](./adr/ADR-012-security-foundatio
 ## Operación
 
 1. Ejecutar `audit-events.sql` y `rbac.sql` en Supabase.  
-2. Ejecutar `assign-superadmin.sql` con tu email.  
-3. Logout/login para refrescar JWT.  
-4. Configurar Upstash en Vercel (prod).  
+2. Ejecutar `project-engine.sql` (Bloque 2; incluye guards/RPC).  
+3. Ejecutar `assign-superadmin.sql` con tu email.  
+4. Logout/login para refrescar JWT.  
+5. Configurar Upstash en Vercel (prod).
+
+Notas RBAC (B2 post-auditoría): `operator` y techo `jarvis` incluyen `project.approve` para completar `review → approved` en el camino OPS/orquestación, sin elevar otros permisos.  
 
 ## Rollback
 
