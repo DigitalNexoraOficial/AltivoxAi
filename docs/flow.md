@@ -31,8 +31,10 @@ Lead → Cliente → Proyecto → Planificación → Capabilities → Agentes
   → Entrega → Deploy opcional → Mantenimiento
 ```
 
-Ese ciclo completo requiere Capability Registry (runtime), Agent Runtime, Review Engine, Tool Registry (runtime), Workflow runtime y JARVIS operativo.  
-**Aún no están implementados.** Sus fronteras se clarifican en Bloque 4 (ADR-014); los runtimes empiezan en Bloques 5–7.
+Ese ciclo completo requiere Capability Registry (runtime), Agent Runtime, Review Engine, Tool Registry (runtime), Workflow runtime y JARVIS operativo con agentes.  
+**Parcialmente cubierto:** JARVIS Core (B4) + PE (B2).  
+**B5 (ADR-015):** Agent Runtime + módulos + Tool/Memory/Capability mínimos — **aún no en código**.  
+Review/Deploy = B6/B7. Workflow runtime ≠ B5.
 
 ---
 
@@ -83,18 +85,16 @@ Capabilities en el proyecto · agent runs · review tokens/comments · deploymen
 
 ---
 
-## 4. Bloque 4 en el flujo (interfaces — ADR-014)
-
-Bloque 4 **no cambia** el ciclo operativo del §3.  
-Solo fija fronteras: JARVIS orquesta llamando motores; el resto de motores del núcleo existen como **límites de responsabilidad**.  
-No introduce ejecución automática del ciclo largo.
+## 4. Bloque 4 y Bloque 5 en el flujo
 
 | Bloque | Aporta al flujo |
 |--------|-----------------|
-| 4 | Fronteras JARVIS + motores (interfaces) |
-| 5 | Agent runtime + service modules → ejecución |
-| 6 | Review URL + comentarios cliente |
-| 7 | Entrega ZIP + deploy opcional |
+| **4 · cerrado** | JARVIS Core caller + fronteras; sin ejecución de agentes |
+| **5 · ADR-015** | Agent Runtime + service module; OPS/JARVIS pueden lanzar runs internos |
+| **6** | Review URL + comentarios cliente |
+| **7** | Entrega ZIP + deploy opcional |
+
+Bloque 5 **no** cambia el ciclo operativo manual del §3 por sí solo: las transiciones de proyecto siguen en PE; los agentes no reemplazan al humano OPS hasta que se cablee orquestación operativa bajo ADR-015.
 
 ---
 
@@ -136,5 +136,7 @@ Eventos de agentes, review token, deploy → bloques futuros (5–7).
 - Embudo real: leads + clientes + admin HTML + seguridad B1.  
 - Project Engine: **implementado** (ADR-013).  
 - Shell `/ops`: **implementado** (B3).  
-- JARVIS / agentes OS / review / deploy: **no** fingir en producto; contrato B4 = ADR-014 (docs).  
+- **JARVIS Core:** implementado (B4) — caller PE; **no** chatbot.  
+- **Agent Runtime:** **no** implementado — contrato ADR-015 (B5-A).  
+- Review / deploy: diferidos B6/B7.  
 - No fingir en la web pública que el chat son agentes OS.

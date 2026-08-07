@@ -58,12 +58,19 @@ Detalle: [`ADR-013`](./adr/ADR-013-project-engine.md), [`flow.md`](./flow.md).
 
 ---
 
-## 3. Horizonte (fuera de B2 — y fuera de B4)
+## 3. Horizonte por bloque (sin inventar tablas)
 
-Bloque 4 (**ADR-014**) es corte de **interfaces / fronteras**: **no** añade tablas nuevas.
+| Bloque | Persistencia |
+|-------|----------------|
+| **4 · cerrado** | ADR-014: **ninguna** tabla nueva |
+| **5** | ADR-015: si hace falta persistir agentes/runs/manifests, se define **en implementación** bajo el recorte — **sin** `review_tokens` ni `deployments` |
+| **6** | `review_tokens` / comentarios — **fuera de B5** |
+| **7** | `deployments` / artefactos de publish — **fuera de B5** |
 
-Capability Registry, Workflow, Tool Registry, Memory, agents, review tokens, deployments — ver [`core-engines.md`](./core-engines.md).  
-Runtimes y persistencia asociada: Bloques **5–7**, sin reescribir el core de `projects`.
+**Fuera de B5 también:** Workflow runtime store · Tool Registry de vendors · `required_capabilities` en `projects` · Memory KB corporativa.
+
+Ver [`core-engines.md`](./core-engines.md) · [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md).  
+Sin reescribir el core de `projects` (ADR-013).
 
 ---
 

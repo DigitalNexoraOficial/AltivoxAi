@@ -1,7 +1,7 @@
 # Roadmap — Altivox OS
 
 Orden por dependencias. Visión: [`product-vision.md`](./product-vision.md) · Flujo: [`flow.md`](./flow.md)  
-Contrato Bloque 4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md)
+B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md)
 
 ---
 
@@ -12,11 +12,12 @@ Contrato Bloque 4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.
 | **0** | Docs Altivox OS | Completado |
 | **1** | Seguridad | Completado (código; ops SQL/Upstash en entorno) |
 | **B2-A** | Sync docs PE recorte | Completado |
-| **2** | Project Engine | **Cerrado** (ADR-013 · código + harden post-auditoría) |
-| **3** | Shell `/ops` App Router | **Cerrado** (UI Proyectos + puente HTML legacy) |
-| **B4-A** | Sync docs JARVIS + motores (interfaces) | **Completado** (ADR-014) |
-| **4** | JARVIS + resto de motores (interfaces) | **Cerrado** (ADR-014 · JARVIS Core caller + fronteras TypeScript) |
-| **5** | Agent runtime + service modules | Pendiente (después de B4) |
+| **2** | Project Engine | **Cerrado** (ADR-013) |
+| **3** | Shell `/ops` App Router | **Cerrado** |
+| **B4-A** | Sync docs JARVIS + motores (interfaces) | Completado (ADR-014) |
+| **4** | JARVIS + resto de motores (interfaces) | **Cerrado** (ADR-014) |
+| **B5-A** | Sync docs Agent Runtime + módulos | **Completado** (ADR-015) |
+| **5** | Agent runtime + service modules | Pendiente de **aprobación de implementación** |
 | **6** | Review Engine + `/r/[token]` | Pendiente (después de B5) |
 | **7** | Entrega ZIP + Deployment Engine | Pendiente (después de B6) |
 
@@ -42,20 +43,21 @@ APIs `/api/ops/projects*` · sin review/deploy/capabilities/agents.
 
 **Contrato:** [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md)
 
-**Implementado:**
+- **JARVIS Core** — orquestador/caller → PE.  
+- Fronteras TypeScript de motores + Agent Manager boundary.  
+- Sin Agent Runtime ni service modules.
 
-- **JARVIS Core** (`src/core/jarvis`) — orquestador/caller; delega en use-cases públicos del Project Engine.  
-- Fronteras TypeScript: **Workflow**, **Tool Registry**, **Memory**, **Capability Registry** + **Agent Manager** (boundary, sin runtime).  
-- «Interfaces» = contratos de responsabilidad — **no** runtimes.
-
-**No es Fase 4 (sigue fuera):** Agent runtime · runtimes de motores · Review · Deploy · service modules · tablas/APIs nuevas · UI JARVIS · stubs.
 ---
 
 ## Fase 5 — Agent runtime + service modules
 
-- Ejecución de agentes (Agent Runtime).  
-- Primeros **service modules** / plugins.  
-- Fronteras B4 ya existen; **no** anticipar runtimes en B4 (cerrado).
+**Contrato:** [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md)
+
+**Incluye (recorte):** Agent Runtime · Agent Manager runtime · un primer service module · integración JARVIS · Tool/Memory/Capability **mínimos** según ADR-015.
+
+**No es Fase 5:** Review · `/r/[token]` · Deploy · ZIP · Workflow runtime · Tool Registry de vendors de entrega · CRM · chat como agente.
+
+*Implementación de código: solo tras OK explícito. B5-A solo sincronizó docs.*
 
 ---
 
@@ -69,7 +71,7 @@ APIs `/api/ops/projects*` · sin review/deploy/capabilities/agents.
 ## Fase 7 — Entrega ZIP + Deployment Engine
 
 - Empaquetado / entrega.  
-- Deployment Engine **vía Tool Registry** (cuando el registry tenga runtime).
+- Deployment Engine **vía Tool Registry** (ampliado; no el mínimo LLM de B5).
 
 ---
 
@@ -86,5 +88,5 @@ Detalle motors: [`core-engines.md`](./core-engines.md).
 ## Principios
 
 - Un bloque cada vez; docs = verdad; `can()` en mutaciones ops.  
-- No anticipar tablas/APIs de motores futuros.  
+- No anticipar tablas/APIs fuera del ADR del bloque.  
 - No stubs ni simulaciones de motores.

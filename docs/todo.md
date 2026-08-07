@@ -3,7 +3,8 @@
 Leyenda: **P0** bloqueante · **P1** alto · **P2** medio · **P3** mejora  
 Regla: no código sin aprobación del bloque.
 
-Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](./roadmap.md) · B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md)
+Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](./roadmap.md)  
+B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md)
 
 ---
 
@@ -15,6 +16,7 @@ Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](.
 | T-000b | Cinco motores del núcleo + ADR-011 | **done** |
 | T-000c | Prebloque B2-A sync docs + ADR-013 | **done** |
 | T-000d | Prebloque B4-A sync docs + ADR-014 | **done** |
+| T-000e | Prebloque B5-A sync docs + ADR-015 | **done** |
 
 ---
 
@@ -33,8 +35,6 @@ Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](.
 | T-100…T-104 | Schema, use-cases, APIs, RLS/`can()` | **done** / cerrado |
 | Harden post-auditoría | RPC atómicas, status guard, approve | **done** |
 
-**Fuera de B2:** review_tokens, deployments, capabilities, agents, TR, workflows, JARVIS runtime.
-
 ---
 
 ## P0 — Ops Shell (Bloque 3)
@@ -51,31 +51,35 @@ Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](.
 
 | ID | Tarea | Notas |
 |----|-------|-------|
-| T-201 | Migrar leads/clientes desde HTML | gradual; **no** en B3 ni B4 |
+| T-201 | Migrar leads/clientes desde HTML | gradual; **no** B4 ni B5 |
 
 ---
 
 ## P1 — Bloque 4 — JARVIS + motores (interfaces) · **cerrado**
 
-Contrato: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md).  
-Código: `src/core/jarvis` + fronteras TypeScript de motores (sin runtimes/APIs/UI).
-
 | ID | Tarea | Estado |
 |----|-------|--------|
-| T-300 | JARVIS Core (orquestador / caller → PE use-cases) | **done** |
-| T-301 | Fronteras del resto de motores del núcleo | **done** (Workflow · Tool Registry · Memory · Capability Registry · Agent Manager boundary — **sin** runtimes) |
-
-**Fuera de B4 (sigue pendiente en B5+):** Agent Runtime · Agent Manager runtime · Workflows ejecutables · Review Engine · Deployment Engine · service modules · tablas/APIs nuevas · stubs · chatbot público · reabrir B0–B3.
+| T-300 | JARVIS Core caller → PE | **done** |
+| T-301 | Fronteras TypeScript de motores | **done** |
 
 ---
 
 ## P1 — Bloque 5 — Agent runtime + service modules
 
+Contrato: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md).  
+**Sin código** hasta OK explícito de implementación.
+
 | ID | Tarea | Notas |
 |----|-------|-------|
-| T-306 | Agent Runtime + Agent Manager en ejecución | **No** B4 |
-| T-307 | Primer service module plugin | **No** B4 |
-| T-308 | Relabel/retirar `agentes.html` cosmético | Con B5 o cuando deje de confundir producto |
+| T-306 | Agent Runtime (ciclo de vida de runs) | ADR-015 |
+| T-306b | Agent Manager runtime (registro por manifest) | ADR-015; no marketplace |
+| T-307 | Primer service module plugin | Un módulo; capabilities en manifest |
+| T-307b | Tool Registry runtime **mínimo** (solo LLM aprobado) | No vendors de entrega |
+| T-307c | Memory / Capability runtimes **mínimos** | Runs + resolución manifest; no PE capabilities |
+| T-307d | JARVIS Core: intenciones → Agent Runtime / Manager | Sin sustituir PE |
+| T-308 | Relabel/retirar `agentes.html` cosmético | Con B5 o cuando deje de confundir |
+
+**Fuera de B5:** Workflow runtime · Review · Deploy · ZIP · CRM · chat como agente · reabrir B0–B4.
 
 ---
 
@@ -83,7 +87,7 @@ Código: `src/core/jarvis` + fronteras TypeScript de motores (sin runtimes/APIs/
 
 | ID | Tarea | Notas |
 |----|-------|-------|
-| T-400 | `/r/[token]` + Review Engine | Sin internos; **no** B4 |
+| T-400 | `/r/[token]` + Review Engine | **No** B5 |
 
 ---
 
@@ -91,8 +95,8 @@ Código: `src/core/jarvis` + fronteras TypeScript de motores (sin runtimes/APIs/
 
 | ID | Tarea | Notas |
 |----|-------|-------|
-| T-401 | ZIP delivery pipeline | **No** B4 |
-| T-402 | Deploy adapters + confirmación (vía Tool Registry) | **No** B4 |
+| T-401 | ZIP delivery pipeline | **No** B5 |
+| T-402 | Deploy adapters + confirmación | **No** B5 |
 
 ---
 
@@ -123,10 +127,10 @@ Código: `src/core/jarvis` + fronteras TypeScript de motores (sin runtimes/APIs/
 |------------|--------|
 | T-023 Chat → tools agentes OS | Viola aislamiento público/OS |
 | T-202 JARVIS stub en B3 | Prohibido fingir motores |
-| T-302…T-305 como “implementar runtime en B4” | Runtimes = B5+; B4 solo fronteras (ADR-014) |
+| Runtime completo de todos los motores en B5 | ADR-015 = recorte |
 | Plataforma agentes pública | ADR-010 |
 | JARVIS respuesta unificada al visitante | ADR-010 |
-| Portal demo como producto cliente IA | Sustituido por `/r/[token]` (B6) |
+| Portal demo como producto cliente IA | `/r/[token]` = B6 |
 
 ---
 
@@ -134,7 +138,5 @@ Código: `src/core/jarvis` + fronteras TypeScript de motores (sin runtimes/APIs/
 
 | Ítem | Ref |
 |------|-----|
-| Bloque 2 Project Engine | ADR-013 |
-| Bloque 3 Ops Shell | `/ops` + proyectos UI |
-| Prebloque B4-A | ADR-014 · sync docs |
-| **Bloque 4** JARVIS Core + fronteras motores | ADR-014 · `src/core/jarvis` · **cerrado** |
+| Bloque 4 JARVIS + fronteras | ADR-014 · cerrado |
+| Prebloque B5-A | ADR-015 · sync docs |

@@ -37,15 +37,22 @@ Tres familias alineadas a las tres superficies.
 Mutaciones PE: use-cases en `src/core/project-engine` + `can(subject, action, resource)`.  
 Dominio → `project_events`. Técnico → `audit_events`.
 
-**No en B2 ni en B4:** `/api/review/*`, deploy endpoints, capabilities, workflows, tools, memory, agent runs.
+**No en B2 ni en B4:** `/api/review/*`, deploy endpoints, agent runs, workflows ejecutables.
 
 ---
 
-## 3. Horizonte (diferido · no Bloque 4)
+## 3. Horizonte por bloque (sin inventar rutas)
 
-Bloque 4 (**ADR-014**) es corte de **interfaces / fronteras**: **no** añade APIs nuevas.
+| Bloque | Contrato | APIs |
+|--------|----------|------|
+| **4 · cerrado** | ADR-014 | **Ninguna** API nueva (solo caller in-process) |
+| **5** | ADR-015 | Si la implementación necesita APIs ops de agentes/runs/módulos, se definen **en el bloque de código** bajo el recorte — **no** aquí |
+| **6** | Review | `/api/review/*` — **fuera de B5** |
+| **7** | Deploy | endpoints de deploy/ZIP — **fuera de B5** |
 
-Workflow run · capability assign · tool invoke · memory · agent runs · review token APIs · deploy — bloques **5–7**. Ver [`core-engines.md`](./core-engines.md) · [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md).
+Workflow run completo · Tool Registry de vendors · review tokens · deploy ≠ B5.
+
+Detalle: [`core-engines.md`](./core-engines.md) · [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md).
 
 ---
 
