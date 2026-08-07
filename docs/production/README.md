@@ -43,4 +43,4 @@ Documentación de **preparación para lanzamiento real**.
 
 Visión: [`../deployment.md`](../deployment.md).
 
-**Estado:** RC **READY** · merge/`v0.7.0-b7`/deploy **bloqueados** hasta confirmación owner — [`FINAL-GO-LIVE-REPORT.md`](./FINAL-GO-LIVE-REPORT.md).
+**Estado:** código **RELEASED** en `main` · tag **`v0.7.0-b7`** · checklist ops pendiente — [`RELEASE-CLOSURE-REPORT.md`](./RELEASE-CLOSURE-REPORT.md).
