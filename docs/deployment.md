@@ -43,22 +43,25 @@ Mismo repositorio permitido; **límites de seguridad** por ruta y rol, no por �
 - Shell `/ops` App Router (**Bloque 3 cerrado**) + `/api/ops/*` (PE + agentes)  
 - Admin estático en `public/*.html` (CRM/legacy temporal)  
 - Portal `/r/[token]`: **implementado** (ADR-016)  
-- Deployment Engine de proyectos cliente: **aún no** (**B7**)
+- Deployment Engine de proyectos cliente: **contrato ADR-017 · no implementado** (B7-A)
 
 ---
 
-## 4. To-be entregables de **proyectos cliente** (Fase 7)
+## 4. To-be entregables de **proyectos cliente** (Fase 7 · ADR-017)
+
+**Contrato:** [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md). Prebloque B7-A (docs only).
 
 No confundir con deploy de Altivox ni con Review (B6):
 
-1. Artefacto ZIP (código, docs, guía, `.env.example`, README).  
-2. Adapters opcionales: GitHub, Vercel, WordPress, FTP, …  
+1. Artefacto ZIP / paquete (código, docs, guía, `.env.example`, README).  
+2. Adapters opcionales vía Tool Registry ampliado: GitHub, Vercel, WordPress, FTP, …  
 3. **Siempre confirmación humana** antes de publicar en destino del cliente.  
-4. Registro en `deployments` + eventos.  
-5. Entrada: **únicamente entregables aprobados** (habilitado por Review B6).
+4. Registro en persistencia Deploy + eventos propios.  
+5. Entrada: **únicamente entregables / reviews approved** (B6).  
+6. Estados propios Deploy (`draft`…`published`/`failed`/`cancelled`) ≠ PE ≠ Review.
 
 Los adapters son **plugins**; añadir destino nuevo no modifica el núcleo OS.  
-**B6 no incluye** ZIP, hosting ni vendors (ADR-016).
+**Código B7 bloqueado** hasta «OK implementar Bloque 7».
 
 ---
 

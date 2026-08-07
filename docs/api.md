@@ -57,7 +57,7 @@ Agentes = **solo OS**. No hay APIs de agentes en superficie Review ni pública.
 | **4 · cerrado** | ADR-014 | Ninguna API nueva (caller in-process) |
 | **5 · cerrado** | ADR-015 | `/api/ops/agents*` · `/api/ops/agent-runs*` (implementado) |
 | **6 · cerrado** | ADR-016 | `/api/ops/reviews*` · `/api/review/[token]*` |
-| **7** | Deploy | endpoints de deploy/ZIP — **fuera de B6** |
+| **7** | ADR-017 | `/api/ops/deployments*` (o `/api/ops/deploy*`) — **no implementado** |
 
 ### 3.1 Review (Bloque 6)
 
@@ -73,7 +73,8 @@ Agentes = **solo OS**. No hay APIs de agentes en superficie Review ni pública.
 | `POST /api/review/[token]/approve` | Token | Aprobar (no muta PE) |
 | `POST /api/review/[token]/reject` | Token | Rechazar (no muta PE) |
 
-**Fuera de B6:** Workflow run · Tool vendors · deploy · ZIP · agentes en portal.
+**Fuera de B6:** Workflow run · Tool vendors · deploy · ZIP · agentes en portal.  
+**Fuera de B7 (hasta OK):** rutas concretas, adapters, tablas — solo contrato ADR-017.
 
 Detalle: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md) · [`flow.md`](./flow.md).
 
@@ -83,4 +84,5 @@ Detalle: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md) · [`flow.md`](./f
 
 Dominio PE: [`flow.md`](./flow.md) §7.  
 Técnico: `audit_events`.  
-Review: `review_events` (B6).
+Review: `review_events` (B6).  
+Deploy: store propio (B7) — **aún no**.

@@ -4,7 +4,7 @@
 **Marca comercial:** AltivoxAi / Altivox AI  
 **Dominio público:** https://www.altivoxai.es  
 **Documento oficial de visión:** este archivo (Bloque 0 · 2026-08-07)  
-**Actualizado:** 2026-08-07 · Bloque 6 cerrado (ADR-016)
+**Actualizado:** 2026-08-07 · Prebloque B7-A (ADR-017)
 
 ---
 
@@ -85,7 +85,7 @@ Estados en dominio: `draft|planning|in_progress|qa|review|approved|delivered|mai
 |--------|----------|--------|
 | 5 | Agent runtime + service modules | **Cerrado** |
 | 6 | Review Engine + `/r/[token]` | **Cerrado** |
-| 7 | Entrega ZIP + Deployment Engine | Pendiente |
+| 7 | Entrega ZIP + Deployment Engine | Contrato ADR-017 · código pendiente |
 
 Detalle: [`flow.md`](./flow.md), [`core-engines.md`](./core-engines.md), [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md).
 
@@ -147,7 +147,7 @@ Mínimo funcional a medio plazo:
 
 Hoy existen: landing Next.js, admin HTML (`public/*.html`, temporal ADR-001), APIs lead/chat/n8n, CRM ligero Supabase, **Security (B1)**, **Project Engine (B2)**, **shell `/ops` (B3)**, **JARVIS Core (B4)**, **Agent Runtime + módulo web (B5)**, **Review Engine + `/r/[token]` (B6)**.
 
-**Aún no:** Deploy/ZIP (B7), Workflow runtime pleno, CRM App Router, Memory KB corporativa.
+**Aún no:** Deploy Engine / ZIP (contrato [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md)), Workflow runtime pleno, CRM App Router, Memory KB corporativa.
 
 Esta visión es la **fuente oficial de verdad** para el diseño; la implementación sigue el [`roadmap.md`](./roadmap.md) bloque a bloque.  
-**No escribir código de B7** hasta OK explícito.
+**No escribir código de B7** hasta «OK implementar Bloque 7».

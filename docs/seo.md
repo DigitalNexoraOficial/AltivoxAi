@@ -95,4 +95,5 @@ OG pipeline ← /og default + por página
 SEO alimenta el embudo de [`flow.md`](./flow.md):  
 organic → landing → tools → lead → CRM.  
 Cada pieza de contenido nueva debe tener **un CTA medible** (fuente de lead distinta).  
-El portal de review **no** es canal SEO.
+El portal de review **no** es canal SEO.  
+Deploy (B7) vive en `/ops` — ya noindex; no es superficie pública.
