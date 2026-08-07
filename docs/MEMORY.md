@@ -53,7 +53,7 @@
 | **ADR-014** | **Bloque 4 — JARVIS + motores (interfaces)** | **Aceptado · implementado** — [`adr/ADR-014-bloque-4-jarvis-motores-interfaces.md`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) |
 | **ADR-015** | **Bloque 5 — Agent Runtime + service modules (recorte)** | **Aceptado · implementado** — [`adr/ADR-015-bloque-5-agent-runtime.md`](./adr/ADR-015-bloque-5-agent-runtime.md) |
 | **ADR-016** | **Bloque 6 — Review Engine + `/r/[token]` (recorte)** | **Aceptado · implementado** — [`adr/ADR-016-bloque-6-review-engine.md`](./adr/ADR-016-bloque-6-review-engine.md) |
-| **ADR-017** | **Bloque 7 — Deploy Engine + ZIP (recorte)** | **Aceptado · solo docs (B7-A)** — [`adr/ADR-017-bloque-7-deploy-engine.md`](./adr/ADR-017-bloque-7-deploy-engine.md) |
+| **ADR-017** | **Bloque 7 — Deploy Engine + ZIP (recorte)** | **Aceptado · implementado** — [`adr/ADR-017-bloque-7-deploy-engine.md`](./adr/ADR-017-bloque-7-deploy-engine.md) |
 
 ### ADR-005 (enmienda 2026-08-07)
 
@@ -84,7 +84,7 @@ Visión: cinco motores.
 Motores Workflow / Tool Registry / Memory / Capability (+ Agent Manager boundary) = interfaces TypeScript en B4.  
 **Bloque 5 (cerrado · ADR-015):** Agent Runtime + Agent Manager runtime + módulo `web` + Tool/Memory/Capability **mínimos** + APIs ops agentes/runs.  
 **Bloque 6 (cerrado · ADR-016):** Review Engine + `/r/[token]` + tokens + APIs.  
-**Bloque 7 (contrato · ADR-017 · B7-A):** Deploy Engine + ZIP (sin providers externos en el recorte inicial) — **no implementado**.  
+**Bloque 7 (cerrado · ADR-017):** Deploy Engine + ZIP interno (sin providers externos).  
 Spec: [`core-engines.md`](./core-engines.md).
 
 ---
@@ -96,7 +96,7 @@ Spec: [`core-engines.md`](./core-engines.md).
 | Pública | `src/app/(public)`, sections | Marketing + Frontend |
 | OS | `src/app/ops` | OS + Frontend |
 | Review | `src/app/r` + `src/core/review-engine` (B6) | Delivery |
-| Core | `src/core/security`, `src/core/project-engine`, `src/core/jarvis`, `src/core/agent-runtime`, … | Arquitectura |
+| Core | `src/core/security`, `project-engine`, `jarvis`, `agent-runtime`, `review-engine`, `deploy-engine`, … | Arquitectura |
 | Módulos | `src/modules/web` (B5) | Por servicio |
 | Admin legacy | `public/*.html` | Temporal |
 | Docs | `docs/` | CTO / arquitectura |
@@ -123,16 +123,17 @@ Spec: [`core-engines.md`](./core-engines.md).
 | 2026-08-07 | **Prebloque B6-A:** sync docs + ADR-016 (corte Review Engine) | ADR-016 |
 | 2026-08 | **Bloque 6:** Review Engine + portal `/r/[token]` (ADR-016) | cerrado |
 | 2026-08-07 | **Prebloque B7-A:** sync docs + ADR-017 (corte Deploy Engine) | ADR-017 |
+| 2026-08 | **Bloque 7:** Deploy Engine + ZIP (ADR-017) | cerrado |
 
 ---
 
 ## 8. Pendiente de implementación (no docs)
 
 Ver [`todo.md`](./todo.md) y [`roadmap.md`](./roadmap.md).  
-**Bloques 0–6 cerrados.** Prebloque **B7-A cerrado** (ADR-017).  
-**Próximo bloque oficial de código:** Bloque 7 — Deploy Engine + ZIP — requiere **«OK implementar Bloque 7»**.  
-**No** existe Deploy Engine implementado. Review = B6. Agent Runtime permanece interno.  
-Ops entorno: aplicar SQL B1/B2/B5 + `review.sql` + Upstash en producción.  
+**Bloques 0–7 cerrados.**  
+**Próximo:** fases 8–9 (perf/SEO · analítica/facturación) u OK explícito posterior.  
+Deploy Engine **implementado** (ZIP interno; sin providers). Review = B6. Agent Runtime interno.  
+Ops entorno: SQL B1/B2/B5 + `review.sql` + `deploy.sql` + Upstash.  
 Migración CRM UI = backlog UI aparte.
 
 ---

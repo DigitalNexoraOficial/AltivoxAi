@@ -22,7 +22,8 @@ Review (contrato): [`adr/ADR-016-bloque-6-review-engine.md`](./adr/ADR-016-bloqu
 2. Ejecutar `project-engine.sql` (Bloque 2; incluye guards/RPC).  
 3. Ejecutar `agent-runtime.sql` (Bloque 5) si el entorno usa agentes.  
 4. Ejecutar `review.sql` (Bloque 6).  
-5. Ejecutar `assign-superadmin.sql` con tu email.  
+5. Ejecutar `deploy.sql` (Bloque 7).  
+6. Ejecutar `assign-superadmin.sql` con tu email.  
 6. Logout/login para refrescar JWT.  
 7. Configurar Upstash en Vercel (prod).
 
@@ -42,19 +43,17 @@ Notas RBAC (B2 post-auditoría): `operator` y techo `jarvis` incluyen `project.a
 
 JARVIS techo incluye `review.create` + `review.revoke`; **no** es superadmin (ADR-012).
 
-## Deploy Engine (Bloque 7 · ADR-017 · no implementado)
-
-Contrato de seguridad (cuando exista código):
+## Deploy Engine (Bloque 7 · ADR-017 · implementado)
 
 | Superficie | Regla |
 |------------|--------|
 | Ops | `deploy.create` · `deploy.execute` · `deploy.cancel` · `deploy.configure` vía `can()` |
-| Catálogo B1 | Existen `deploy.preview` / `deploy.production` históricos; B7 alinea al contrato anterior sin reabrir ADR-012 |
+| Catálogo | También conserva `deploy.preview` / `deploy.production` históricos |
 | Frontend | Sin `service_role` |
 | Cliente `/r` | Sin APIs de deploy |
-| JARVIS | Solo orquesta (caller) |
+| JARVIS | Caller create/execute/cancel (sin `deploy.configure`) |
 | Agent | **No** ejecuta deployment directo |
-| Aislamiento | Sin credenciales expuestas; sin bypass; con auditoría |
+| Aislamiento | ZIP interno; sin vendors; auditoría en `audit_events` |
 
 ## Rollback
 
@@ -62,4 +61,4 @@ Contrato de seguridad (cuando exista código):
 
 ## Diferido
 
-client_credentials · approval_requests UI · Memory Engine completo · Tool Registry de vendors (hasta B7 código) · HITL UI · **Deploy Engine código (B7)**.
+client_credentials · approval_requests UI · Memory Engine completo · Tool Registry de vendors externos · HITL UI · providers publish.

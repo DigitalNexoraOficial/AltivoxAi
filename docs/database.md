@@ -15,7 +15,8 @@ project_versions
 deliverables
 project_events        ← dominio PE (no mezclar con audit)
 + Agent Runtime (Bloque 5 · agent-runtime.sql)
-+ Review Engine (Bloque 6 · review.sql): reviews, review_tokens, …
++ Review Engine (Bloque 6 · review.sql)
++ Deploy Engine (Bloque 7 · deploy.sql): deployments, deployment_events
 ```
 
 SQL relevante:
@@ -23,10 +24,11 @@ SQL relevante:
 - B1: `supabase/sql/rbac.sql`, `audit-events.sql`, …  
 - B2: `supabase/sql/project-engine.sql`  
 - B5: `supabase/sql/agent-runtime.sql`  
-- B6: `supabase/sql/review.sql` (rollback: `review-rollback.sql`)  
+- B6: `supabase/sql/review.sql`  
+- B7: `supabase/sql/deploy.sql` (rollback: `deploy-rollback.sql`)  
 - B2 **requiere** helpers `altivox_is_staff` / `altivox_role_in` del Bloque 1.
 
-Orden: `audit-events.sql` → `rbac.sql` → `project-engine.sql` → `agent-runtime.sql` → `review.sql`.
+Orden: `audit-events.sql` → `rbac.sql` → `project-engine.sql` → `agent-runtime.sql` → `review.sql` → `deploy.sql`.
 
 ---
 
@@ -71,7 +73,7 @@ Detalle: [`ADR-013`](./adr/ADR-013-project-engine.md), [`flow.md`](./flow.md).
 | **4 · cerrado** | ADR-014: **ninguna** tabla nueva |
 | **5 · cerrado** | ADR-015: Agent Runtime / Memory mínima de runs (`agent-runtime.sql`) — **sin** `review_tokens` ni `deployments` |
 | **6 · cerrado** | ADR-016: `reviews`, `review_tokens`, `review_deliverables`, `review_comments`, `review_events` |
-| **7** | ADR-017 (futuro): `deployments` · `deployment_events` · `deployment_artifacts` · `deployment_configs` — **no implementado** |
+| **7 · cerrado** | ADR-017: `deployments` · `deployment_events` (config/deliverables en JSONB del deployment) |
 
 **Fuera de B6 también:** Workflow runtime store · Tool Registry de vendors · `required_capabilities` en `projects` · Memory KB corporativa · reescritura del PE.
 
@@ -104,4 +106,4 @@ Sin reescribir el core de `projects` (ADR-013). Agent Runtime permanece aislado 
 | `audit_events` | Técnico (authz, API, rate limit, errores) |
 | Persistencia Review (B6) | Sesión cliente / tokens / comentarios / eventos |
 | Persistencia Agent Runtime (B5) | Runs / facts mínimos — **interno** |
-| Persistencia Deploy (B7) | Deployments / paquetes / errores — **aún no** |
+| Persistencia Deploy (B7) | Deployments / eventos / package_uri |

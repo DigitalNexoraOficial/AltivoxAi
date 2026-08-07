@@ -18,7 +18,7 @@ PE: [`ADR-013`](./adr/ADR-013-project-engine.md) · B4: [`ADR-014`](./adr/ADR-01
 [/r/[token]]       revisión cliente  ← implementado (Review Engine · Bloque 6)
       │
       ▼
-[Altivox OS /ops]  entrega / deploy / mantenimiento  ← contrato ADR-017 · código pendiente (Bloque 7)
+[Altivox OS /ops]  entrega / deploy / mantenimiento  ← implementado ZIP (Bloque 7 · sin vendors)
 ```
 
 ---
@@ -34,7 +34,7 @@ Lead → Cliente → Proyecto → Planificación → Capabilities → Agentes
 Ese ciclo completo requiere Capability Registry (runtime), Agent Runtime, Review Engine, Tool Registry (runtime), Workflow runtime y JARVIS operativo con agentes.  
 **Cubierto en código:** PE (B2) · `/ops` (B3) · JARVIS Core (B4) · Agent Runtime + módulo web + Tool/Memory/Capability mínimos (B5).  
 **B6 (ADR-016 · cerrado):** Review Engine + `/r/[token]` — **implementado**.  
-**Contrato B7 (ADR-017 · B7-A):** Deploy Engine + ZIP — **no implementado**. Workflow runtime ≠ B5–B7.
+**B7 (ADR-017 · cerrado):** Deploy Engine + ZIP interno — **implementado** (sin providers). Workflow runtime ≠ B5–B7.
 
 ---
 
@@ -90,7 +90,7 @@ Deployments · Workflow runtime · Memory KB corporativa · Tool vendors de entr
 | **4 · cerrado** | JARVIS Core caller + fronteras; sin ejecución de agentes |
 | **5 · cerrado** | Agent Runtime + service module; OPS/JARVIS lanzan runs **internos** |
 | **6 · cerrado** | Review Engine + tokens + portal cliente |
-| **7 · ADR-017** | Entrega ZIP + Deploy Engine (código pendiente; solo approved) |
+| **7 · cerrado** | Entrega ZIP + Deploy Engine (packaged; sin vendors) |
 
 La fase PE `review` puede existir **sin** portal. El portal es B6. Deploy es **solo** B7.
 
@@ -120,16 +120,13 @@ Chat público ≠ Agent Runtime ≠ Review Engine.
 
 ---
 
-## 6b. Deploy Engine — Bloque 7 (contrato ADR-017)
+## 6b. Deploy Engine — Bloque 7 (implementado · ADR-017)
 
-Cuando exista (tras OK de código):
-
-- Solo consume deliverables / reviews **approved** (nunca auto-deploy).  
-- ZIP pipeline → artefacto interno.  
-- Estados: `draft|queued|building|packaged|deploying|deployed|failed|cancelled`.  
-- **Sin** providers externos en el recorte inicial (adapters = posterior).  
-- JARVIS caller; Agent Runtime **no** ejecuta deploy.  
-- PE/Review solo por use-cases públicos.
+- OPS/JARVIS crea deployment (`draft`) y ejecuta packaging → `packaged`.  
+- ZIP reproducible interno (`package_uri`); sin vendors.  
+- Estados ADR-017; historial en `deployment_events`.  
+- **Prohibido** auto-deploy tras Review.  
+- PE/Review solo por superficies públicas; Agent Runtime no participa.
 
 Detalle: [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md).
 
@@ -148,7 +145,7 @@ Ejemplos válidos en `project_events`:
 
 Eventos de agentes → B5 (persistencia Agent Runtime).  
 Eventos de review → `review_events` (B6).  
-Eventos de deploy → B7 (`deployments` / eventos Deploy — aún no).
+Eventos de deploy → `deployment_events` (B7).
 
 ---
 
@@ -160,5 +157,5 @@ Eventos de deploy → B7 (`deployments` / eventos Deploy — aún no).
 - **JARVIS Core:** implementado (B4) — caller PE (+ agentes B5); **no** chatbot.  
 - **Agent Runtime:** **implementado** (ADR-015) — **interno**; aislado del portal.  
 - **Review Engine:** **implementado** (ADR-016) — portal `/r/[token]`.  
-- **Deploy Engine:** **no** implementado — contrato ADR-017 (B7-A).  
+- **Deploy Engine:** **implementado** (ADR-017) — ZIP interno; sin providers.  
 - No fingir en la web pública que el chat son agentes OS.

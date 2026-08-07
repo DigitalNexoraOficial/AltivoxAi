@@ -20,8 +20,8 @@ B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`AD
 | **5** | Agent runtime + service modules | **Cerrado** (ADR-015) |
 | **B6-A** | Sync docs Review Engine | Completado (ADR-016) |
 | **6** | Review Engine + `/r/[token]` | **Cerrado** (ADR-016 · Review Engine + portal `/r/[token]`) |
-| **B7-A** | Sync docs Deploy Engine | **Completado** (ADR-017) |
-| **7** | Entrega ZIP + Deployment Engine | Pendiente de código (ADR-017 · requiere OK explícito) |
+| **B7-A** | Sync docs Deploy Engine | Completado (ADR-017) |
+| **7** | Entrega ZIP + Deployment Engine | **Cerrado** (ADR-017 · Deploy Engine + ZIP interno) |
 
 ---
 
@@ -73,15 +73,15 @@ APIs `/api/ops/projects*` · sin review/deploy/capabilities/agents.
 
 ---
 
-## Fase 7 — Entrega ZIP + Deployment Engine
+## Fase 7 — Entrega ZIP + Deployment Engine · **cerrada**
 
-**Contrato:** [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md) · Prebloque **B7-A completado**.
+**Contrato:** [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md)
 
-**Incluye (cuando haya OK de código):** Deploy Engine independiente · validar artefactos approved · crear deployments · ZIP pipeline · estados `draft|queued|building|packaged|deploying|deployed|failed|cancelled` · historial · APIs Ops · JARVIS caller · PE/Review solo por use-cases públicos.
+**Implementado:** Deploy Engine · ZIP reproducible interno · estados ADR-017 · `deployments` + `deployment_events` · APIs `/api/ops/deployments*` · JARVIS `deploy.create|execute|cancel|configure` · acciones Security `deploy.*`.
 
-**No es Fase 7 (inicial):** providers externos (Vercel/Netlify/AWS/GitHub Deploy/FTP) · auto-deploy tras Review · portal `/r` como deploy · Agent Runtime como deployer · Workflow · CRM · marketplace · reabrir B0–B6.
+**No es Fase 7:** providers externos · auto-deploy tras Review · portal `/r` · Agent Runtime como deployer · Workflow · CRM · marketplace.
 
-**Estado:** **no implementado**.
+**Nota:** execute termina en `packaged` (sin vendors). PE/Review intactos.
 
 ---
 

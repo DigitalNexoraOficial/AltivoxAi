@@ -1,6 +1,6 @@
 # Núcleo oficial — Motores de Altivox OS
 
-**Estado:** Fuente de verdad · actualizado Prebloque B7-A (2026-08-07)  
+**Estado:** Fuente de verdad · actualizado Bloque 7 cerrado (2026-08-07)  
 **ADRs:** [`ADR-011`](./adr/ADR-011-core-engines.md) · [`ADR-013`](./adr/ADR-013-project-engine.md) · [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md) · [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md) · [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md)
 
 Estos motores forman el **núcleo estable** a largo plazo.  
@@ -23,7 +23,7 @@ JARVIS **orquesta**; no sustituye a los motores.
               ┌────────────┼────────────┐
               ▼            ▼            ▼
         Tool Registry  Memory Engine  Review Engine (B6 ✅)
-        (B5: LLM min)  (B5: runs)     Deploy Engine (B7 · ADR-017 · no código)
+        (B5: LLM min)  (B5: runs)     Deploy Engine (B7 ✅ · ZIP, sin vendors)
 ```
 
 ---
@@ -82,11 +82,11 @@ Validación cliente (`/r/[token]`). **Approved ≠ deploy automático.**
 
 ---
 
-## 9. Deploy Engine — B7 · contrato ADR-017 · **no implementado**
+## 9. Deploy Engine — B7 · **cerrado**
 
 [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md).  
-ZIP + deployments + historial. Sin providers en el recorte inicial.  
-Prebloque **B7-A** documental; código hasta «OK implementar Bloque 7».
+Código: `src/core/deploy-engine`, SQL `deploy.sql`, APIs `/api/ops/deployments*`.  
+ZIP interno reproducible; sin providers externos.
 
 ---
 
@@ -98,6 +98,6 @@ Prebloque **B7-A** documental; código hasta «OK implementar Bloque 7».
 4. JARVIS + fronteras — B4 ✅  
 5. Agent Runtime + módulos — B5 ✅  
 6. Review Engine + `/r/[token]` — B6 ✅  
-7. **Entrega ZIP + Deploy Engine** — B7 (ADR-017 · pendiente de código)  
+7. **Entrega ZIP + Deploy Engine** — B7 ✅ (ADR-017)  
 
 Visión: ADR-011. Recortes: ADR-013…017.

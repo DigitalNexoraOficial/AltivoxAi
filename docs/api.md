@@ -57,7 +57,7 @@ Agentes = **solo OS**. No hay APIs de agentes en superficie Review ni pública.
 | **4 · cerrado** | ADR-014 | Ninguna API nueva (caller in-process) |
 | **5 · cerrado** | ADR-015 | `/api/ops/agents*` · `/api/ops/agent-runs*` (implementado) |
 | **6 · cerrado** | ADR-016 | `/api/ops/reviews*` · `/api/review/[token]*` |
-| **7** | ADR-017 | `/api/ops/deployments*` · opcional `/api/deploy/*` interno — **no implementado**; **nunca** `/api/public/deploy` |
+| **7 · cerrado** | ADR-017 | `/api/ops/deployments*` — implementado; **nunca** `/api/public/deploy` |
 
 ### 3.1 Review (Bloque 6)
 
@@ -73,8 +73,18 @@ Agentes = **solo OS**. No hay APIs de agentes en superficie Review ni pública.
 | `POST /api/review/[token]/approve` | Token | Aprobar (no muta PE) |
 | `POST /api/review/[token]/reject` | Token | Rechazar (no muta PE) |
 
-**Fuera de B6:** Workflow run · Tool vendors · deploy · ZIP · agentes en portal.  
-**Fuera de B7 (hasta OK):** rutas concretas, tablas, providers externos — solo contrato ADR-017.
+### 3.2 Deploy (Bloque 7)
+
+| Ruta | Auth | Notas |
+|------|------|-------|
+| `POST /api/ops/deployments` | Ops + `deploy.create` | Crea `draft` |
+| `GET /api/ops/deployments` | Ops | Lista |
+| `GET /api/ops/deployments/[id]` | Ops | Detalle + events |
+| `POST /api/ops/deployments/[id]/execute` | Ops + `deploy.execute` | → `packaged` + ZIP |
+| `POST /api/ops/deployments/[id]/cancel` | Ops + `deploy.cancel` | → `cancelled` |
+
+**Fuera de B7:** providers externos · `/api/public/deploy` · auto-deploy Review.
+
 
 Detalle: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md) · [`flow.md`](./flow.md).
 
@@ -85,4 +95,4 @@ Detalle: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md) · [`flow.md`](./f
 Dominio PE: [`flow.md`](./flow.md) §7.  
 Técnico: `audit_events`.  
 Review: `review_events` (B6).  
-Deploy: store propio (B7) — **aún no**.
+Deploy: `deployment_events` (B7).
