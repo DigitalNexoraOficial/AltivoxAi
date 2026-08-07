@@ -56,4 +56,4 @@ Documentación de **preparación para lanzamiento real**.
 
 Visión: [`../deployment.md`](../deployment.md).
 
-**Estado:** código **RELEASED** (`v0.7.0-b7`) · producción live **PENDING** — [`PRODUCTION-ACTIVATION-REPORT.md`](./PRODUCTION-ACTIVATION-REPORT.md).
+**Estado:** código **RELEASED** (`v0.7.0-b7`) · smoke live **PASS** · **ACTIVE** bloqueado solo por backup — [`PRODUCTION-ACTIVATION-REPORT.md`](./PRODUCTION-ACTIVATION-REPORT.md).
