@@ -7,14 +7,14 @@ Documentación de **preparación para lanzamiento real**.
 
 | Documento | Contenido |
 |-----------|-----------|
-| [`PRODUCTION-ACTIVATION-REPORT.md`](./PRODUCTION-ACTIVATION-REPORT.md) | **Informe activación** · **PENDING** |
-| [`FINAL-ENV-VALIDATION.md`](./FINAL-ENV-VALIDATION.md) | Env final (no verificado en agente) |
-| [`FINAL-SQL-VALIDATION.md`](./FINAL-SQL-VALIDATION.md) | SQL final (no aplicado/verificado) |
+| [`PRODUCTION-ACTIVATION-REPORT.md`](./PRODUCTION-ACTIVATION-REPORT.md) | **Informe activación** · smoke PASS · **PENDING backup** → ACTIVE |
+| [`FINAL-ENV-VALIDATION.md`](./FINAL-ENV-VALIDATION.md) | Env final · **PASS** (smoke) |
+| [`FINAL-SQL-VALIDATION.md`](./FINAL-SQL-VALIDATION.md) | SQL final · **PASS** (smoke) |
 | [`ENV-ACTIVATION-CHECK.md`](./ENV-ACTIVATION-CHECK.md) | Variables · prohibido memory stores |
 | [`SUPABASE-ACTIVATION.md`](./SUPABASE-ACTIVATION.md) | Orden SQL (no auto) |
 | [`SECURITY-PRODUCTION-CHECK.md`](./SECURITY-PRODUCTION-CHECK.md) | Security prod |
 | [`BACKUP-EXECUTION.md`](./BACKUP-EXECUTION.md) | Backup + rollback |
-| [`SMOKE-TEST-RESULT.md`](./SMOKE-TEST-RESULT.md) | Smoke A PASS · B ops |
+| [`SMOKE-TEST-RESULT.md`](./SMOKE-TEST-RESULT.md) | Smoke A+B **PASS** (live 2026-08-07) |
 
 ## Release v0.7.0-b7
 

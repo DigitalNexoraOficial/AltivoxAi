@@ -2,18 +2,20 @@
 
 **Informe:** Production Activation Final Check  
 **Fecha:** 2026-08-07  
-**Main tip (docs):** ver commit de este archivo · **Tag código:** `v0.7.0-b7`
+**Operador smoke:** Xabier  
+**Main tip:** post-merge fixes review/login/deploy · **Tag código:** `v0.7.0-b7`
 
 ---
 
 ## Estado
 
-**PENDING**
+**PENDING — solo backup formal**
 
-No **ACTIVE**: faltan pruebas reales de entorno (env · SQL · Upstash · backup · smoke HTTP).  
-No **BLOCKED** por defecto de código: el release es sano; el bloqueo es **operacional / acceso**.
+Smoke HTTP **PASS**. Env/SQL/Upstash demostrados por comportamiento en `www.altivoxai.es`.  
+**No ACTIVE** todavía: falta evidencia de **backup** Supabase registrada por el owner  
+([`BACKUP-EXECUTION.md`](./BACKUP-EXECUTION.md)).
 
-Criterio respetado: **no inventar verificaciones** · **no marcar ACTIVE sin pruebas reales**.
+Criterio respetado: no marcar ACTIVE sin backup real.
 
 ---
 
@@ -21,11 +23,11 @@ Criterio respetado: **no inventar verificaciones** · **no marcar ACTIVE sin pru
 
 | Ítem | Estado |
 |------|--------|
-| Env | **PENDING** — [`FINAL-ENV-VALIDATION.md`](./FINAL-ENV-VALIDATION.md) |
-| SQL | **PENDING** — [`FINAL-SQL-VALIDATION.md`](./FINAL-SQL-VALIDATION.md) |
-| Upstash | **PENDING** — no variables en agente |
+| Env | **PASS** — [`FINAL-ENV-VALIDATION.md`](./FINAL-ENV-VALIDATION.md) |
+| SQL | **PASS** — [`FINAL-SQL-VALIDATION.md`](./FINAL-SQL-VALIDATION.md) |
+| Upstash | **PASS** (rate limit live 429 en login) |
 | Backup | **PENDING** — [`BACKUP-EXECUTION.md`](./BACKUP-EXECUTION.md) |
-| Smoke test | Código **PASS** · HTTP **BLOCKED** — [`SMOKE-TEST-RESULT.md`](./SMOKE-TEST-RESULT.md) |
+| Smoke test | Código **PASS** · HTTP **PASS** — [`SMOKE-TEST-RESULT.md`](./SMOKE-TEST-RESULT.md) |
 
 ---
 
@@ -39,29 +41,27 @@ npm run test:core
 
 ---
 
-## Seguridad (código)
+## Seguridad (código + live)
 
 | Área | |
 |------|--|
-| Auth | OK |
-| RLS scripts | OK |
-| Review aislado | OK |
-| Agents privados | OK |
-| Deploy protegido | OK |
-| Lead anon + RLS | OK |
+| Auth | OK live |
+| RLS / service_role | OK live |
+| Review aislado | OK live `/r` |
+| Agents privados | OK código |
+| Deploy protegido | OK live `packaged` |
+| Lead anon + RLS | OK código |
 
-Live: PENDING — [`SECURITY-PRODUCTION-CHECK.md`](./SECURITY-PRODUCTION-CHECK.md)
+Live: [`SECURITY-PRODUCTION-CHECK.md`](./SECURITY-PRODUCTION-CHECK.md)
 
 ---
 
 ## Riesgos restantes
 
-Solo problemas reales:
-
-1. Sin acceso a secretos Vercel/Supabase en este agente → env/SQL/Upstash no auditables en vivo.  
-2. Backup real no demostrado.  
-3. Smoke HTTP no ejecutado (BLOCKED).  
-4. Riesgo ops: desplegar con `ALTIVOX_*_STORE=memory` si se copia `.env.example`.
+1. **Backup** no registrado (bloquea ACTIVE).  
+2. Lead insert prod no re-probado en este smoke.  
+3. Paquete deploy en `/tmp` es efímero por instancia (ADR-017: package interno; OK para smoke).  
+4. Riesgo ops: no poner `ALTIVOX_*_STORE=memory` en Vercel.
 
 Sin fallos de arquitectura, tests o ADRs.
 
@@ -69,12 +69,10 @@ Sin fallos de arquitectura, tests o ADRs.
 
 ## Cómo pasar a ACTIVE
 
-Owner (con acceso prod):
+Owner:
 
-1. Completar casillas en `FINAL-ENV-VALIDATION.md` y `FINAL-SQL-VALIDATION.md`.  
-2. Confirmar Upstash + backup.  
-3. Ejecutar smoke HTTP y registrar PASS en `SMOKE-TEST-RESULT.md`.  
-4. Cambiar este documento: **Estado → ACTIVE** + fecha/operador.
+1. Completar backup y casillas en [`BACKUP-EXECUTION.md`](./BACKUP-EXECUTION.md).  
+2. Avisar / cambiar este documento: **Estado → ACTIVE** + fecha/operador.
 
 ---
 
@@ -83,4 +81,4 @@ Owner (con acceso prod):
 | Dimensión | Nota |
 |-----------|------|
 | Arquitectura | **9/10** |
-| Producción live | **5/10** — released; no activado |
+| Producción live | **8/10** — smoke PASS; falta backup para ACTIVE |
