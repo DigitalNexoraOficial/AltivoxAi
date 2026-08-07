@@ -5,7 +5,7 @@
 **Visión oficial:** [`product-vision.md`](./product-vision.md)  
 **ADRs:** [`ADR-010`](./adr/ADR-010-altivox-os-pivot.md) · [`ADR-011`](./adr/ADR-011-core-engines.md) · [`ADR-012`](./adr/ADR-012-security-foundation.md) · [`ADR-013`](./adr/ADR-013-project-engine.md) · [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md) · [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md)  
 **Motores del núcleo:** [`core-engines.md`](./core-engines.md)  
-**Actualizado:** 2026-08-07 · Prebloque B6-A (sync docs; sin implementación Review)
+**Actualizado:** 2026-08-07 · Bloque 6 cerrado (Review Engine)
 
 ---
 
@@ -55,7 +55,7 @@
                             │ versión candidata + token
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  3. PORTAL REVISIÓN  (/r/[token])  ← ADR-016 · no código    │
+│  3. PORTAL REVISIÓN  (/r/[token])  ← ADR-016 · implementado │
 │  Entregables · comentarios · cambios · aprobar/rechazar     │
 │  Sin agentes · sin prompts · sin datos internos             │
 └─────────────────────────────────────────────────────────────┘
@@ -77,7 +77,7 @@
 | **Memory Engine** | Memoria runtime | Frontera B4 · runtime **mínimo** runs en B5 · KB corporativa posterior |
 | **Capability Registry** | Capabilities → agentes | Frontera B4 · runtime **mínimo** manifests en B5 |
 
-Además: Identidad/RBAC (B1) · Agent Manager + Agent Runtime (**B5 cerrado**) · **Review Engine (B6 · ADR-016 · no implementado)** · Event Bus · Logger · Configuration · API Gateway `/api/ops/*` (+ `/api/review/*` en B6).
+Además: Identidad/RBAC (B1) · Agent Manager + Agent Runtime (**B5 cerrado**) · **Review Engine (B6 cerrado)** · Event Bus · Logger · Configuration · API Gateway `/api/ops/*` + `/api/review/*`.
 
 JARVIS es **orquestador caller** ([`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) / [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md) / [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md)), no el almacén de proyectos ni el portal cliente.
 
@@ -108,7 +108,7 @@ Descubrimiento por manifest; cero `if/else` de servicio en el core.
 | Shell `/ops` + UI Proyectos (B3) | **Implementado** |
 | JARVIS Core + fronteras motores (B4) | **Implementado** (ADR-014) |
 | Agent runtime · service modules | **Implementado** (ADR-015 · sin UI completa) |
-| `/r/[token]` · Review Engine | **No implementado** — contrato [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md) |
+| `/r/[token]` · Review Engine | **Implementado** ([`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md)) |
 | Deploy / ZIP | Bloque **7** — no B6 |
 | Extensión modular formal | **Parcial** — módulo `web` (B5) |
 
@@ -142,7 +142,7 @@ Carpetas objetivo (no crear Review/Deploy sin OK de bloque):
 Ver [`security.md`](./security.md) · [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md).
 
 - `/ops` y `/api/ops/*`: autenticación + RBAC.  
-- `/r/[token]`: autorización por token de revisión (cuando exista B6); sin sesión staff; `noindex`.  
+- `/r/[token]`: autorización por token de revisión; sin sesión staff; `noindex`.  
 - Agentes y prompts: nunca en respuestas del portal ni de la web pública.  
 - Deploy: solo B7.
 

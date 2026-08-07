@@ -15,7 +15,7 @@ PE: [`ADR-013`](./adr/ADR-013-project-engine.md) · B4: [`ADR-014`](./adr/ADR-01
 [Altivox OS /ops]  dominio + ops
       │
       ▼
-[/r/[token]]       revisión cliente  ← contrato ADR-016 · código pendiente (Bloque 6)
+[/r/[token]]       revisión cliente  ← implementado (Review Engine · Bloque 6)
       │
       ▼
 [Altivox OS /ops]  entrega / deploy / mantenimiento  ← diferido (Bloque 7)
@@ -33,7 +33,7 @@ Lead → Cliente → Proyecto → Planificación → Capabilities → Agentes
 
 Ese ciclo completo requiere Capability Registry (runtime), Agent Runtime, Review Engine, Tool Registry (runtime), Workflow runtime y JARVIS operativo con agentes.  
 **Cubierto en código:** PE (B2) · `/ops` (B3) · JARVIS Core (B4) · Agent Runtime + módulo web + Tool/Memory/Capability mínimos (B5).  
-**Contrato B6 (ADR-016 · B6-A):** Review Engine + `/r/[token]` — **no implementado**.  
+**B6 (ADR-016 · cerrado):** Review Engine + `/r/[token]` — **implementado**.  
 **B7:** Deploy / ZIP. Workflow runtime ≠ B5 ni B6.
 
 ---
@@ -67,7 +67,7 @@ draft → planning → in_progress → qa → review
 - Un humano (rol con `project.transition` / etc.) dispara cambios de estado vía **Project Engine** (`can` + API `/api/ops/projects/.../transition`).  
 - Shell `/ops` (Bloque 3) es la UI de esos use-cases.  
 - Agent Runtime (B5) ejecuta agentes **internos**; no emite URL de review ni deploy.  
-- **No** hay emisión de URL `/r/[token]` (Bloque 6 · ADR-016).  
+- Emisión de URL `/r/[token]` vía Review Engine (B6).  
 - **No** hay deploy a infraestructura del cliente (Bloque 7).
 
 ### 3.3 Versionado y entregables
@@ -79,7 +79,7 @@ draft → planning → in_progress → qa → review
 
 ### 3.4 Qué no hace esta fase operativa
 
-Review tokens/comments · portal `/r` · deployments · Workflow runtime · Memory KB corporativa · Tool vendors de entrega.
+Deployments · Workflow runtime · Memory KB corporativa · Tool vendors de entrega.
 
 ---
 
@@ -89,7 +89,7 @@ Review tokens/comments · portal `/r` · deployments · Workflow runtime · Memo
 |--------|-----------------|
 | **4 · cerrado** | JARVIS Core caller + fronteras; sin ejecución de agentes |
 | **5 · cerrado** | Agent Runtime + service module; OPS/JARVIS lanzan runs **internos** |
-| **6 · ADR-016** | Review Engine + tokens + portal cliente (código pendiente) |
+| **6 · cerrado** | Review Engine + tokens + portal cliente |
 | **7** | Entrega ZIP + deploy opcional (solo entregables aprobados) |
 
 La fase PE `review` puede existir **sin** portal. El portal es B6. Deploy es **solo** B7.
@@ -107,18 +107,16 @@ Chat público ≠ Agent Runtime ≠ Review Engine.
 
 ---
 
-## 6. Portal `/r/[token]` — Bloque 6 (contrato ADR-016)
+## 6. Portal `/r/[token]` — Bloque 6 (implementado · ADR-016)
 
-Cuando exista Review Engine (tras OK de código):
-
-- Sesión ligada a proyecto / versión / deliverables permitidos.  
+- Sesión ligada a proyecto / versión / deliverables (snapshot allowlist).  
 - Acciones: ver · comentar · solicitar cambios · aprobar · rechazar.  
-- Auth por token (revocable + expiración); **sin** sesión staff.  
+- Auth por token (hash en DB, revocable + expiración); **sin** sesión staff.  
 - **Sin** agentes, prompts, Memory, Tools ni credenciales.  
-- Emisión/revocación desde Ops (`review.create` / `review.revoke`); JARVIS puede solicitar vía caller.  
-- Integración PE solo por use-cases públicos existentes.
+- Emisión/revocación desde Ops (`review.create` / `review.revoke`); JARVIS vía caller.  
+- Integración PE: `getProject` al crear; **sin** auto-transición de `projects.status`.
 
-**No** forma parte de B2, B4 ni B5. **No** es Deploy (B7).
+**No** es Deploy (B7).
 
 ---
 
@@ -134,7 +132,7 @@ Ejemplos válidos en `project_events`:
 - `project.archived` / `project.cancelled`
 
 Eventos de agentes → B5 (persistencia Agent Runtime).  
-Eventos de review token / decisión portal → B6 (persistencia Review).  
+Eventos de review → `review_events` (B6).  
 Eventos de deploy → B7.
 
 ---
@@ -146,6 +144,6 @@ Eventos de deploy → B7.
 - Shell `/ops`: **implementado** (B3).  
 - **JARVIS Core:** implementado (B4) — caller PE (+ agentes B5); **no** chatbot.  
 - **Agent Runtime:** **implementado** (ADR-015) — **interno**; aislado del portal.  
-- **Review Engine:** **no** implementado — contrato ADR-016 (B6-A).  
+- **Review Engine:** **implementado** (ADR-016) — portal `/r/[token]`.  
 - Deploy: diferido B7.  
 - No fingir en la web pública que el chat son agentes OS.

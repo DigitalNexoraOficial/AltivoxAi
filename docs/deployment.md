@@ -8,7 +8,7 @@
 GitHub → Vercel
           ├─ Web pública (producción actual)
           ├─ /ops (implementado · Bloque 3; mismo deploy / path)
-          └─ /r/[token] (contrato ADR-016 · Bloque 6 · no implementado)
+          └─ /r/[token] (implementado · Bloque 6 · ADR-016)
 
 Supabase = Auth + DB
 n8n = automatización ops
@@ -23,7 +23,7 @@ LLM providers = chat público + agent runtime OS (Bloque 5 · interno)
 |------|------------------|
 | Marketing site | Landing, casos, APIs públicas |
 | Altivox OS | App `/ops` + `/api/ops` |
-| Review portal | `/r` + `/api/review` — **B6** (ADR-016) |
+| Review portal | `/r` + `/api/review` — **B6 cerrado** |
 | Worker/agents | Agent Runtime B5 (mismo Node hoy); cola externa = futuro |
 
 Mismo repositorio permitido; **límites de seguridad** por ruta y rol, no por “otro dominio” obligatorio en v1.
@@ -42,7 +42,7 @@ Mismo repositorio permitido; **límites de seguridad** por ruta y rol, no por �
 - SQL manual en Supabase Editor (B1/B2/B5 según entorno)  
 - Shell `/ops` App Router (**Bloque 3 cerrado**) + `/api/ops/*` (PE + agentes)  
 - Admin estático en `public/*.html` (CRM/legacy temporal)  
-- Portal `/r/[token]`: **aún no** (ADR-016 · B6-A docs only)  
+- Portal `/r/[token]`: **implementado** (ADR-016)  
 - Deployment Engine de proyectos cliente: **aún no** (**B7**)
 
 ---
@@ -70,7 +70,7 @@ Los adapters son **plugins**; añadir destino nuevo no modifica el núcleo OS.
 4. Smoke pública: `/`, lead, chat  
 5. Smoke OS (`/ops` B3): login RBAC, proyecto  
 6. Smoke agentes (B5): run interno sin fuga a pública  
-7. Smoke review (cuando exista · B6): token, sin sesión staff, sin fuga de internos, `noindex`  
+7. Smoke review (B6): token, sin sesión staff, sin fuga de internos, `noindex`  
 
 ---
 

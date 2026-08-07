@@ -18,8 +18,8 @@ B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`AD
 | **4** | JARVIS + resto de motores (interfaces) | **Cerrado** (ADR-014) |
 | **B5-A** | Sync docs Agent Runtime + módulos | Completado (ADR-015) |
 | **5** | Agent runtime + service modules | **Cerrado** (ADR-015) |
-| **B6-A** | Sync docs Review Engine | **Completado** (ADR-016) |
-| **6** | Review Engine + `/r/[token]` | Pendiente de código (ADR-016 · requiere OK explícito) |
+| **B6-A** | Sync docs Review Engine | Completado (ADR-016) |
+| **6** | Review Engine + `/r/[token]` | **Cerrado** (ADR-016 · Review Engine + portal `/r/[token]`) |
 | **7** | Entrega ZIP + Deployment Engine | Pendiente (después de B6) |
 
 ---
@@ -60,15 +60,15 @@ APIs `/api/ops/projects*` · sin review/deploy/capabilities/agents.
 
 ---
 
-## Fase 6 — Review Engine + `/r/[token]`
+## Fase 6 — Review Engine + `/r/[token]` · **cerrada**
 
-**Contrato:** [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md) · Prebloque **B6-A completado**.
+**Contrato:** [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md)
 
-**Incluye (cuando haya OK de código):** Review Engine independiente · sesiones ligadas a proyecto/versión/deliverables · `review_tokens` · portal `/r/[token]` · comentar / pedir cambios / aprobar / rechazar · APIs review · emisión/revocación Ops (+ JARVIS caller) · persistencia propia · PE solo vía use-cases públicos.
+**Implementado:** Review Engine · sesiones + estados propios · tokens hasheados · snapshot deliverables · portal `/r/[token]` (noindex) · APIs `/api/ops/reviews*` + `/api/review/[token]*` · JARVIS `review.create`/`review.revoke` · SQL `review.sql`.
 
-**No es Fase 6:** Deploy · ZIP · hosting · vendors publish · Workflow runtime · CRM · chat público · agentes/prompts/Memory/Tools al cliente · marketplace · reabrir PE/Security/Ops · agente revisor.
+**No es Fase 6:** Deploy · ZIP · hosting · vendors · Workflow runtime · CRM · chat · agentes al cliente · auto-transición PE.
 
-**Estado:** **no implementado**. Fase PE `review` ≠ portal cliente.
+**Nota:** fase PE `review` ≠ sesión/portal Review. Aprobación cliente **no** muta `projects.status`.
 
 ---
 

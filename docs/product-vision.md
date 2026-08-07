@@ -4,7 +4,7 @@
 **Marca comercial:** AltivoxAi / Altivox AI  
 **Dominio público:** https://www.altivoxai.es  
 **Documento oficial de visión:** este archivo (Bloque 0 · 2026-08-07)  
-**Actualizado:** 2026-08-07 · Prebloque B6-A (ADR-016)
+**Actualizado:** 2026-08-07 · Bloque 6 cerrado (ADR-016)
 
 ---
 
@@ -35,7 +35,7 @@ Toda la inteligencia operativa vive **dentro** de Altivox OS.
 |---|------------|------|-----------|-----------|
 | 1 | **Web pública** | `/`, `/casos/*`, etc. | Visitantes / leads | Marketing, captación, información, chat comercial, formularios |
 | 2 | **Altivox OS** | `/ops` | Equipo interno (RBAC) | Centro de operaciones: CRM, clientes, proyectos, JARVIS, agentes, automatizaciones, docs, analítica, despliegues |
-| 3 | **Portal de revisión** | `/r/[token]` | Cliente del proyecto | Solo entregables: ver, comentar, pedir cambios, aprobar/rechazar — **sin** datos internos, agentes ni prompts · **contrato ADR-016 · no implementado** |
+| 3 | **Portal de revisión** | `/r/[token]` | Cliente del proyecto | Solo entregables: ver, comentar, pedir cambios, aprobar/rechazar — **sin** datos internos, agentes ni prompts · **implementado ADR-016** |
 
 Cualquier UI futura debe clasificarse en una de estas tres superficies.
 
@@ -75,17 +75,17 @@ Estados en dominio: `draft|planning|in_progress|qa|review|approved|delivered|mai
 - **B4 (ADR-014):** JARVIS Core caller + fronteras de motores.  
 - **B5 (ADR-015):** Agent Runtime + módulo `web` + Tool/Memory/Capability mínimos — **agentes internos**.
 
-### Fase Bloque 6 — contrato ADR-016 (B6-A)
+### Fase Bloque 6 — cerrada (ADR-016)
 
 - Review Engine independiente + `/r/[token]`.  
 - **No** Deploy, ZIP, hosting, agentes al cliente, chat público, marketplace.  
-- **Código pendiente** hasta «OK implementar Bloque 6».
+- Aprobación cliente **no** cambia automáticamente el estado PE.
 
 | Bloque | Producto | Estado |
 |--------|----------|--------|
 | 5 | Agent runtime + service modules | **Cerrado** |
-| 6 | Review Engine + `/r/[token]` | Contrato ADR-016 · código pendiente |
-| 7 | Entrega ZIP + Deployment Engine | Pendiente (después de B6) |
+| 6 | Review Engine + `/r/[token]` | **Cerrado** |
+| 7 | Entrega ZIP + Deployment Engine | Pendiente |
 
 Detalle: [`flow.md`](./flow.md), [`core-engines.md`](./core-engines.md), [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md).
 
@@ -145,9 +145,9 @@ Mínimo funcional a medio plazo:
 
 ## 8. Relación con el código actual (honestidad)
 
-Hoy existen: landing Next.js, admin HTML (`public/*.html`, temporal ADR-001), APIs lead/chat/n8n, CRM ligero Supabase, **Security (B1)**, **Project Engine (B2)**, **shell `/ops` (B3)**, **JARVIS Core + fronteras (B4)**, **Agent Runtime + módulo web (B5)**.
+Hoy existen: landing Next.js, admin HTML (`public/*.html`, temporal ADR-001), APIs lead/chat/n8n, CRM ligero Supabase, **Security (B1)**, **Project Engine (B2)**, **shell `/ops` (B3)**, **JARVIS Core (B4)**, **Agent Runtime + módulo web (B5)**, **Review Engine + `/r/[token]` (B6)**.
 
-**Aún no:** portal `/r/[token]` / Review Engine (contrato [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md)), Deploy/ZIP (B7), Workflow runtime pleno, CRM App Router, Memory KB corporativa.
+**Aún no:** Deploy/ZIP (B7), Workflow runtime pleno, CRM App Router, Memory KB corporativa.
 
 Esta visión es la **fuente oficial de verdad** para el diseño; la implementación sigue el [`roadmap.md`](./roadmap.md) bloque a bloque.  
-**No escribir código de B6** hasta «OK implementar Bloque 6».
+**No escribir código de B7** hasta OK explícito.
