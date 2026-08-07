@@ -39,11 +39,40 @@ async function rest<T>(
     ...init,
     headers,
   });
+  const raw = await res.text();
+  let data: unknown = null;
+  if (raw) {
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      throw new ReviewError(
+        "persistence_error",
+        `supabase_bad_json_${res.status}`
+      );
+    }
+  }
   if (!res.ok) {
-    throw new ReviewError("persistence_error", `supabase_${res.status}`);
+    const detail =
+      data && typeof data === "object" && !Array.isArray(data)
+        ? String(
+            (data as { message?: string; code?: string }).message ||
+              (data as { code?: string }).code ||
+              ""
+          ).slice(0, 160)
+        : "";
+    throw new ReviewError(
+      "persistence_error",
+      detail ? `supabase_${res.status}:${detail}` : `supabase_${res.status}`
+    );
   }
   if (res.status === 204) return undefined as T;
-  return (await res.json()) as T;
+  return data as T;
+}
+
+function asRows(data: unknown): Record<string, unknown>[] {
+  if (Array.isArray(data)) return data as Record<string, unknown>[];
+  if (data && typeof data === "object") return [data as Record<string, unknown>];
+  return [];
 }
 
 function mapReview(row: Record<string, unknown>): ReviewSession {
@@ -105,7 +134,7 @@ function mapEvent(row: Record<string, unknown>): ReviewEvent {
 export function createSqlReviewStore(): ReviewStore {
   return {
     async createReview(input) {
-      const rows = await rest<Record<string, unknown>[]>("reviews", {
+      const inserted = await rest<unknown>("reviews", {
         method: "POST",
         prefer: "return=representation",
         body: JSON.stringify({
@@ -117,6 +146,10 @@ export function createSqlReviewStore(): ReviewStore {
           created_by_type: input.actor.actorType,
         }),
       });
+      const rows = asRows(inserted);
+      if (!rows[0]) {
+        throw new ReviewError("persistence_error", "review_insert_empty");
+      }
       const review = mapReview(rows[0]);
 
       if (input.deliverables.length) {
@@ -138,7 +171,7 @@ export function createSqlReviewStore(): ReviewStore {
 
       let token: ReviewTokenRecord | null = null;
       if (input.tokenHash) {
-        const trows = await rest<Record<string, unknown>[]>("review_tokens", {
+        const tInserted = await rest<unknown>("review_tokens", {
           method: "POST",
           prefer: "return=representation",
           body: JSON.stringify({
@@ -147,6 +180,10 @@ export function createSqlReviewStore(): ReviewStore {
             expires_at: input.expiresAt,
           }),
         });
+        const trows = asRows(tInserted);
+        if (!trows[0]) {
+          throw new ReviewError("persistence_error", "token_insert_empty");
+        }
         token = mapToken(trows[0]);
       }
 
@@ -158,22 +195,28 @@ export function createSqlReviewStore(): ReviewStore {
     },
 
     async getReview(id) {
-      const rows = await rest<Record<string, unknown>[]>(
-        `reviews?id=eq.${encodeURIComponent(id)}&select=*&limit=1`
+      const rows = asRows(
+        await rest<unknown>(
+          `reviews?id=eq.${encodeURIComponent(id)}&select=*&limit=1`
+        )
       );
       return rows[0] ? mapReview(rows[0]) : null;
     },
 
     async listReviewsByProject(projectId) {
-      const rows = await rest<Record<string, unknown>[]>(
-        `reviews?project_id=eq.${encodeURIComponent(projectId)}&select=*&order=created_at.desc`
+      const rows = asRows(
+        await rest<unknown>(
+          `reviews?project_id=eq.${encodeURIComponent(projectId)}&select=*&order=created_at.desc`
+        )
       );
       return rows.map(mapReview);
     },
 
     async findByTokenHash(tokenHash) {
-      const trows = await rest<Record<string, unknown>[]>(
-        `review_tokens?token_hash=eq.${encodeURIComponent(tokenHash)}&select=*&limit=1`
+      const trows = asRows(
+        await rest<unknown>(
+          `review_tokens?token_hash=eq.${encodeURIComponent(tokenHash)}&select=*&limit=1`
+        )
       );
       if (!trows[0]) return null;
       const token = mapToken(trows[0]);
@@ -189,13 +232,15 @@ export function createSqlReviewStore(): ReviewStore {
       };
       if (patch?.revokedAt !== undefined) body.revoked_at = patch.revokedAt;
 
-      const rows = await rest<Record<string, unknown>[]>(
-        `reviews?id=eq.${encodeURIComponent(id)}&status=eq.${encodeURIComponent(from)}`,
-        {
-          method: "PATCH",
-          prefer: "return=representation",
-          body: JSON.stringify(body),
-        }
+      const rows = asRows(
+        await rest<unknown>(
+          `reviews?id=eq.${encodeURIComponent(id)}&status=eq.${encodeURIComponent(from)}`,
+          {
+            method: "PATCH",
+            prefer: "return=representation",
+            body: JSON.stringify(body),
+          }
+        )
       );
       if (!rows[0]) {
         throw new ReviewError("conflict", "review_status_conflict", 409);
@@ -215,62 +260,83 @@ export function createSqlReviewStore(): ReviewStore {
     },
 
     async listDeliverables(reviewId) {
-      const rows = await rest<Record<string, unknown>[]>(
-        `review_deliverables?review_id=eq.${encodeURIComponent(reviewId)}&select=*&order=created_at.asc`
+      const rows = asRows(
+        await rest<unknown>(
+          `review_deliverables?review_id=eq.${encodeURIComponent(reviewId)}&select=*&order=created_at.asc`
+        )
       );
       return rows.map(mapDeliverable);
     },
 
     async addComment(reviewId, authorType, body) {
-      const rows = await rest<Record<string, unknown>[]>("review_comments", {
-        method: "POST",
-        prefer: "return=representation",
-        body: JSON.stringify({
-          review_id: reviewId,
-          author_type: authorType,
-          body,
-        }),
-      });
+      const rows = asRows(
+        await rest<unknown>("review_comments", {
+          method: "POST",
+          prefer: "return=representation",
+          body: JSON.stringify({
+            review_id: reviewId,
+            author_type: authorType,
+            body,
+          }),
+        })
+      );
+      if (!rows[0]) {
+        throw new ReviewError("persistence_error", "comment_insert_empty");
+      }
       return mapComment(rows[0]);
     },
 
     async listComments(reviewId) {
-      const rows = await rest<Record<string, unknown>[]>(
-        `review_comments?review_id=eq.${encodeURIComponent(reviewId)}&select=*&order=created_at.asc`
+      const rows = asRows(
+        await rest<unknown>(
+          `review_comments?review_id=eq.${encodeURIComponent(reviewId)}&select=*&order=created_at.asc`
+        )
       );
       return rows.map(mapComment);
     },
 
     async appendEvent(reviewId, event, metadata = {}) {
-      const rows = await rest<Record<string, unknown>[]>("review_events", {
-        method: "POST",
-        prefer: "return=representation",
-        body: JSON.stringify({
-          review_id: reviewId,
-          event,
-          metadata,
-        }),
-      });
+      const rows = asRows(
+        await rest<unknown>("review_events", {
+          method: "POST",
+          prefer: "return=representation",
+          body: JSON.stringify({
+            review_id: reviewId,
+            event,
+            metadata,
+          }),
+        })
+      );
+      if (!rows[0]) {
+        throw new ReviewError("persistence_error", "event_insert_empty");
+      }
       return mapEvent(rows[0]);
     },
 
     async listEvents(reviewId) {
-      const rows = await rest<Record<string, unknown>[]>(
-        `review_events?review_id=eq.${encodeURIComponent(reviewId)}&select=*&order=created_at.asc`
+      const rows = asRows(
+        await rest<unknown>(
+          `review_events?review_id=eq.${encodeURIComponent(reviewId)}&select=*&order=created_at.asc`
+        )
       );
       return rows.map(mapEvent);
     },
 
     async attachToken(reviewId, tokenHash, expiresAt) {
-      const rows = await rest<Record<string, unknown>[]>("review_tokens", {
-        method: "POST",
-        prefer: "return=representation",
-        body: JSON.stringify({
-          review_id: reviewId,
-          token_hash: tokenHash,
-          expires_at: expiresAt,
-        }),
-      });
+      const rows = asRows(
+        await rest<unknown>("review_tokens", {
+          method: "POST",
+          prefer: "return=representation",
+          body: JSON.stringify({
+            review_id: reviewId,
+            token_hash: tokenHash,
+            expires_at: expiresAt,
+          }),
+        })
+      );
+      if (!rows[0]) {
+        throw new ReviewError("persistence_error", "token_attach_empty");
+      }
       return mapToken(rows[0]);
     },
   };
