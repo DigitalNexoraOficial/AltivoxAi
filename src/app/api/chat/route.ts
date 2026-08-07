@@ -143,34 +143,44 @@ export async function POST(req: NextRequest) {
 
     const openRouterKey = process.env.OPENROUTER_API_KEY;
     if (openRouterKey) {
-      try {
-        const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: "Bearer " + openRouterKey,
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://www.altivoxai.es",
-            "X-Title": "AltivoxAi",
-          },
-          body: JSON.stringify({
-            model: process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-001",
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: cleanMessage },
-            ],
-          }),
-        });
-        const orData: any = await orRes.json();
-        if (orRes.ok) {
-          reply =
-            (orData.choices &&
-              orData.choices[0] &&
-              orData.choices[0].message &&
-              orData.choices[0].message.content) ||
-            "";
+      const orModels = [
+        process.env.OPENROUTER_MODEL || "",
+        "google/gemini-2.5-flash",
+        "google/gemini-flash-1.5",
+        "google/gemini-2.0-flash-001",
+      ].filter(Boolean);
+      const uniqueOr = [...new Set(orModels)];
+      for (const model of uniqueOr) {
+        if (reply) break;
+        try {
+          const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              Authorization: "Bearer " + openRouterKey,
+              "Content-Type": "application/json",
+              "HTTP-Referer": "https://www.altivoxai.es",
+              "X-Title": "AltivoxAi",
+            },
+            body: JSON.stringify({
+              model,
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: cleanMessage },
+              ],
+            }),
+          });
+          const orData: any = await orRes.json();
+          if (orRes.ok) {
+            reply =
+              (orData.choices &&
+                orData.choices[0] &&
+                orData.choices[0].message &&
+                orData.choices[0].message.content) ||
+              "";
+          }
+        } catch (e: any) {
+          console.error("OpenRouter error", e?.message);
         }
-      } catch (e: any) {
-        console.error("OpenRouter error", e?.message);
       }
     }
 
@@ -179,6 +189,7 @@ export async function POST(req: NextRequest) {
       if (geminiKey) {
         const modelsToTry = [
           process.env.GEMINI_MODEL || "gemini-2.5-flash",
+          "gemini-2.0-flash",
           "gemini-2.5-flash-lite",
           "gemini-flash-latest",
           "gemini-1.5-flash",

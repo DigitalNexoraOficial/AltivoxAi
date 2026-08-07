@@ -167,10 +167,386 @@ function buildChatbotHtml(input: {
 </html>`;
 }
 
+function wantsCinematicCarLanding(description: string): boolean {
+  const d = description.toLowerCase();
+  const hasCar =
+    /mustang|veh[ií]culo|coche|auto|carro|gt\b|deportivo|motor|cap[oó]|puertas|interior/.test(
+      d
+    );
+  const hasMotion =
+    /3d|scroll|animaci[oó]n|cinemat|modelaci[oó]n|three|premium|luna|parabrisas|capot|capó/.test(
+      d
+    );
+  return hasCar && hasMotion;
+}
+
+function guessCarTitle(description: string, clientName: string): string {
+  const mustang = description.match(
+    /mustang(?:\s+gt)?(?:\s+\d{4})?/i
+  );
+  if (mustang?.[0]) {
+    return mustang[0]
+      .replace(/\s+/g, " ")
+      .trim()
+      .replace(/mustang/i, "Mustang")
+      .replace(/\bgt\b/i, "GT");
+  }
+  const model = description.match(
+    /(?:modelo|coche|auto|veh[ií]culo)\s+([A-Za-z0-9][A-Za-z0-9 \-]{2,40})/i
+  );
+  if (model?.[1]) return model[1].trim();
+  return clientName || "Edition";
+}
+
+/** Scroll-driven stylized 3D car landing (Three.js CDN). No photoreal GLB. */
+function buildCinematicCarHtml(input: {
+  clientName: string;
+  description: string;
+}): string {
+  const brand = escapeHtml(input.clientName || "Altivox");
+  const carTitle = escapeHtml(guessCarTitle(input.description, input.clientName));
+  const brief = escapeHtml(input.description.slice(0, 320));
+  return `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>${carTitle} · ${brand}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #07080c;
+    --text: #f3f0ea;
+    --muted: #9a958c;
+    --accent: #c45c26;
+    --steel: #d7dde8;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: auto; }
+  body {
+    margin: 0; color: var(--text);
+    font-family: "DM Sans", sans-serif;
+    background: var(--bg);
+  }
+  #stage {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse at 50% 70%, #1a120c 0%, transparent 55%),
+      radial-gradient(circle at 80% 10%, rgba(196,92,38,.18), transparent 40%),
+      linear-gradient(180deg, #0c0e14, #050507 70%);
+  }
+  canvas { display: block; width: 100%; height: 100%; }
+  .scroll-track { position: relative; z-index: 1; height: 520vh; pointer-events: none; }
+  .hud {
+    position: fixed; inset: 0; z-index: 2; pointer-events: none;
+    display: grid; align-content: space-between;
+    padding: clamp(18px, 4vw, 40px);
+  }
+  .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .brand {
+    font-family: "Bebas Neue", sans-serif;
+    letter-spacing: .14em; font-size: clamp(1.4rem, 3vw, 2rem);
+  }
+  .progress {
+    width: min(180px, 36vw); height: 2px; background: rgba(243,240,234,.15);
+    margin-top: 12px; overflow: hidden;
+  }
+  .progress > i {
+    display: block; height: 100%; width: 0%; background: var(--accent);
+    transform-origin: left center;
+  }
+  .copy {
+    max-width: 28rem;
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  .copy .kicker {
+    color: var(--accent); text-transform: uppercase; letter-spacing: .16em;
+    font-size: 11px; font-weight: 700; margin-bottom: 10px;
+  }
+  .copy h1 {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: clamp(2.6rem, 8vw, 5.2rem);
+    line-height: .92; margin: 0 0 12px; letter-spacing: .02em;
+  }
+  .copy p { margin: 0; color: var(--muted); line-height: 1.55; font-size: 0.98rem; }
+  .hint {
+    justify-self: end; align-self: end;
+    color: var(--muted); font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+  }
+  .hint span { color: var(--steel); }
+  @media (max-width: 720px) {
+    .top { flex-direction: column; }
+    .hint { justify-self: start; }
+  }
+</style>
+</head>
+<body>
+  <div id="stage" aria-hidden="true"></div>
+  <div class="scroll-track" aria-hidden="true"></div>
+  <div class="hud">
+    <div class="top">
+      <div>
+        <div class="brand">${brand}</div>
+        <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+      </div>
+      <div class="copy" id="copy">
+        <div class="kicker" id="kicker">Experiencia scroll</div>
+        <h1 id="headline">${carTitle}</h1>
+        <p id="sub">${brief}</p>
+      </div>
+    </div>
+    <div class="hint">Desplaza · <span id="beat">Exterior</span></div>
+  </div>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script>
+(function () {
+  if (!window.THREE) return;
+  var scenes = [
+    { k: "01 · Presentación", h: ${JSON.stringify(guessCarTitle(input.description, input.clientName))}, s: "Silueta premium. Gira y observa el cuerpo antes del recorrido.", beat: "Exterior" },
+    { k: "02 · Acceso", h: "Puertas abiertas", s: "Conductor y copiloto se abren al ritmo del scroll.", beat: "Puertas" },
+    { k: "03 · Cabina", h: "Interior", s: "Entra en el habitáculo: asientos, volante y consolas.", beat: "Interior" },
+    { k: "04 · Luna", h: "Salida frontal", s: "La cámara atraviesa el parabrisas hacia la carretera.", beat: "Luna" },
+    { k: "05 · Motor", h: "Capó y motor", s: "Vista superior: el capó se abre y revela el bloque.", beat: "Motor" }
+  ];
+
+  var stage = document.getElementById("stage");
+  var bar = document.getElementById("bar");
+  var kicker = document.getElementById("kicker");
+  var headline = document.getElementById("headline");
+  var sub = document.getElementById("sub");
+  var beat = document.getElementById("beat");
+  var copy = document.getElementById("copy");
+  var sceneIdx = 0;
+
+  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  stage.appendChild(renderer.domElement);
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(4.2, 1.6, 5.4);
+
+  var hemi = new THREE.HemisphereLight(0xf0e6d8, 0x1a120c, 1.1);
+  scene.add(hemi);
+  var key = new THREE.DirectionalLight(0xffffff, 1.35);
+  key.position.set(6, 8, 4);
+  scene.add(key);
+  var rim = new THREE.DirectionalLight(0xc45c26, 0.55);
+  rim.position.set(-5, 3, -4);
+  scene.add(rim);
+
+  var floor = new THREE.Mesh(
+    new THREE.CircleGeometry(18, 64),
+    new THREE.MeshStandardMaterial({ color: 0x12141a, metalness: 0.2, roughness: 0.9 })
+  );
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -0.55;
+  scene.add(floor);
+
+  var paint = new THREE.MeshStandardMaterial({ color: 0xb42318, metalness: 0.72, roughness: 0.28 });
+  var dark = new THREE.MeshStandardMaterial({ color: 0x111318, metalness: 0.6, roughness: 0.4 });
+  var chrome = new THREE.MeshStandardMaterial({ color: 0xc9d0db, metalness: 1, roughness: 0.18 });
+  var glass = new THREE.MeshStandardMaterial({ color: 0x7ec8e3, metalness: 0.2, roughness: 0.05, transparent: true, opacity: 0.35 });
+  var leather = new THREE.MeshStandardMaterial({ color: 0x2a211c, roughness: 0.85, metalness: 0.05 });
+  var engineMat = new THREE.MeshStandardMaterial({ color: 0x2f343c, metalness: 0.85, roughness: 0.35 });
+
+  var car = new THREE.Group();
+  scene.add(car);
+
+  function box(w, h, d, mat, x, y, z) {
+    var m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    m.position.set(x || 0, y || 0, z || 0);
+    return m;
+  }
+
+  var body = box(2.6, 0.55, 1.15, paint, 0, 0.05, 0);
+  car.add(body);
+  var cabin = box(1.35, 0.48, 1.05, paint, -0.15, 0.48, 0);
+  car.add(cabin);
+  var nose = box(0.7, 0.35, 1.05, paint, 1.35, 0.02, 0);
+  car.add(nose);
+  var tail = box(0.55, 0.38, 1.08, paint, -1.4, 0.0, 0);
+  car.add(tail);
+
+  var windshield = box(0.06, 0.42, 0.95, glass, 0.55, 0.55, 0);
+  windshield.rotation.z = -0.35;
+  car.add(windshield);
+
+  var hoodPivot = new THREE.Group();
+  hoodPivot.position.set(0.85, 0.32, 0);
+  var hood = box(1.05, 0.06, 1.02, paint, 0.52, 0, 0);
+  hoodPivot.add(hood);
+  car.add(hoodPivot);
+
+  var engine = new THREE.Group();
+  engine.position.set(1.15, 0.12, 0);
+  engine.visible = false;
+  engine.add(box(0.55, 0.28, 0.55, engineMat, 0, 0, 0));
+  engine.add(box(0.18, 0.12, 0.18, chrome, 0.12, 0.18, 0.12));
+  engine.add(box(0.18, 0.12, 0.18, chrome, -0.12, 0.18, -0.12));
+  engine.add(box(0.08, 0.22, 0.08, chrome, 0, 0.22, 0));
+  car.add(engine);
+
+  function makeDoor(side) {
+    var pivot = new THREE.Group();
+    pivot.position.set(-0.05, 0.22, side * 0.55);
+    var panel = box(1.15, 0.42, 0.08, paint, 0.2, 0, side * 0.04);
+    var windowPane = box(0.55, 0.22, 0.04, glass, 0.15, 0.22, side * 0.04);
+    pivot.add(panel);
+    pivot.add(windowPane);
+    car.add(pivot);
+    return pivot;
+  }
+  var doorL = makeDoor(1);
+  var doorR = makeDoor(-1);
+
+  var interior = new THREE.Group();
+  interior.position.set(-0.2, 0.18, 0);
+  interior.add(box(0.85, 0.08, 0.9, leather, 0, 0, 0));
+  interior.add(box(0.28, 0.28, 0.32, leather, 0.05, 0.18, 0.28));
+  interior.add(box(0.28, 0.28, 0.32, leather, 0.05, 0.18, -0.28));
+  interior.add(box(0.08, 0.22, 0.08, chrome, 0.42, 0.22, 0.22));
+  interior.add(box(0.35, 0.06, 0.35, dark, 0.35, 0.12, 0));
+  car.add(interior);
+
+  function wheel(x, z) {
+    var g = new THREE.Group();
+    var tire = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.28, 0.28, 0.18, 24),
+      dark
+    );
+    tire.rotation.z = Math.PI / 2;
+    var rimM = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.16, 0.16, 0.2, 16),
+      chrome
+    );
+    rimM.rotation.z = Math.PI / 2;
+    g.add(tire); g.add(rimM);
+    g.position.set(x, -0.28, z);
+    car.add(g);
+  }
+  wheel(0.95, 0.55); wheel(0.95, -0.55); wheel(-0.95, 0.55); wheel(-0.95, -0.55);
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function smoothstep(edge0, edge1, x) {
+    var t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
+    return t * t * (3 - 2 * t);
+  }
+  function mix(a, b, t) {
+    return new THREE.Vector3(lerp(a.x, b.x, t), lerp(a.y, b.y, t), lerp(a.z, b.z, t));
+  }
+
+  var camA = new THREE.Vector3(4.2, 1.6, 5.4);
+  var camB = new THREE.Vector3(2.8, 1.4, 4.2);
+  var camC = new THREE.Vector3(0.1, 0.85, 0.15);
+  var camD = new THREE.Vector3(2.4, 1.1, 0.05);
+  var camE = new THREE.Vector3(1.2, 4.2, 0.2);
+  var lookA = new THREE.Vector3(0, 0.3, 0);
+  var lookB = new THREE.Vector3(0.1, 0.35, 0);
+  var lookC = new THREE.Vector3(-0.1, 0.35, 0);
+  var lookD = new THREE.Vector3(1.6, 0.4, 0);
+  var lookE = new THREE.Vector3(1.15, 0.2, 0);
+
+  function setCopy(i) {
+    if (i === sceneIdx) return;
+    sceneIdx = i;
+    copy.style.opacity = "0";
+    copy.style.transform = "translateY(10px)";
+    setTimeout(function () {
+      kicker.textContent = scenes[i].k;
+      headline.textContent = scenes[i].h;
+      sub.textContent = scenes[i].s;
+      beat.textContent = scenes[i].beat;
+      copy.style.opacity = "1";
+      copy.style.transform = "translateY(0)";
+    }, 160);
+  }
+
+  function applyScroll(p) {
+    bar.style.width = (p * 100).toFixed(1) + "%";
+    var doors = smoothstep(0.12, 0.32, p);
+    doorL.rotation.y = doors * 1.15;
+    doorR.rotation.y = -doors * 1.15;
+
+    var hoodOpen = smoothstep(0.72, 0.92, p);
+    hoodPivot.rotation.z = -hoodOpen * 0.95;
+    engine.visible = p > 0.7;
+
+    var pos, look, idx;
+    if (p < 0.18) {
+      idx = 0;
+      var t = p / 0.18;
+      pos = mix(camA, camB, t);
+      look = mix(lookA, lookB, t);
+      car.rotation.y = lerp(0.35, -0.15, t);
+    } else if (p < 0.38) {
+      idx = 1;
+      var t2 = (p - 0.18) / 0.2;
+      pos = mix(camB, new THREE.Vector3(1.8, 1.1, 3.2), t2);
+      look = mix(lookB, lookB, t2);
+      car.rotation.y = lerp(-0.15, -0.05, t2);
+    } else if (p < 0.58) {
+      idx = 2;
+      var t3 = (p - 0.38) / 0.2;
+      pos = mix(new THREE.Vector3(1.8, 1.1, 3.2), camC, t3);
+      look = mix(lookB, lookC, t3);
+      car.rotation.y = 0;
+    } else if (p < 0.76) {
+      idx = 3;
+      var t4 = (p - 0.58) / 0.18;
+      pos = mix(camC, camD, t4);
+      look = mix(lookC, lookD, t4);
+    } else {
+      idx = 4;
+      var t5 = (p - 0.76) / 0.24;
+      pos = mix(camD, camE, clamp(t5, 0, 1));
+      look = mix(lookD, lookE, clamp(t5, 0, 1));
+    }
+    camera.position.copy(pos);
+    camera.lookAt(look);
+    setCopy(idx);
+  }
+
+  function progress() {
+    var max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    return clamp(window.scrollY / max, 0, 1);
+  }
+
+  var target = 0, current = 0;
+  function onScroll() { target = progress(); }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", function () {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  function tick() {
+    current += (target - current) * 0.08;
+    applyScroll(current);
+    renderer.render(scene, camera);
+    requestAnimationFrame(tick);
+  }
+  applyScroll(0);
+  tick();
+})();
+</script>
+</body>
+</html>`;
+}
+
 function buildWebHtml(input: {
   clientName: string;
   description: string;
 }): string {
+  if (wantsCinematicCarLanding(input.description)) {
+    return buildCinematicCarHtml(input);
+  }
   const title = escapeHtml(input.clientName || "Landing");
   const brief = escapeHtml(input.description.slice(0, 400));
   return `<!DOCTYPE html>
@@ -184,7 +560,7 @@ function buildWebHtml(input: {
   * { box-sizing: border-box; }
   body {
     margin: 0; min-height: 100vh; color: var(--text);
-    font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    font-family: "Segoe UI", system-ui, sans-serif;
     background:
       radial-gradient(circle at 12% -8%, rgba(34,211,238,.14), transparent 42%),
       var(--bg);

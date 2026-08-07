@@ -28,76 +28,120 @@ export function setLlmCompleterForTests(fn: Completer | null): void {
   testCompleter = fn;
 }
 
+/** OpenRouter model cascade — env first, then known-good Gemini Flash IDs. */
+function openRouterModels(): string[] {
+  const preferred = String(process.env.OPENROUTER_MODEL || "").trim();
+  const cascade = [
+    preferred,
+    "google/gemini-2.5-flash",
+    "google/gemini-flash-1.5",
+    "google/gemini-2.0-flash-001",
+  ].filter(Boolean);
+  return [...new Set(cascade)];
+}
+
+/** Google AI Studio model cascade. */
+function geminiModels(): string[] {
+  const preferred = String(process.env.GEMINI_MODEL || "").trim();
+  const cascade = [
+    preferred,
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
+    "gemini-flash-latest",
+    "gemini-1.5-flash",
+  ].filter(Boolean);
+  return [...new Set(cascade)];
+}
+
 async function tryOpenRouter(
   input: LlmCompleteInput,
   key: string
 ): Promise<LlmCompleteResult> {
-  const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": "https://www.altivoxai.es",
-      "X-Title": "Altivox OS",
-    },
-    body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-001",
-      messages: [
-        ...(input.system ? [{ role: "system", content: input.system }] : []),
-        { role: "user", content: input.prompt },
-      ],
-    }),
-  });
-  if (!orRes.ok) {
-    const detail = (await orRes.text().catch(() => "")).slice(0, 180);
-    throw new AgentError(
-      "execution_error",
-      `llm_openrouter_${orRes.status}:${detail || "error"}`
-    );
+  const errors: string[] = [];
+  for (const model of openRouterModels()) {
+    const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://www.altivoxai.es",
+        "X-Title": "Altivox OS",
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          ...(input.system ? [{ role: "system", content: input.system }] : []),
+          { role: "user", content: input.prompt },
+        ],
+      }),
+    });
+    if (!orRes.ok) {
+      const detail = (await orRes.text().catch(() => "")).slice(0, 120);
+      errors.push(`${model}:${orRes.status}:${detail || "error"}`);
+      continue;
+    }
+    const data = (await orRes.json()) as {
+      choices?: { message?: { content?: string } }[];
+    };
+    const text = data.choices?.[0]?.message?.content || "";
+    if (!text.trim()) {
+      errors.push(`${model}:empty`);
+      continue;
+    }
+    return { text, provider: `openrouter:${model}` };
   }
-  const data = (await orRes.json()) as {
-    choices?: { message?: { content?: string } }[];
-  };
-  const text = data.choices?.[0]?.message?.content || "";
-  return { text, provider: "openrouter" };
+  throw new AgentError(
+    "execution_error",
+    `llm_openrouter_all_failed:${errors.join("|").slice(0, 220)}`
+  );
 }
 
 async function tryGemini(
   input: LlmCompleteInput,
   key: string
 ): Promise<LlmCompleteResult> {
-  const modelId = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${key}`;
-  const gemRes = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [
-        {
-          role: "user",
-          parts: [
-            {
-              text: input.system
-                ? `${input.system}\n\n${input.prompt}`
-                : input.prompt,
-            },
-          ],
-        },
-      ],
-    }),
-  });
-  if (!gemRes.ok) {
-    const detail = (await gemRes.text().catch(() => "")).slice(0, 180);
-    throw new AgentError(
-      "execution_error",
-      `llm_gemini_${gemRes.status}:${detail || "error"}`
-    );
-  }
-  const data = (await gemRes.json()) as {
-    candidates?: { content?: { parts?: { text?: string }[] } }[];
+  const errors: string[] = [];
+  const body = {
+    contents: [
+      {
+        role: "user",
+        parts: [
+          {
+            text: input.system
+              ? `${input.system}\n\n${input.prompt}`
+              : input.prompt,
+          },
+        ],
+      },
+    ],
   };
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-  return { text, provider: "gemini" };
+
+  for (const modelId of geminiModels()) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${key}`;
+    const gemRes = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!gemRes.ok) {
+      const detail = (await gemRes.text().catch(() => "")).slice(0, 120);
+      errors.push(`${modelId}:${gemRes.status}:${detail || "error"}`);
+      continue;
+    }
+    const data = (await gemRes.json()) as {
+      candidates?: { content?: { parts?: { text?: string }[] } }[];
+    };
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    if (!text.trim()) {
+      errors.push(`${modelId}:empty`);
+      continue;
+    }
+    return { text, provider: `gemini:${modelId}` };
+  }
+  throw new AgentError(
+    "execution_error",
+    `llm_gemini_all_failed:${errors.join("|").slice(0, 220)}`
+  );
 }
 
 async function defaultComplete(
