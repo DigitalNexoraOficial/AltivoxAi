@@ -15,7 +15,7 @@ Tres familias alineadas a las tres superficies.
 
 ---
 
-## 2. As-is (implementado · Bloque 1 incluido)
+## 2. As-is (implementado · Bloque 1 + Bloque 2)
 
 | Ruta | Notas |
 |------|-------|
@@ -25,33 +25,29 @@ Tres familias alineadas a las tres superficies.
 | `GET /api/site-settings` | Anon key only |
 | `GET/POST/DELETE /api/ops/session` | Cookie transporte + whoami |
 | `POST /api/ops/site-settings` | `can(settings.write)` + JWT usuario |
+| `POST /api/ops/projects` | `can(project.create)` → createProject |
+| `GET /api/ops/projects` | `can(project.read)` → listProjects |
+| `GET /api/ops/projects/[id]` | getProject |
+| `PATCH /api/ops/projects/[id]` | `can(project.update)` → updateProjectMeta |
+| `POST /api/ops/projects/[id]/transition` | `project.transition` / `project.approve` |
+| `POST /api/ops/projects/[id]/versions` | createVersion |
+| `POST /api/ops/projects/[id]/deliverables` | `deliverable.generate` |
+| `GET /api/ops/projects/[id]/timeline` | listTimeline (`project_events`) |
 
----
-
-## 3. Bloque 2 — Project Engine (contrato; código pendiente)
-
-Mutaciones vía Project Engine + `can(subject, action, resource)`.
-
-| Método | Ruta |
-|--------|------|
-| POST, GET | `/api/ops/projects` |
-| GET, PATCH | `/api/ops/projects/[id]` |
-| POST | `/api/ops/projects/[id]/transition` |
-| POST | `/api/ops/projects/[id]/versions` |
-| POST | `/api/ops/projects/[id]/deliverables` |
-| GET | `/api/ops/projects/[id]/timeline` |
+Mutaciones PE: use-cases en `src/core/project-engine` + `can(subject, action, resource)`.  
+Dominio → `project_events`. Técnico → `audit_events`.
 
 **No en B2:** `/api/review/*`, deploy endpoints, capabilities, workflows, tools, memory, agent runs.
 
 ---
 
-## 4. Horizonte (diferido)
+## 3. Horizonte (diferido)
 
 Workflow run · capability assign · tool invoke · memory · review token APIs · deploy — ver [`core-engines.md`](./core-engines.md).
 
 ---
 
-## 5. Eventos
+## 4. Eventos
 
-Dominio PE: [`flow.md`](./flow.md) §6 (fase B2).  
+Dominio PE: [`flow.md`](./flow.md) §6.  
 Técnico: `audit_events`.

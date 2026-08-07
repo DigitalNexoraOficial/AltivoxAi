@@ -2,7 +2,7 @@
 
 ---
 
-## 1. As-is (producción + Bloque 1)
+## 1. As-is (producción + Bloque 1 + Bloque 2)
 
 ```
 auth.users (+ app_metadata.role)
@@ -10,15 +10,25 @@ leads
 clientes
 site_settings
 audit_events          ← técnico (Bloque 1)
+projects              ← dominio PE (Bloque 2)
+project_versions
+deliverables
+project_events        ← dominio PE (no mezclar con audit)
 ```
 
-SQL relevante: `supabase/sql/rbac.sql`, `audit-events.sql`, `clientes.sql`, `site-settings.sql`, …
+SQL relevante:
+
+- B1: `supabase/sql/rbac.sql`, `audit-events.sql`, …  
+- B2: `supabase/sql/project-engine.sql` (rollback: `project-engine-rollback.sql`)  
+- B2 **requiere** helpers `altivox_is_staff` / `altivox_role_in` del Bloque 1.
+
+Orden de aplicación en un entorno nuevo: `audit-events.sql` → `rbac.sql` → `project-engine.sql` (más `assign-superadmin.sql` según ops).
 
 ---
 
-## 2. Bloque 2 — Project Engine (único recorte de dominio a añadir)
+## 2. Bloque 2 — Project Engine (recorte)
 
-Cuatro tablas nuevas. **Nada más** en este bloque.
+Cuatro tablas. **Nada más** en este bloque.
 
 ```
 clientes / leads
@@ -33,7 +43,7 @@ clientes / leads
 | Tabla | Contenido |
 |-------|-----------|
 | `projects` | Agregado: `service_type`, `status` (estados B2), FKs opcionales a cliente/lead, metadata de negocio. **Sin** `required_capabilities`, **sin** agent ids. |
-| `project_versions` | Versionado del trabajo |
+| `project_versions` | Versionado del trabajo (`label` único por proyecto) |
 | `deliverables` | Artefactos (refs/metadata) por proyecto/versión |
 | `project_events` | Timeline de **dominio** únicamente |
 
@@ -57,9 +67,11 @@ Se añadirán en sus bloques sin reescribir el core de `projects`.
 
 ## 4. RLS (B2)
 
-- Staff: políticas por rol alineadas a permisos `project.*` (como leads/clientes).  
+- Staff: políticas por rol alineadas a permisos `project.*` / `deliverable.generate` (como leads/clientes).  
 - Sin acceso anon a tablas PE.  
-- Review por token: N/A hasta Review Engine.
+- `project_events`: select + insert staff; sin update/delete autenticado (append-only).  
+- Review por token: N/A hasta Review Engine.  
+- APIs del PE persisten con **service role** tras `can()`; RLS protege acceso directo con JWT de usuario.
 
 ---
 
