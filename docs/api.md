@@ -51,5 +51,5 @@ Workflow run · capability assign · tool invoke · memory · agent runs · revi
 
 ## 4. Eventos
 
-Dominio PE: [`flow.md`](./flow.md) §6.  
+Dominio PE: [`flow.md`](./flow.md) §7.  
 Técnico: `audit_events`.

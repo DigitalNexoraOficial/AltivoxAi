@@ -12,8 +12,8 @@
 | Producto interno | **Altivox OS** (Sistema Operativo de la empresa) |
 | Marca comercial | AltivoxAi / Altivox AI |
 | URL pública | https://www.altivoxai.es |
-| OS (objetivo) | `/ops` |
-| Review (objetivo) | `/r/[token]` |
+| OS | `/ops` (**implementado** · Bloque 3) |
+| Review (objetivo) | `/r/[token]` (futuro · Bloque 6) |
 | Repo | DigitalNexoraOficial/AltivoxAi |
 | Owner | Xabier |
 | Hosting | Vercel · Supabase · n8n |
@@ -108,16 +108,18 @@ Spec: [`core-engines.md`](./core-engines.md).
 | 2026-08-07 | Prebloque B2-A: sync docs + ADR-013 PE recorte | docs |
 | 2026-08 | Bloque 2 Project Engine (+ harden) | ADR-013 · cerrado |
 | 2026-08 | Bloque 3 Ops Shell `/ops` + UI proyectos | cerrado |
-| 2026-08-07 | Prebloque B4-A: sync docs + ADR-014 (corte B4) | este cambio |
+| 2026-08-07 | Prebloque B4-A: sync docs + ADR-014 (corte B4) | ADR-014 |
+| 2026-08-07 | Sync residual B4-A: bots/deployment/performance/MEMORY/api | GO docs |
 
 ---
 
 ## 8. Pendiente de implementación (no docs)
 
 Ver [`todo.md`](./todo.md) y [`roadmap.md`](./roadmap.md).  
-**Prebloque B4-A cerrado** (ADR-014). Bloque 4 de **código** solo tras OK explícito de implementación.  
+**Prebloque B4-A cerrado** (ADR-014).  
+**Próximo bloque oficial de código:** Bloque 4 (JARVIS + motores · interfaces) — solo tras OK explícito de implementación.  
 Alcance B4 ≠ Agent runtime / Review / Deploy / módulos (eso es B5–B7).  
-Migración CRM UI = backlog aparte, no B4.  
+Migración CRM UI = backlog UI aparte; **no** es el siguiente bloque oficial.  
 Ops entorno: aplicar SQL B1/B2 + Upstash en producción.
 
 ---
