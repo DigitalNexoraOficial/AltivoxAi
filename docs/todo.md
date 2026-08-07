@@ -78,7 +78,7 @@ Contrato: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md).
 | T-307b | Tool Registry runtime **mínimo** (`llm.complete`) | **done** |
 | T-307c | Memory / Capability runtimes **mínimos** | **done** |
 | T-307d | JARVIS Core: intenciones → Agent Runtime / Manager | **done** |
-| T-308 | Relabel/retirar `agentes.html` cosmético | pendiente (no bloquea cierre B5) |
+| T-308 | Relabel/retirar `agentes.html` cosmético | **done** (→ `public/legacy/`) |
 
 **Fuera de B5:** Workflow runtime · Review · Deploy · ZIP · CRM · chat como agente · reabrir B0–B4.
 

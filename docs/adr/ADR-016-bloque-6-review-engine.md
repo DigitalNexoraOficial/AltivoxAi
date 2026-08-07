@@ -1,9 +1,10 @@
 # ADR-016 — Bloque 6: Review Engine + `/r/[token]` (recorte)
 
-- **Estado:** Aceptado · **contrato documental** (Prebloque B6-A)  
-- **Fecha:** 2026-08-07  
+- **Estado:** Aceptado e implementado  
+- **Fecha:** 2026-08-07 (contrato Prebloque B6-A) · **implementación código:** 2026-08 (Bloque 6 cerrado)  
 - **Decisores:** Owner (Xabier) · arquitectura Altivox OS  
 - **Analogía:** mismo tipo de corte que [`ADR-013`](./ADR-013-project-engine.md) / [`ADR-014`](./ADR-014-bloque-4-jarvis-motores-interfaces.md) / [`ADR-015`](./ADR-015-bloque-5-agent-runtime.md)
+- **Bloque cerrado:** B6 — Review Engine + portal `/r/[token]`
 
 ---
 
@@ -21,7 +22,7 @@ Los bloques **0–5** están cerrados:
 
 El Project Engine ya tiene el estado de fase `review` en `projects.status`. **Eso no es el portal cliente.**  
 `review` = fase operativa del agregado proyecto (OPS marca “en revisión”).  
-**Review Engine** + **`/r/[token]`** = superficie **independiente** de feedback/aprobación del cliente, aún inexistente en código.
+**Review Engine** + **`/r/[token]`** = superficie **independiente** de feedback/aprobación del cliente (**implementado** en Bloque 6; este ADR fijó el recorte previo).
 
 El roadmap declara a continuación:
 
@@ -139,9 +140,7 @@ Cadena portal:
 - No implica Workflow runtime.  
 - No implica agentes revisores ni chat público de review.  
 - No implica reabrir PE / Security / Ops / Agent Runtime.  
-- No diseña todavía clases, tablas definitivas, rutas ni implementación.  
-- No es aprobación de implementación: hace falta **OK explícito** de código tras este Prebloque  
-  (**«OK implementar Bloque 6»**).
+- El diseño detallado de clases/tablas/rutas se congeló en el Prebloque; **implementación B6 cerrada**.
 
 ---
 

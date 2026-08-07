@@ -20,7 +20,8 @@
 |-------|------|-------|
 | UI | `ChatWidget.tsx` | Selector de “agentes” = tonos de prompt |
 | API | `/api/chat` | Allowlist de nombres → system prompt; OpenRouter/Gemini |
-| Admin | `chatbot.html` | Monitor legacy |
+| Admin legacy CRM | `dashboard.html` / `clientes.html` / … | CRM puente |
+| Admin legacy cosmético | `public/legacy/*.html` | **No** es JARVIS Core ni Agent Runtime |
 | Flags | `site_settings.flags.chatEnabled` | Gate |
 
 Estas etiquetas **no** son el catálogo OS. En producto/UI interna deben etiquetarse como “modo conversacional” o similar para no confundir con agentes de entrega.

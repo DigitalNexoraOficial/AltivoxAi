@@ -6,7 +6,7 @@
 import { can, type Subject } from "@/core/security";
 import { AgentError } from "@/core/agent-runtime/errors";
 import { isAllowedTool } from "@/core/agent-runtime/states";
-import { getAgentStore } from "@/core/agent-runtime/internal/store";
+import { getAgentStore } from "@/core/agent-runtime/store";
 import type { AgentManifest, AgentRecord } from "@/core/agent-runtime/types";
 import { knownModuleIds } from "@/modules/registry";
 

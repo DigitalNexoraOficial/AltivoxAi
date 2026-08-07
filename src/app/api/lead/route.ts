@@ -3,9 +3,9 @@
  *
  * Env (Vercel):
  *   SUPABASE_URL
- *   SUPABASE_SERVICE_ROLE_KEY  – preferred (bypasses RLS)
- *   SUPABASE_ANON_KEY          – fallback if service role missing + RLS allows anon insert
- *   N8N_WEBHOOK_URL            – forward lead.created / lead.hot
+ *   SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY) — preferred; RLS anon_insert_leads
+ *   SUPABASE_SERVICE_ROLE_KEY — NOT used for public inserts (no privilege elevation)
+ *   N8N_WEBHOOK_URL — forward lead.created / lead.hot
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -108,18 +108,20 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function supabaseKey(): string {
-  const service = String(
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-      process.env.SUPABASE_SECRET_KEY ||
+/**
+ * Public insert uses anon key + RLS (`anon_insert_leads`).
+ * Never elevate with service_role for this public surface.
+ */
+function supabaseAnonKey(): string {
+  return String(
+    process.env.SUPABASE_ANON_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
       ""
   ).trim();
-  if (service) return service;
-  return String(process.env.SUPABASE_ANON_KEY || "").trim();
 }
 
 async function insertLead(payload: Record<string, unknown>) {
-  const key = supabaseKey();
+  const key = supabaseAnonKey();
   if (!key) {
     const err: ApiError = new Error("Configuración de servidor incompleta");
     err.code = "NO_KEY";

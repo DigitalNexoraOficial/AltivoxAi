@@ -5,7 +5,7 @@
 
 import { can, type Subject } from "@/core/security";
 import { AgentError } from "@/core/agent-runtime/errors";
-import { getAgentStore } from "@/core/agent-runtime/internal/store";
+import { getAgentStore } from "@/core/agent-runtime/store";
 
 export interface CapabilityRegistry {
   readonly __frontier: "CapabilityRegistry";

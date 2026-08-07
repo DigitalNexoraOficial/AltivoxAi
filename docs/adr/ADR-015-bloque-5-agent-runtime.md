@@ -1,9 +1,10 @@
 # ADR-015 — Bloque 5: Agent Runtime + Service Modules (recorte)
 
-- **Estado:** Aceptado · **contrato documental** (Prebloque B5-A)  
-- **Fecha:** 2026-08-07  
+- **Estado:** Aceptado e implementado  
+- **Fecha:** 2026-08-07 (contrato Prebloque B5-A) · **implementación código:** 2026-08 (Bloque 5 cerrado)  
 - **Decisores:** Owner (Xabier) · arquitectura Altivox OS  
 - **Analogía:** mismo tipo de corte que [`ADR-013`](./ADR-013-project-engine.md) / [`ADR-014`](./ADR-014-bloque-4-jarvis-motores-interfaces.md)
+- **Bloque cerrado:** B5 — Agent Runtime + Agent Manager + módulo `web` + Tool/Memory/Capability mínimos
 
 ---
 
@@ -129,7 +130,7 @@ Cadena obligatoria:
 - No implica Memory Engine corporativo completo.  
 - No implica capabilities en la tabla `projects`.  
 - No implica UI completa de “consola de agentes” ni chat JARVIS público.  
-- No es aprobación de implementación: hace falta **OK explícito** de código tras este Prebloque.
+- **Implementación B5 cerrada** tras OK de código; este ADR permanece como contrato de recorte.
 
 ---
 

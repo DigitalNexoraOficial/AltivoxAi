@@ -84,6 +84,7 @@ async function main() {
   assert(permissionsForHumanRole("viewer").has("ops.access"), "viewer ops.access");
 
   assert(isOpsProtectedPath("/dashboard.html"), "protect dashboard");
+  assert(isOpsProtectedPath("/legacy/jarvis.html"), "protect legacy jarvis");
   assert(isOpsProtectedPath("/ops"), "protect /ops");
   assert(isOpsProtectedPath("/ops/projects"), "protect /ops/*");
   assert(isOpsProtectedPath("/api/ops/site-settings"), "protect ops api");
@@ -94,6 +95,7 @@ async function main() {
   assert(!isOpsProtectedPath("/"), "public home");
   assert(!isOpsProtectedPath("/api/lead"), "public lead api");
   assert(!isOpsProtectedPath("/login.html"), "login public");
+  assert(!isOpsProtectedPath("/jarvis.html"), "old jarvis path moved to legacy");
 
   process.env.RATE_LIMIT_MODE = "memory";
   const id = "selftest-" + Date.now();

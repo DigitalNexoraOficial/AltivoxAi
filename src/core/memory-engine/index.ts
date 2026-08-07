@@ -5,7 +5,7 @@
 
 import { can, type Subject } from "@/core/security";
 import { AgentError } from "@/core/agent-runtime/errors";
-import { getAgentStore } from "@/core/agent-runtime/internal/store";
+import { getAgentStore } from "@/core/agent-runtime/store";
 import type { AgentRunFact } from "@/core/agent-runtime/types";
 
 export interface MemoryEngine {

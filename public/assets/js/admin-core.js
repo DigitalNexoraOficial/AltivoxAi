@@ -6,12 +6,12 @@
   var SUPABASE_ANON_KEY = "sb_publishable_EwdS78d3p42NWVgrGwU6gQ_7leqHOF2";
 
   var NAV = [
-    { href: "dashboard.html", label: "Dashboard", id: "dashboard" },
-    { href: "clientes.html", label: "Clientes", id: "clientes" },
-    { href: "chatbot.html", label: "Chatbot", id: "chatbot" },
-    { href: "jarvis.html", label: "J.A.R.V.I.S.", id: "jarvis" },
-    { href: "agentes.html", label: "Agentes IA", id: "agentes" },
-    { href: "ajustes.html", label: "Ajustes", id: "ajustes" },
+    { href: "/dashboard.html", label: "Dashboard", id: "dashboard" },
+    { href: "/clientes.html", label: "Clientes", id: "clientes" },
+    { href: "/legacy/chatbot.html", label: "Chatbot (legacy)", id: "chatbot" },
+    { href: "/legacy/jarvis.html", label: "J.A.R.V.I.S. (legacy)", id: "jarvis" },
+    { href: "/legacy/agentes.html", label: "Agentes (legacy)", id: "agentes" },
+    { href: "/ajustes.html", label: "Ajustes", id: "ajustes" },
   ];
 
   function esc(str) {
@@ -119,7 +119,7 @@
   async function requireAuth(sb, emailEl) {
     var res = await sb.auth.getSession();
     if (res.error || !res.data.session) {
-      window.location.href = "login.html";
+      window.location.href = "/login.html";
       return null;
     }
     var session = res.data.session;
@@ -128,7 +128,7 @@
       await sb.auth.signOut().catch(function () {});
       await clearOpsSession();
       var q = sync.status === 403 ? "error=forbidden" : "error=auth_required";
-      window.location.href = "login.html?" + q;
+      window.location.href = "/login.html?" + q;
       return null;
     }
     var email = session.user && session.user.email;
@@ -152,7 +152,7 @@
   async function logout(sb) {
     await clearOpsSession();
     await sb.auth.signOut();
-    window.location.href = "login.html";
+    window.location.href = "/login.html";
   }
 
   var DEFAULT_SITE = {

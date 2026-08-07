@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+/**
+ * LEGACY demo — not the client Review portal.
+ * Real client surface: `/r/[token]` (Review Engine · B6).
+ */
+
 const DEMO = {
   project: "Piloto Chatbot · Retail Norte",
   day: 4,
@@ -22,9 +27,12 @@ export default function PortalPage() {
 
   return (
     <main className="relative z-10 mx-auto min-h-[100svh] max-w-5xl px-6 py-24">
-      <p className="step-num">Portal cliente · demo</p>
-      <h1 className="heading-display mt-4 text-4xl md:text-6xl">Tu piloto, transparente</h1>
-      <p className="mt-4 max-w-2xl text-mist-muted">Vista demo sin datos sensibles. En producción se conecta a tu proyecto real.</p>
+      <p className="step-num">LEGACY · demo cosmético (no es Review Engine)</p>
+      <h1 className="heading-display mt-4 text-4xl md:text-6xl">Portal demo</h1>
+      <p className="mt-4 max-w-2xl text-mist-muted">
+        Vista de marketing antigua sin datos reales. El portal cliente de producción es{" "}
+        <code className="text-cyan">/r/[token]</code> (Review Engine · B6).
+      </p>
 
       <div className="mt-8 flex flex-wrap gap-2">
         {[

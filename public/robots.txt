@@ -8,10 +8,8 @@ Disallow: /r/
 Disallow: /login.html
 Disallow: /dashboard.html
 Disallow: /clientes.html
-Disallow: /agentes.html
 Disallow: /ajustes.html
-Disallow: /chatbot.html
-Disallow: /jarvis.html
+Disallow: /legacy/
 Disallow: /admin.html
 Disallow: /api/
 Disallow: /portal

@@ -1,9 +1,10 @@
 # ADR-014 — Bloque 4: JARVIS + resto de motores (interfaces)
 
-- **Estado:** Aceptado · **contrato documental** (Prebloque B4-A)  
-- **Fecha:** 2026-08-07  
+- **Estado:** Aceptado e implementado  
+- **Fecha:** 2026-08-07 (contrato Prebloque B4-A) · **implementación código:** 2026-08 (Bloque 4 cerrado)  
 - **Decisores:** Owner (Xabier) · arquitectura Altivox OS  
 - **Analogía:** mismo tipo de corte que [`ADR-013`](./ADR-013-project-engine.md) hizo para el Project Engine antes de su implementación
+- **Bloque cerrado:** B4 — JARVIS Core caller + fronteras TypeScript de motores
 
 ---
 
@@ -135,9 +136,9 @@ También fuera de B4 (por pertenecer a fases posteriores del roadmap):
 
 - El Bloque 4 queda **documentalmente cortado**: se puede auditar alcance sin ambigüedad.  
 - Roadmap y backlog dejan de mezclar interfaces (B4) con Agent runtime / módulos (B5) y con Review/Deploy (B6–B7).  
-- Una futura implementación de B4 requiere **aprobación explícita de código**; este Prebloque **no** es esa aprobación.  
-- JARVIS legacy (`public/jarvis.html`) y `agentes.html` cosmético siguen sin ser el runtime OS.  
-- OPS humano + Project Engine (B2) + shell (B3) siguen siendo el camino operativo real hasta que existan runtimes en bloques posteriores.
+- **Implementación B4 cerrada** (JARVIS Core + fronteras). Este ADR permanece como contrato.  
+- JARVIS legacy (`public/legacy/jarvis.html`) y `agentes.html` cosmético siguen sin ser el runtime OS.  
+- OPS humano + Project Engine (B2) + shell (B3) fueron el camino operativo hasta los runtimes B5–B7.
 
 ---
 

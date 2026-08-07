@@ -13,8 +13,10 @@ Review (contrato): [`adr/ADR-016-bloque-6-review-engine.md`](./adr/ADR-016-bloqu
 - Rate limit: Upstash (`RATE_LIMIT_MODE`, `UPSTASH_*`)
 - `/api/n8n` exige secret **o** humano con `n8n.emit` / `n8n.write_crm`
 - `GET /api/site-settings` solo anon key
+- `POST /api/lead` — **anon key + RLS** (`anon_insert_leads`); **sin** `service_role` (no elevación en superficie pública)
 - `POST /api/ops/site-settings` — `can(settings.write)` + escritura con JWT del usuario (RLS), sin service_role
 - Agent Runtime (B5): mutaciones vía `can()`; agentes = `principalType: "agent"`; **sin** exposición pública/review
+- Frontera Agent Runtime: módulos hermanos importan solo `@/core/agent-runtime` (no `internal/*`)
 
 ## Operación
 

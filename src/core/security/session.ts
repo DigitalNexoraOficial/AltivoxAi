@@ -28,9 +28,9 @@ export const PROTECTED_HTML = [
   "/dashboard.html",
   "/clientes.html",
   "/ajustes.html",
-  "/chatbot.html",
-  "/jarvis.html",
-  "/agentes.html",
+  "/legacy/chatbot.html",
+  "/legacy/jarvis.html",
+  "/legacy/agentes.html",
 ] as const;
 
 /** Pure path helper (testable; used by middleware). */

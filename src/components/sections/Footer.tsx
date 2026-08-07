@@ -23,8 +23,6 @@ export function Footer() {
           <a href="#home" className="hover:text-cyan">{t.nav.home}</a>
           <a href="#ofertas" className="hover:text-cyan">{t.nav.offers}</a>
           <a href="#auditoria" className="hover:text-cyan">Auditoría</a>
-          <a href="/portal" className="hover:text-cyan">Portal</a>
-          <a href="/design-system" className="hover:text-cyan">Design</a>
           <a href="#contact" className="hover:text-cyan">{t.nav.contact}</a>
           <button type="button" className="hover:text-cyan" onClick={() => setLegal(true)}>{t.footer.legal}</button>
         </div>

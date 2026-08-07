@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEGACY · J.A.R.V.I.S. | AltivoxAI</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/favicon.png">
+<link rel="stylesheet" href="/assets/css/admin.css">
+<style>
+  .kpis .kpi { cursor: default; }
+  .bar {
+    height: 8px;
+    background: rgba(0,0,0,.4);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .bar > i {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #22d3ee, #a855f7);
+  }
+  .prio-row {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .prio-row:hover { color: #fff; }
+  #status { font-size: 12px; color: #93c5fd; margin-bottom: 10px; }
+  .jarvis-panel { min-height: 360px; }
+  .jarvis-panel .body { padding: 14px; overflow: auto; flex: 1; }
+</style>
+</head>
+<body class="admin-body">
+  <div class="admin-grain" aria-hidden="true"></div>
+  <aside class="sidebar" id="admin-sidebar"></aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1>J.A.R.V.I.S. Control</h1>
+        <p class="sub">Clasificación de leads, scoring, salud del núcleo y reanálisis rápido.</p>
+      </div>
+      <div class="top-actions">
+        <div class="pill"><span class="dot"></span><span id="admin-email">Admin</span></div>
+        <button class="btn btn-primary" id="btn-health" type="button">Health check</button>
+        <button class="btn btn-ghost" id="btn-refresh" type="button">Actualizar</button>
+        <button class="btn btn-danger" id="btn-logout" type="button">Salir</button>
+      </div>
+    </header>
+    <p id="status">Cargando...</p>
+
+    <section class="kpis">
+      <div class="kpi"><div class="label">Leads</div><div class="value" id="k-total">0</div></div>
+      <div class="kpi hot"><div class="label">Calientes</div><div class="value" id="k-hot">0</div></div>
+      <div class="kpi pending"><div class="label">Templados</div><div class="value" id="k-warm">0</div></div>
+      <div class="kpi"><div class="label">Fríos</div><div class="value" id="k-cold">0</div></div>
+      <div class="kpi chat"><div class="label">Score medio</div><div class="value" id="k-avg">0</div></div>
+      <div class="kpi done"><div class="label">Núcleo</div><div class="value" id="k-core" style="font-size:15px">—</div></div>
+    </section>
+
+    <section class="layout">
+      <div class="panel jarvis-panel">
+        <div class="panel-head"><h2>Distribución & cola prioritaria</h2></div>
+        <div class="body">
+          <div class="field"><label>Calientes</label><div class="bar"><i id="bar-hot" style="width:0%"></i></div></div>
+          <div class="field"><label>Templados</label><div class="bar"><i id="bar-warm" style="width:0%;background:#fbbf24"></i></div></div>
+          <div class="field"><label>Fríos</label><div class="bar"><i id="bar-cold" style="width:0%;background:#94a3b8"></i></div></div>
+          <div class="field"><label>Top prioridad (score)</label><div id="top"></div></div>
+        </div>
+      </div>
+      <div class="panel jarvis-panel">
+        <div class="panel-head"><h2>Reanalizar texto / lead</h2></div>
+        <div class="body">
+          <div class="field"><label>Pega mensaje o elige lead caliente</label>
+            <textarea id="txt" rows="6" placeholder="Ej: Necesito presupuesto urgente para automatizar mi e-commerce..."></textarea>
+          </div>
+          <div class="actions">
+            <button class="btn btn-ok" id="btn-analyze" type="button">Analizar con JARVIS</button>
+            <button class="btn btn-ghost" id="btn-apply" type="button">Aplicar score al lead seleccionado</button>
+          </div>
+          <div class="field"><label>Resultado</label><pre id="out" style="white-space:pre-wrap;font-size:12px;color:#cbd5e1">—</pre></div>
+          <div class="field"><label>Health</label><pre id="health" style="white-space:pre-wrap;font-size:12px;color:#93c5fd">—</pre></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/assets/js/admin-core.js"></script>
+<script src="/assets/js/n8n-bridge.js"></script>
+<script>
+(function () {
+  var esc = AltivoxAdmin.esc;
+  var sb = AltivoxAdmin.createClient();
+  AltivoxAdmin.renderShell("jarvis");
+
+  var leads = [];
+  var selected = null;
+  var lastAi = null;
+
+  function classify(text) {
+    var t = String(text || "").toLowerCase(), score = 0;
+    if (t.indexOf("urgente") >= 0) score += 35;
+    if (/presupuesto|precio|cotiz/.test(t)) score += 30;
+    if (/contratar|necesito|quiero/.test(t)) score += 20;
+    if (t.indexOf("automat") >= 0) score += 20;
+    if (/ia|inteligencia/.test(t)) score += 15;
+    if (/ecommerce|tienda|web|proyecto/.test(t)) score += 15;
+    if (/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i.test(text || "")) score += 25;
+    if ((text || "").length > 120) score += 10;
+    var clasificacion = score >= 60 ? "caliente" : score >= 30 ? "templado" : "frio";
+    var prioridad = clasificacion === "caliente" ? "alta" : clasificacion === "templado" ? "media" : "baja";
+    return {
+      score: score,
+      clasificacion: clasificacion,
+      prioridad: prioridad,
+      auto_respuesta: "Hola, gracias por contactar con AltivoxAI. Hemos clasificado tu solicitud como " + clasificacion + "."
+    };
+  }
+
+  async function load() {
+    var r = await sb.from("leads").select("*").order("created_at", { ascending: false }).limit(300);
+    if (r.error) {
+      document.getElementById("status").textContent = r.error.message;
+      return;
+    }
+    leads = r.data || [];
+    var hot = leads.filter(function (l) { return (l.clasificacion || "") === "caliente"; }).length;
+    var warm = leads.filter(function (l) { return (l.clasificacion || "") === "templado"; }).length;
+    var cold = leads.filter(function (l) { return (l.clasificacion || "") === "frio" || !l.clasificacion; }).length;
+    var avg = leads.length ? Math.round(leads.reduce(function (s, l) { return s + Number(l.score || 0); }, 0) / leads.length) : 0;
+    document.getElementById("k-total").textContent = leads.length;
+    document.getElementById("k-hot").textContent = hot;
+    document.getElementById("k-warm").textContent = warm;
+    document.getElementById("k-cold").textContent = cold;
+    document.getElementById("k-avg").textContent = avg;
+    var t = Math.max(leads.length, 1);
+    document.getElementById("bar-hot").style.width = (hot / t * 100) + "%";
+    document.getElementById("bar-warm").style.width = (warm / t * 100) + "%";
+    document.getElementById("bar-cold").style.width = (cold / t * 100) + "%";
+    var top = leads.slice().sort(function (a, b) { return Number(b.score || 0) - Number(a.score || 0); }).slice(0, 8);
+    document.getElementById("top").innerHTML = top.map(function (l) {
+      return (
+        '<div class="prio-row" data-id="' + esc(l.id) + '">' +
+          '<strong>' + esc(l.nombre || "Lead") + '</strong> ' +
+          '<span class="badge">' + esc(l.score || 0) + '</span> ' +
+          '<span class="badge ' + esc((l.clasificacion || "").toLowerCase()) + '">' + esc(l.clasificacion || "—") + '</span>' +
+          '<div class="meta">' + esc((l.mensaje || "").slice(0, 120)) + '</div>' +
+        '</div>'
+      );
+    }).join("") || '<div class="meta">Sin leads</div>';
+    Array.prototype.forEach.call(document.querySelectorAll("#top .prio-row"), function (el) {
+      el.onclick = function () {
+        selected = leads.find(function (x) { return String(x.id) === el.getAttribute("data-id"); });
+        document.getElementById("txt").value = selected.mensaje || "";
+        document.getElementById("status").textContent = "Lead seleccionado: " + (selected.nombre || selected.id);
+      };
+    });
+    document.getElementById("status").textContent = "JARVIS listo · " + leads.length + " leads analizados en cartera";
+  }
+
+  async function health() {
+    var lines = [];
+    try {
+      var s = await sb.from("leads").select("id", { count: "exact", head: true });
+      lines.push("Supabase leads: " + (s.error ? "FAIL " + s.error.message : "OK"));
+    } catch (e) {
+      lines.push("Supabase: FAIL");
+    }
+    try {
+      var res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: "ping", agent: "JARVIS" })
+      });
+      var d = await res.json();
+      lines.push("/api/chat: " + (res.ok ? "OK" : "FAIL " + (d.error || res.status)));
+      document.getElementById("k-core").textContent = res.ok ? "Online" : "Down";
+    } catch (e) {
+      lines.push("/api/chat: FAIL");
+      document.getElementById("k-core").textContent = "Down";
+    }
+    document.getElementById("health").textContent = lines.join("\n");
+  }
+
+  document.getElementById("btn-analyze").onclick = function () {
+    lastAi = classify(document.getElementById("txt").value);
+    document.getElementById("out").textContent = JSON.stringify(lastAi, null, 2);
+  };
+
+  document.getElementById("btn-apply").onclick = async function () {
+    if (!selected) return alert("Selecciona un lead de la cola prioritaria");
+    if (!lastAi) lastAi = classify(document.getElementById("txt").value || selected.mensaje);
+    var r = await sb.from("leads").update({
+      score: lastAi.score,
+      clasificacion: lastAi.clasificacion,
+      prioridad: lastAi.prioridad,
+      auto_respuesta: lastAi.auto_respuesta,
+      ultimo_contacto: new Date().toISOString()
+    }).eq("id", selected.id).select().single();
+    if (r.error) return alert(r.error.message);
+    if (window.AltivoxN8n) {
+      var lead = Object.assign({}, selected, r.data || {}, lastAi);
+      window.AltivoxN8n.emit("jarvis.rescored", lead);
+      if (String(lastAi.clasificacion || "").toLowerCase() === "caliente" || Number(lastAi.score || 0) >= 70) {
+        window.AltivoxN8n.emit("lead.hot", lead);
+      }
+    }
+    await load();
+    document.getElementById("status").textContent = "Score aplicado a " + (selected.nombre || selected.id);
+  };
+
+  document.getElementById("btn-health").onclick = health;
+  document.getElementById("btn-refresh").onclick = load;
+  document.getElementById("btn-logout").onclick = function () { AltivoxAdmin.logout(sb); };
+
+  (async function () {
+    if (!(await AltivoxAdmin.requireAuth(sb, document.getElementById("admin-email")))) return;
+    await load();
+    await health();
+  })();
+})();
+</script>
+</body>
+</html>

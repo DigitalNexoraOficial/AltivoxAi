@@ -5,11 +5,10 @@
 import { can, type Subject } from "@/core/security";
 import { completeLlm } from "@/core/tool-registry";
 import { appendRunFact } from "@/core/memory-engine";
-import { getAgent } from "@/core/agent-manager";
 import { AgentError } from "./errors";
 import { canTransitionRun } from "./states";
 import { getAgentStore } from "./internal/store";
-import type { AgentRun, CreateRunInput } from "./types";
+import type { AgentRecord, AgentRun, CreateRunInput } from "./types";
 
 function actor(subject: Subject) {
   return { actorType: subject.type, actorId: subject.id };
@@ -20,6 +19,13 @@ function assertCan(subject: Subject, action: string): void {
   if (!d.allowed) throw new AgentError("forbidden", d.reason, 403);
 }
 
+/** Resolve agent from Runtime store after can() — no Agent Manager import (no cycle). */
+async function resolveAgentRecord(agentId: string): Promise<AgentRecord> {
+  const agent = await getAgentStore().getAgent(agentId);
+  if (!agent) throw new AgentError("not_found", "agent_not_found");
+  return agent;
+}
+
 export async function createAgentRun(
   subject: Subject,
   input: CreateRunInput
@@ -27,7 +33,7 @@ export async function createAgentRun(
   assertCan(subject, "agent.execute");
   const agentId = String(input.agentId || "").trim();
   if (!agentId) throw new AgentError("invalid_input", "agent_id_required");
-  const agent = await getAgent(subject, agentId);
+  const agent = await resolveAgentRecord(agentId);
   if (!agent.enabled) throw new AgentError("invalid_input", "agent_disabled");
   return getAgentStore().createRun(
     {
@@ -91,7 +97,7 @@ export async function executeAgentRun(
     );
   }
 
-  const agent = await getAgent(subject, run.agentId);
+  const agent = await resolveAgentRecord(run.agentId);
   if (!agent.enabled) {
     await store.updateRunStatus(run.id, run.status, "failed", {
       error: "agent_disabled",

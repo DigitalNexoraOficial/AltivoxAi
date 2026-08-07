@@ -1,9 +1,10 @@
 # ADR-017 — Bloque 7: Deploy Engine + entrega ZIP (recorte)
 
-- **Estado:** Aceptado · **contrato documental** (Prebloque B7-A)  
-- **Fecha:** 2026-08-07  
+- **Estado:** Aceptado e implementado  
+- **Fecha:** 2026-08-07 (contrato Prebloque B7-A) · **implementación código:** 2026-08 (Bloque 7 cerrado)  
 - **Decisores:** Owner (Xabier) · arquitectura Altivox OS  
 - **Analogía:** mismo tipo de corte que [`ADR-013`](./ADR-013-project-engine.md) … [`ADR-016`](./ADR-016-bloque-6-review-engine.md)
+- **Bloque cerrado:** B7 — Deploy Engine + entrega ZIP interna (sin providers externos)
 
 ---
 
@@ -20,8 +21,8 @@ Los bloques **0–6** están **cerrados**:
 | 5 | Agent Runtime + módulos + Tool/Memory/Capability mínimos | ADR-015 |
 | 6 | Review Engine + `/r/[token]` | ADR-016 |
 
-**Existe:** PE · Security · Ops · JARVIS · Agent Runtime (interno) · Review Engine.  
-**No existe:** Deploy Engine · ZIP pipeline · tablas deployment · APIs deploy · publicación automática · proveedores externos.
+**Existe (tras B7):** PE · Security · Ops · JARVIS · Agent Runtime (interno) · Review Engine · **Deploy Engine + ZIP**.  
+**Este ADR** fijó el recorte **antes** del código; la implementación B7 ya está cerrada (ZIP interno; sin providers externos).
 
 Separación oficial de motores:
 
@@ -33,7 +34,7 @@ Review Engine   →  validación cliente (approved ≠ deploy)
 Deploy Engine   →  empaquetado / publicación (B7)
 ```
 
-Deploy es el **siguiente bloque de código**. Este ADR es solo el **Prebloque B7-A**. **No** implementa B7.
+Deploy es el bloque de empaquetado/publicación. Este ADR fue el **Prebloque B7-A** (contrato). **Implementación B7:** cerrada — ZIP interno; sin vendors.
 
 ---
 
@@ -270,12 +271,11 @@ Cadena:
 - Historial de deployments desacoplado.  
 - Base para adapters externos en un bloque posterior.
 
-### No implica ADR-017
+### Estado de implementación (post B7)
 
-- No implica código, SQL, rutas ni providers.  
-- No implica auto-deploy.  
-- No implica reabrir B0–B6.  
-- Implementación bloqueada hasta **«OK implementar Bloque 7»**.
+- Código, SQL y APIs Deploy Engine **implementados** (Bloque 7 cerrado).  
+- Las decisiones de este ADR **permanecen** (motor independiente, estados, sin auto-deploy, sin providers en el recorte inicial).  
+- Adapters externos = **posterior** a B7.
 
 ---
 

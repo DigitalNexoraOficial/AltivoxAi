@@ -13,10 +13,10 @@ B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`AD
 
 | Bloque | Qué cubre |
 |--------|-----------|
-| **4** · **cerrado** | JARVIS Core caller + fronteras TypeScript de motores. **Sin** Agent Runtime. |
-| **5** · ADR-015 | **Agent Runtime** + Agent Manager runtime + primer service module + Tool/Memory/Capability **mínimos**. |
-| **6** | Review Engine / portal — sin exponer agentes. |
-| **7** | Deploy / ZIP — Tool Registry ampliado; sin agentes en el portal. |
+| **4** · **cerrado** | JARVIS Core caller + fronteras TypeScript de motores. |
+| **5** · **cerrado** | **Agent Runtime** + Agent Manager runtime + primer service module + Tool/Memory/Capability **mínimos**. |
+| **6** · **cerrado** | Review Engine / portal — sin exponer agentes. |
+| **7** · **cerrado** | Deploy / ZIP — sin agentes en el portal; sin providers externos. |
 
 Este documento mezcla **visión a largo plazo** y **cortes por bloque**.  
 Lo implementado hoy ≠ visión completa.
@@ -33,24 +33,24 @@ Lo implementado hoy ≠ visión completa.
 
 ### Estado real (código)
 
-- **JARVIS Core** (`src/core/jarvis`, B4): caller → use-cases del Project Engine.  
-- `public/jarvis.html`: UI legacy; **no** es el Core.  
-- Orquestación de **Agent Runtime**: pendiente Bloque 5 (ADR-015).
+- **JARVIS Core** (`src/core/jarvis`, B4): caller → use-cases del Project Engine (+ intenciones agente/review/deploy).  
+- `public/legacy/jarvis.html`: UI **legacy**; **no** es el Core.  
+- Orquestación de **Agent Runtime**: **implementada** (Bloque 5 · ADR-015).
 
 ### Visión (largo plazo — no todo es B5)
 
 Interpretar solicitudes, ejecutar workflows, pedir altas al PE, resolver capabilities→agentes, coordinar ciclo, informes.  
-Workflow runtime y Review/Deploy = **fuera de B5**.
+Workflow runtime completo y adapters publish = **fuera** del cierre B0–B7.
 
 ---
 
 ## 2. Agentes — herramientas privadas
 
-### Corte Bloque 5 (ADR-015)
+### Corte Bloque 5 (ADR-015) — **cerrado**
 
 - Agent Runtime: ciclo de vida de runs.  
 - Agent Manager runtime: registro por manifest.  
-- Un primer service module.  
+- Un primer service module (`web`).  
 - Tool Registry **mínimo** (LLM aprobado).  
 - Memory / Capability **mínimos** (runs + resolución de manifests).  
 - **No:** Review, Deploy, Workflow runtime, Tool de vendors de entrega, chat público.
@@ -68,21 +68,21 @@ Workflow runtime y Review/Deploy = **fuera de B5**.
 | Memoria | Scope Memory Engine (no silo) |
 | Permisos | RBAC / capability |
 
-### Estado as-is del código (además de B4)
+### Estado as-is del código
 
 `/api/chat` = tonos comerciales.  
-`agentes.html` = cosmético (`localStorage`).  
-**Ninguno** es Agent Runtime OS.
+`public/legacy/agentes.html` = cosmético (`localStorage`).  
+**Ninguno** es Agent Runtime OS (`src/core/agent-runtime`).
 
 ---
 
-## 3. Catálogo orientativo (visión · no checklist B5)
+## 3. Catálogo orientativo (visión · no checklist cerrado)
 
-Roles internos de ejemplo (Planificador, Frontend, QA, …) viven en el registro cuando exista B5+; no hardcodear en el núcleo.
+Roles internos de ejemplo (Planificador, Frontend, QA, …) viven en manifests del módulo; no hardcodear en el núcleo.
 
 ---
 
-## 4. Relación con capabilities y módulos (visión · B5+ según ADR-015)
+## 4. Relación con capabilities y módulos (B5+)
 
 ```
 Service module declara capabilities (manifest)
@@ -100,8 +100,8 @@ Service module declara capabilities (manifest)
 
 ## 5. Reglas de producto
 
-1. Añadir un agente = manifest + capabilities + tools allowlist — **cero cambios al core** (cuando exista B5).  
-2. Prohibido exponer prompts o IDs de agentes al portal de revisión (B6).  
+1. Añadir un agente = manifest + capabilities + tools allowlist — **cero cambios al core**.  
+2. Prohibido exponer prompts o IDs de agentes al portal de revisión (`/r/[token]`).  
 3. El chat de la landing no registra agentes OS ni los enciende.  
 4. Costes y logs solo en `/ops` con RBAC.  
 5. Prohibido I/O externo fuera del Tool Registry.  
