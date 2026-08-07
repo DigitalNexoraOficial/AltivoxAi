@@ -205,6 +205,63 @@ export async function listTimeline(id: string): Promise<OpsEvent[]> {
   return data.events;
 }
 
+export type OpsReviewSession = {
+  id: string;
+  projectId: string;
+  versionId: string;
+  status: string;
+  expiresAt: string;
+  createdAt: string;
+  revokedAt: string | null;
+};
+
+export type OpsReviewCreateResult = {
+  review: OpsReviewSession;
+  token?: string;
+  portalPath?: string;
+  deliverables: Array<{
+    deliverableId: string;
+    title: string;
+    kind: string;
+    uri: string | null;
+  }>;
+};
+
+export async function listReviews(
+  projectId: string
+): Promise<OpsReviewSession[]> {
+  const data = await opsFetch<{ reviews: OpsReviewSession[] }>(
+    `/api/ops/reviews?projectId=${encodeURIComponent(projectId)}`
+  );
+  return data.reviews;
+}
+
+export async function createReview(input: {
+  projectId: string;
+  versionId: string;
+  deliverables: Array<{
+    deliverableId: string;
+    title: string;
+    kind?: string;
+    uri?: string | null;
+  }>;
+  expiresAt?: string;
+}): Promise<OpsReviewCreateResult> {
+  return opsFetch<OpsReviewCreateResult>("/api/ops/reviews", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function revokeReview(
+  reviewId: string
+): Promise<OpsReviewCreateResult> {
+  return opsFetch<OpsReviewCreateResult>(
+    `/api/ops/reviews/${encodeURIComponent(reviewId)}`,
+    { method: "POST" }
+  );
+}
+
 /** Catalog of statuses accepted by PE APIs (display only — server enforces transitions). */
 export const OPS_PROJECT_STATUSES = [
   "draft",

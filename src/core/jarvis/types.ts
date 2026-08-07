@@ -1,6 +1,6 @@
 /**
- * JARVIS Core — internal orchestration intentions (Bloque 4–5).
- * PE ops + agent orchestration. No chatbot, no direct LLM.
+ * JARVIS Core — internal orchestration intentions (Bloque 4–6).
+ * PE + agents + Review caller. No chatbot, no direct LLM, no portal.
  */
 
 import type {
@@ -11,6 +11,7 @@ import type {
   UpdateProjectMetaInput,
 } from "@/core/project-engine";
 import type { AgentManifest, CreateRunInput } from "@/core/agent-runtime";
+import type { CreateReviewInput } from "@/core/review-engine";
 
 export type JarvisIntention =
   | { op: "project.create"; input: Partial<CreateProjectInput> }
@@ -40,7 +41,9 @@ export type JarvisIntention =
   | { op: "agent.run.execute"; runId: string }
   | { op: "agent.run.cancel"; runId: string }
   | { op: "agent.run.get"; runId: string }
-  | { op: "agent.bootstrap_web" };
+  | { op: "agent.bootstrap_web" }
+  | { op: "review.create"; input: CreateReviewInput }
+  | { op: "review.revoke"; reviewId: string };
 
 export class JarvisError extends Error {
   readonly code: "invalid_intention" | "invalid_subject";
