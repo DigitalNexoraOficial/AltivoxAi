@@ -124,12 +124,12 @@ Chat público ≠ Agent Runtime ≠ Review Engine.
 
 Cuando exista (tras OK de código):
 
-- Solo consume artefactos / reviews **approved**.  
-- ZIP/paquete + deployment request + historial propio.  
-- Publish a vendors vía Tool Registry ampliado.  
-- **Confirmación humana** obligatoria antes de producción.  
-- Estados propios (`draft`…`published`/`failed`/`cancelled`) ≠ PE ≠ Review.  
-- JARVIS caller; Agent Runtime no es el pipeline.
+- Solo consume deliverables / reviews **approved** (nunca auto-deploy).  
+- ZIP pipeline → artefacto interno.  
+- Estados: `draft|queued|building|packaged|deploying|deployed|failed|cancelled`.  
+- **Sin** providers externos en el recorte inicial (adapters = posterior).  
+- JARVIS caller; Agent Runtime **no** ejecuta deploy.  
+- PE/Review solo por use-cases públicos.
 
 Detalle: [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md).
 

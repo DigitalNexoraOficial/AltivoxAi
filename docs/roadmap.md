@@ -77,9 +77,9 @@ APIs `/api/ops/projects*` · sin review/deploy/capabilities/agents.
 
 **Contrato:** [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md) · Prebloque **B7-A completado**.
 
-**Incluye (cuando haya OK de código):** Deploy Engine independiente · validar artefacto aprobado · deployment request · ZIP/paquete · estados propios · historial/errores · adapters vía Tool Registry ampliado · confirmación humana antes de publish · APIs Ops · JARVIS caller · PE/Review solo por superficies públicas.
+**Incluye (cuando haya OK de código):** Deploy Engine independiente · validar artefactos approved · crear deployments · ZIP pipeline · estados `draft|queued|building|packaged|deploying|deployed|failed|cancelled` · historial · APIs Ops · JARVIS caller · PE/Review solo por use-cases públicos.
 
-**No es Fase 7:** auto-publish · portal `/r` como deploy · Agent Runtime como deployer · Workflow runtime · CRM · DNS-as-product · marketplace · reabrir B0–B6.
+**No es Fase 7 (inicial):** providers externos (Vercel/Netlify/AWS/GitHub Deploy/FTP) · auto-deploy tras Review · portal `/r` como deploy · Agent Runtime como deployer · Workflow · CRM · marketplace · reabrir B0–B6.
 
 **Estado:** **no implementado**.
 

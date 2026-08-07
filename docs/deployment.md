@@ -53,14 +53,13 @@ Mismo repositorio permitido; **límites de seguridad** por ruta y rol, no por �
 
 No confundir con deploy de Altivox ni con Review (B6):
 
-1. Artefacto ZIP / paquete (código, docs, guía, `.env.example`, README).  
-2. Adapters opcionales vía Tool Registry ampliado: GitHub, Vercel, WordPress, FTP, …  
-3. **Siempre confirmación humana** antes de publicar en destino del cliente.  
-4. Registro en persistencia Deploy + eventos propios.  
-5. Entrada: **únicamente entregables / reviews approved** (B6).  
-6. Estados propios Deploy (`draft`…`published`/`failed`/`cancelled`) ≠ PE ≠ Review.
+1. **ZIP pipeline** — entrada: deliverables/versiones **approved**; salida: artefacto interno.  
+2. Deploy Engine — estados `draft|queued|building|packaged|deploying|deployed|failed|cancelled`.  
+3. Persistencia futura: `deployments` · eventos · artifacts · configs.  
+4. **Sin providers externos en B7 inicial** (Vercel/Netlify/AWS/GitHub Deploy/FTP = posterior vía adapters).  
+5. **Prohibido** auto-deploy tras aprobación Review.  
+6. APIs futuras solo Ops (`/api/ops/deployments*`); nunca `/api/public/deploy`.
 
-Los adapters son **plugins**; añadir destino nuevo no modifica el núcleo OS.  
 **Código B7 bloqueado** hasta «OK implementar Bloque 7».
 
 ---

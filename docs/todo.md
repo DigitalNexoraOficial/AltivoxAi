@@ -107,12 +107,13 @@ Contrato: [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md). Prebloque **B7-A
 
 | ID | Tarea | Estado |
 |----|-------|--------|
-| T-401 | ZIP / package pipeline | pendiente (ADR-017) |
-| T-402 | Deploy Engine + estados + historial | pendiente |
-| T-402b | Adapters Tool Registry + confirmación humana | pendiente |
-| T-402c | APIs Ops deployments + JARVIS caller | pendiente |
+| T-401 | ZIP pipeline (entrada approved → artefacto interno) | pendiente (ADR-017) |
+| T-402 | Deploy Engine + estados + historial/eventos | pendiente |
+| T-402b | APIs Ops `/api/ops/deployments*` + acciones `deploy.*` | pendiente |
+| T-402c | JARVIS caller create/execute/cancel | pendiente |
+| T-402d | Adapters providers externos | **fuera del recorte B7 inicial** (posterior) |
 
-**Fuera de B7:** auto-publish · deploy en `/r` · Agent Runtime como deployer · Workflow · CRM · DNS-as-product · reabrir B0–B6.
+**Fuera de B7 inicial:** Vercel/Netlify/AWS/GitHub Deploy/FTP · auto-deploy · deploy en `/r` · agentes deployer · Workflow · CRM · marketplace · reabrir B0–B6.
 
 ---
 

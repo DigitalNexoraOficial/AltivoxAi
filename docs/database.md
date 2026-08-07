@@ -71,7 +71,7 @@ Detalle: [`ADR-013`](./adr/ADR-013-project-engine.md), [`flow.md`](./flow.md).
 | **4 · cerrado** | ADR-014: **ninguna** tabla nueva |
 | **5 · cerrado** | ADR-015: Agent Runtime / Memory mínima de runs (`agent-runtime.sql`) — **sin** `review_tokens` ni `deployments` |
 | **6 · cerrado** | ADR-016: `reviews`, `review_tokens`, `review_deliverables`, `review_comments`, `review_events` |
-| **7** | ADR-017: `deployments` / eventos/errores / refs de paquete — **no implementado**; schema en bloque de código |
+| **7** | ADR-017 (futuro): `deployments` · `deployment_events` · `deployment_artifacts` · `deployment_configs` — **no implementado** |
 
 **Fuera de B6 también:** Workflow runtime store · Tool Registry de vendors · `required_capabilities` en `projects` · Memory KB corporativa · reescritura del PE.
 

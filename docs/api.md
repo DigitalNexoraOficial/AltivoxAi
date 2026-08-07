@@ -57,7 +57,7 @@ Agentes = **solo OS**. No hay APIs de agentes en superficie Review ni pública.
 | **4 · cerrado** | ADR-014 | Ninguna API nueva (caller in-process) |
 | **5 · cerrado** | ADR-015 | `/api/ops/agents*` · `/api/ops/agent-runs*` (implementado) |
 | **6 · cerrado** | ADR-016 | `/api/ops/reviews*` · `/api/review/[token]*` |
-| **7** | ADR-017 | `/api/ops/deployments*` (o `/api/ops/deploy*`) — **no implementado** |
+| **7** | ADR-017 | `/api/ops/deployments*` · opcional `/api/deploy/*` interno — **no implementado**; **nunca** `/api/public/deploy` |
 
 ### 3.1 Review (Bloque 6)
 
@@ -74,7 +74,7 @@ Agentes = **solo OS**. No hay APIs de agentes en superficie Review ni pública.
 | `POST /api/review/[token]/reject` | Token | Rechazar (no muta PE) |
 
 **Fuera de B6:** Workflow run · Tool vendors · deploy · ZIP · agentes en portal.  
-**Fuera de B7 (hasta OK):** rutas concretas, adapters, tablas — solo contrato ADR-017.
+**Fuera de B7 (hasta OK):** rutas concretas, tablas, providers externos — solo contrato ADR-017.
 
 Detalle: [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md) · [`flow.md`](./flow.md).
 

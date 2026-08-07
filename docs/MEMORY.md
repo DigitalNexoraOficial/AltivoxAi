@@ -84,7 +84,7 @@ Visión: cinco motores.
 Motores Workflow / Tool Registry / Memory / Capability (+ Agent Manager boundary) = interfaces TypeScript en B4.  
 **Bloque 5 (cerrado · ADR-015):** Agent Runtime + Agent Manager runtime + módulo `web` + Tool/Memory/Capability **mínimos** + APIs ops agentes/runs.  
 **Bloque 6 (cerrado · ADR-016):** Review Engine + `/r/[token]` + tokens + APIs.  
-**Bloque 7 (contrato · ADR-017 · B7-A):** Deploy Engine + ZIP — **no implementado**.  
+**Bloque 7 (contrato · ADR-017 · B7-A):** Deploy Engine + ZIP (sin providers externos en el recorte inicial) — **no implementado**.  
 Spec: [`core-engines.md`](./core-engines.md).
 
 ---

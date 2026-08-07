@@ -9,187 +9,277 @@
 
 # Contexto
 
-Los bloques **0–6** están cerrados:
+Los bloques **0–6** están **cerrados**:
 
 | Bloque | Contenido | Contrato |
 |--------|-----------|----------|
-| 0–1 | Docs + Seguridad | ADR-010 · ADR-011 · ADR-012 |
-| 2 | Project Engine (recorte) | ADR-013 |
-| 3 | Shell `/ops` | Roadmap Fase 3 |
-| 4 | JARVIS Core caller + fronteras TypeScript de motores | ADR-014 |
-| 5 | Agent Runtime + Agent Manager + módulo `web` + Tool/Memory/Capability mínimos | ADR-015 |
-| 6 | Review Engine + portal `/r/[token]` | ADR-016 |
+| 0–1 | Docs + Seguridad (`can()`, roles, RLS, audit) | ADR-010 · ADR-011 · ADR-012 |
+| 2 | Project Engine | ADR-013 |
+| 3 | Ops Shell | Roadmap Fase 3 |
+| 4 | JARVIS Core caller + fronteras | ADR-014 |
+| 5 | Agent Runtime + módulos + Tool/Memory/Capability mínimos | ADR-015 |
+| 6 | Review Engine + `/r/[token]` | ADR-016 |
 
-**Existe hoy:** PE (proyectos, versiones, deliverables, timeline, estados de fase) · Security (`can()`, RLS, audit; acciones `deploy.preview` / `deploy.production` ya en catálogo) · Agent Runtime **interno** · Review Engine (sesiones, tokens, comentarios, aprobación/rechazo, snapshot de deliverables).
+**Existe:** PE · Security · Ops · JARVIS · Agent Runtime (interno) · Review Engine.  
+**No existe:** Deploy Engine · ZIP pipeline · tablas deployment · APIs deploy · publicación automática · proveedores externos.
 
-**No existe:** Deploy Engine · ZIP pipeline · `/api/deploy/*` · tablas `deployments` · providers externos · publicación automática · gestión de dominio/hosting como producto.
+Separación oficial de motores:
 
-El roadmap declara a continuación:
+```
+Project Engine  →  proyectos / versiones / deliverables
+       ↓
+Review Engine   →  validación cliente (approved ≠ deploy)
+       ↓
+Deploy Engine   →  empaquetado / publicación (B7)
+```
 
-- **7.** Entrega ZIP + Deployment Engine  
-
-Sin un ADR de recorte, B7 tiende a absorber Workflow runtime, CRM, reabrir PE/Review/Agent Runtime, publicar sin confirmación humana, o convertir agentes en “deployers” autónomos.
-
-Este ADR es el **Prebloque B7-A**: sincronización documental. **No** implementa el Bloque 7.
-
-> Nota: el brief de entrada se truncó en «Estados posibles:». Los estados de deployment de este ADR son la **propuesta arquitectónica oficial** del Prebloque; cualquier enmienda posterior requiere ADR o addendum explícito antes de código.
+Deploy es el **siguiente bloque de código**. Este ADR es solo el **Prebloque B7-A**. **No** implementa B7.
 
 ---
 
 # Problema
 
-1. Confundir **entrega/publicación técnica** con dominio PE o con aprobación Review.  
-2. Mezclar Deploy con **Agent Runtime** (runs, prompts, Memory) o con el portal `/r`.  
-3. Publicar a vendors **sin** confirmación humana (riesgo de producción accidental).  
-4. Ampliar Tool Registry a “todo vendor” sin recorte, o reabrir PE/Review/Security.  
-5. Diseñar clases, tablas, rutas o adapters antes de congelar el alcance.
+1. Mezclar Deploy con PE, Review o Agent Runtime.  
+2. Interpretar “cliente aprueba” como “publicar automáticamente”.  
+3. Meter providers (Vercel, FTP, …) en el primer corte y diluir el ZIP/historial.  
+4. Dejar que agentes ejecuten deploy o usen credenciales al margen de Security.  
+5. Diseñar SQL/APIs/adapters antes de congelar el alcance.
 
 ---
 
-# Decisión — Qué es Deploy Engine
+# Decisión arquitectónica — Qué es Deploy Engine
 
-**Deploy Engine es un motor independiente**, no una extensión de PE ni de Review.
+**Deploy Engine es un motor independiente.**
 
-| Motor | Dueño de |
-|-------|----------|
-| **Project Engine** | Proyecto, versiones, deliverables, estados de fase |
-| **Review Engine** | Sesión cliente, tokens, feedback, aprobación/rechazo |
-| **Deploy Engine** | Empaquetado, solicitud de despliegue, publicación técnica, historial de deployments |
+No pertenece a:
 
-Motivo: separar dominio de negocio (PE), consentimiento cliente (Review) y publicación técnica (Deploy).
+- Project Engine  
+- Review Engine  
+- Agent Runtime  
+- JARVIS (JARVIS solo **orquesta** vía caller)
+
+### Responsabilidades
+
+- Validar artefactos elegibles (p. ej. deliverables / reviews **approved**).  
+- Crear **deployments**.  
+- Preparar paquete y **generar ZIP**.  
+- Controlar **estados** propios de deployment.  
+- Registrar **eventos** e **historial**.  
+- Gestionar **errores** de forma controlada.
+
+### No es
+
+- Extensión de PE o de Review.  
+- Runtime de agentes.  
+- Chatbot / portal cliente.  
+- Orquestador (eso es JARVIS).
 
 ---
 
-# Decisión — Qué incluye B7
+# Alcance B7 inicial — INCLUYE
 
-1. **Deploy Engine independiente** — ciclo de vida de un **deployment** (solicitud → paquete → confirmación → publicación / fallo).  
-2. **Validación de artefacto aprobado** — solo consumir deliverables / sesiones Review en estado **approved** (o política Ops equivalente explícita); **nunca** publicar desde `rejected` / `revoked` / sin allowlist.  
-3. **Deployment request** — registro de intención de entrega ligada a `projectId`, `versionId`, refs de deliverables/paquete.  
-4. **ZIP / build package pipeline** — generación de artefacto de entrega (código/docs/guía/`.env.example`/README según tipo de servicio); almacenamiento de ref del paquete.  
-5. **Estados propios de deployment** (≠ `projects.status`, ≠ estados Review):
+## 1. Deploy Engine (núcleo)
+
+- Crear deployment.  
+- Validar artefactos de entrada.  
+- Preparar paquete.  
+- Generar ZIP.  
+- Controlar ejecución del ciclo de vida.  
+- Registrar historial / errores.
+
+### Estados recomendados (propios · ≠ PE · ≠ Review)
 
 ```
-draft → queued → packaging → package_ready
-  → awaiting_confirmation → publishing → published
+draft → queued → building → packaged
+              → deploying → deployed
                  ↘ failed
 cualquier no-terminal → cancelled
 ```
 
 | Estado | Significado |
 |--------|-------------|
-| `draft` | Solicitud creada; aún no encolada |
-| `queued` | Lista para empaquetar |
-| `packaging` | Generando ZIP/paquete |
-| `package_ready` | Paquete disponible (entrega descargable / ref) |
-| `awaiting_confirmation` | Esperando **confirmación humana** antes de publish a destino |
-| `publishing` | Adapter de vendor en curso |
-| `published` | Publicación registrada como OK |
-| `failed` | Error controlado (reintentable según política; no auto-promueve PE) |
-| `cancelled` | Abortado por Ops/JARVIS |
+| `draft` | Solicitud creada |
+| `queued` | En cola |
+| `building` | Empaquetando / preparando |
+| `packaged` | ZIP/artefacto listo (entrega interna) |
+| `deploying` | Ejecución de despliegue interno en curso (sin vendor externo en B7 inicial) |
+| `deployed` | Ciclo registrado como completado según política del bloque |
+| `failed` | Error controlado |
+| `cancelled` | Abortado por Ops / caller autorizado |
 
-6. **Historial y errores** — persistencia propia (`deployments`, eventos/errores de deploy); timeline Deploy separado de `project_events` y `review_events`.  
-7. **Adapters de publicación vía Tool Registry (ampliado)** — destinos opcionales (p. ej. GitHub, Vercel, WordPress, FTP u otros plugins); **no** el mínimo LLM de B5. Cada destino = adapter; añadir destino no reescribe el core.  
-8. **Confirmación humana obligatoria** antes de `deploy.production` (y, por defecto, antes de cualquier publish a destino cliente). Preview puede usar `deploy.preview` con el mismo techo `can()`.  
-9. **APIs Ops de deploy** — familia `/api/ops/deployments*` (o `/api/ops/deploy*`); **no** superficie pública ni portal `/r`.  
-10. **Emisión / cancelación / confirmación desde Ops** — `can(deploy.preview)` / `can(deploy.production)` (nombres ya en catálogo B1).  
-11. **JARVIS** puede **solicitar** create/queue/cancel/confirm de deploy **mediante caller** a use-cases del Deploy Engine; **no** publica por sí mismo ni bypassa confirmación.  
-12. **Integración PE** solo vía **use-cases públicos** (lectura proyecto/versión/deliverables; transición a `delivered` **solo** si Ops/JARVIS llama explícitamente un use-case PE ya existente — **sin** auto-transición obligatoria desde Deploy).  
-13. **Integración Review** — leer estado/aprobación / snapshot allowlist vía superficie pública del Review Engine; **sin** SQL Review interno ni tokens en Deploy.  
-14. Este ADR **no diseña** clases, schemas SQL definitivos, firmas TypeScript, contratos de adapters ni rutas HTTP concretas más allá del recorte. Congela alcance. Persistencia/APIs/UI/adapters se definirán en el bloque de código bajo este corte.
+## 2. ZIP Pipeline
+
+| Fase | Contenido |
+|------|-----------|
+| **Entrada** | Deliverables / versiones **aprobados** (vía Review + refs PE) |
+| **Proceso** | Recopilar archivos **permitidos** · validar estructura · generar ZIP |
+| **Salida** | Artefacto interno preparado (`deployment_artifacts`) |
+
+## 3. Superficie Ops + JARVIS caller
+
+- Operación humana en `/ops` (APIs futuras).  
+- JARVIS puede **solicitar** create / execute / cancel vía intenciones → use-cases Deploy.  
+- Toda mutación pasa por `can()`.
+
+## 4. Persistencia propia (solo diseño futuro)
+
+Entidades candidatas (sin SQL en B7-A):
+
+- `deployments`  
+- `deployment_events`  
+- `deployment_artifacts`  
+- `deployment_configs`  
+
+Separadas de `projects` · reviews · `agent_runs`.
+
+## 5. APIs futuras (sin crear rutas)
+
+| Familia | Prefijo | Uso |
+|---------|---------|-----|
+| Ops | `/api/ops/deployments` · `/api/ops/deployments/[id]` | Staff + `can()` |
+| Internas | `/api/deploy/*` | Solo si hace falta superficie interna acotada |
+| **Prohibido** | `/api/public/deploy` | Nunca público |
 
 ---
 
-# Decisión — Qué excluye B7
+# Alcance B7 — EXCLUYE
 
-Bloque 7 **excluye explícitamente**:
+## Review (no reabrir B6)
 
-- Reabrir o reescribir **PE**, **Review**, **Security**, **Ops shell** o **Agent Runtime** (salvo bug real)  
-- Convertir **Agent Runtime** en Deploy Engine o exponer agentes/prompts/runs/Memory al flujo de publish  
-- **Publicación automática** a producción sin confirmación humana  
-- Portal cliente `/r` como superficie de deploy  
-- **Chat público** / CRM / migración HTML → App Router  
-- **Workflow runtime** completo (sigue diferido)  
-- **Marketplace** de adapters o agentes  
-- Gestión avanzada de **DNS / dominios / facturación de hosting** como producto (solo adapters de publish puntuales)  
-- Multi-cloud orchestration genérica / IaC completo (Terraform-as-product)  
-- Sustituir confirmación humana por “agente deployer” autónomo  
-- Stubs que fingan publish real sin Deploy Engine  
-- Plataforma pública de agentes (ADR-010)
+- Portal `/r/[token]` · tokens · comentarios · aprobaciones como feature de Deploy.
+
+## Agent Runtime (no convertir en deployer)
+
+- Agentes desplegadores · agentes públicos · ejecución autónoma de deploy · exposición de prompts/tools/Memory · credenciales propias del agente para publish.
+
+## Providers externos (B7 inicial)
+
+B7 **inicial sin proveedores externos**.  
+Se prepara **arquitectura de adapters** para el futuro, pero **no** se incluyen en este recorte:
+
+- Vercel · Netlify · AWS · GitHub Deploy · FTP · equivalentes.
+
+## Otros
+
+- Workflow Runtime · CRM · chat público · marketplace · multi-tenant avanzado.  
+- Reescritura del PE · cambios de base Security (salvo altas mínimas de acciones `deploy.*` en el bloque de código bajo este ADR).  
+- Auto-deploy tras aprobación cliente.  
+- DNS / hosting-as-product.
 
 ---
 
-# Fronteras arquitectónicas
+# Relación con Project Engine
 
-| Pieza | Rol en B7 |
-|-------|-----------|
-| **Project Engine** | Dueño del proyecto / versiones / deliverables / fase (`delivered`, etc.) |
-| **Review Engine** | Dueño de la aprobación cliente; Deploy **consume** approved |
-| **Deploy Engine** | Dueño del empaquetado y la publicación técnica |
-| **Tool Registry** | Único camino de I/O a vendors de publish (ampliado en B7) |
-| **Agent Runtime** | Permanece **interno**; no es el pipeline de deploy |
-| **JARVIS Core** | Caller/orquestador; no es el adapter ni el botón “publicar sin can()” |
-| **Security** | `can(deploy.preview\|deploy.production)`; sin bypass |
-| **`/r/[token]`** | Sigue siendo Review; **cero** deploy |
+| Puede | No puede |
+|-------|----------|
+| Leer proyectos / versiones / deliverables | Acceder SQL PE directamente |
+| Usar **solo** use-cases públicos PE | Modificar dominio PE |
+| | Crear estados de deploy dentro de `projects.status` |
 
-Cadena Ops:
+PE sigue siendo dueño del dominio proyecto (ADR-013).
 
-`caller (humano OPS o JARVIS) → Subject → can(deploy.*) → Deploy Engine → (PE/Review use-cases públicos) → Tool Registry adapters (tras confirmación humana)`
+---
 
-Regla dura:
+# Relación con Review Engine
 
-**Aprobación Review ≠ publicación.**  
-**Paquete ZIP ≠ publish a vendor.**  
-**Publish requiere confirmación humana + `can()`.**
+Review entrega **validación cliente**.  
+Deploy **puede requerir** estado **approved**.
+
+**Prohibido:**
+
+`cliente aprueba → deploy automático`
+
+Flujo obligatorio:
+
+```
+Deliverable → Review → Approved → (Ops/JARVIS) Deploy Engine → Deployment
+```
+
+Deploy no es dueño de tokens ni del portal.
+
+---
+
+# Relación con Agent Runtime
+
+Agentes pueden, en el futuro, **ayudar** en tareas internas (p. ej. preparar metadatos) **dentro** del OS.
+
+**No pueden:**
+
+- Ejecutar Deploy directamente.  
+- Saltar Security / `can()`.  
+- Usar credenciales al margen del Deploy Engine.  
+- Publicar sin pasar por Deploy Engine.
+
+Agent Runtime permanece **interno** (ADR-015).
 
 ---
 
 # Seguridad
 
-1. **Ops** — mutaciones solo con `can(subject, "deploy.preview" | "deploy.production", resource)` (techos B1; sin bypass).  
-2. **Confirmación humana** — paso explícito antes de publish a destino cliente / producción.  
-3. **Sin `service_role` en frontend** — mutaciones server-side tras authz.  
-4. **Sin sesión cliente** en APIs de deploy — solo Ops (y caller JARVIS interno).  
-5. Credenciales de vendors — solo vía mecanismo de credentials ya previsto en Security (sin exponer al portal ni a la web pública).  
-6. Prompts, agent IDs, Memory de runs y tools internas **nunca** en respuestas de deploy al cliente.  
-7. JARVIS **no** es superadmin (ADR-012); `deploy.production` permanece fuera del techo jarvis salvo decisión futura explícita (hoy: jarvis tiene `deploy.preview` en catálogo; **no** `deploy.production`).  
-8. Auditoría técnica en `audit_events`; dominio Deploy en store propio.
+### Acciones futuras (contrato B7)
+
+- `deploy.create`  
+- `deploy.execute`  
+- `deploy.cancel`  
+- `deploy.configure`  
+
+Toda acción sensible: `can(subject, action, resource)`.
+
+> Nota de catálogo B1: hoy existen `deploy.preview` / `deploy.production` en el catálogo histórico. El contrato **B7** adopta las acciones anteriores. El bloque de código alineará grants/techos **sin** reabrir ADR-012; no hay bypass.
+
+### Reglas
+
+- Sin bypass de `can()`.  
+- Sin `service_role` en frontend.  
+- Sin credenciales expuestas (portal, pública, logs).  
+- Sin ejecución sin auditoría.  
+
+### Sujetos
+
+| Sujeto | Rol |
+|--------|-----|
+| **Human** | Opera según permisos |
+| **JARVIS** | Solo orquesta (caller) |
+| **Agent** | **No** ejecuta deployment directo |
+
+---
+
+# Fronteras
+
+| Pieza | Rol |
+|-------|-----|
+| **PE** | Dominio proyecto |
+| **Review** | Aprobación cliente |
+| **Deploy** | Empaquetado + ciclo deployment |
+| **Tool Registry** | I/O externo futuro (adapters **después** del recorte ZIP) |
+| **Agent Runtime** | Interno; no es el pipeline |
+| **JARVIS** | Caller |
+| **Security** | Autorización |
+
+Cadena:
+
+`caller (OPS o JARVIS) → Subject → can(deploy.*) → Deploy Engine → (PE/Review públicos) → ZIP/artefacto`
 
 ---
 
 # Consecuencias
 
-### Qué habilita B7
+### Habilita (tras OK de código)
 
-- Empaquetar y entregar artefactos (ZIP) de forma trazable.  
-- Publicar a destinos opcionales vía adapters, con confirmación humana.  
-- Historial de deployments desacoplado de PE y Review.  
-- Que el OS cierre el ciclo Lead → … → Aprobación → **Entrega/Deploy** → Mantenimiento.
+- Empaquetado ZIP trazable.  
+- Historial de deployments desacoplado.  
+- Base para adapters externos en un bloque posterior.
 
-### Qué queda fuera / después
+### No implica ADR-017
 
-- Workflow runtime pleno · CRM App Router · DNS-as-product · marketplace de adapters · analítica/facturación (fases 8–9).
-
-### Qué no implica ADR-017
-
-- No implica código, tablas, rutas ni adapters concretos.  
-- No implica auto-transición PE ni auto-publish.  
+- No implica código, SQL, rutas ni providers.  
+- No implica auto-deploy.  
 - No implica reabrir B0–B6.  
-- No es aprobación de implementación: hace falta **OK explícito** de código tras este Prebloque  
-  (**«OK implementar Bloque 7»**).
+- Implementación bloqueada hasta **«OK implementar Bloque 7»**.
 
 ---
 
 # Referencias
 
-- [`ADR-010`](./ADR-010-altivox-os-pivot.md)  
-- [`ADR-011`](./ADR-011-core-engines.md)  
-- [`ADR-012`](./ADR-012-security-foundation.md)  
-- [`ADR-013`](./ADR-013-project-engine.md)  
-- [`ADR-014`](./ADR-014-bloque-4-jarvis-motores-interfaces.md)  
-- [`ADR-015`](./ADR-015-bloque-5-agent-runtime.md)  
-- [`ADR-016`](./ADR-016-bloque-6-review-engine.md)  
-- [`../roadmap.md`](../roadmap.md)  
-- [`../deployment.md`](../deployment.md)  
-- [`../flow.md`](../flow.md)  
-- [`../todo.md`](../todo.md)  
-- [`../MEMORY.md`](../MEMORY.md)
+- [`ADR-010`](./ADR-010-altivox-os-pivot.md) … [`ADR-016`](./ADR-016-bloque-6-review-engine.md)  
+- [`../roadmap.md`](../roadmap.md) · [`../core-engines.md`](../core-engines.md) · [`../deployment.md`](../deployment.md) · [`../flow.md`](../flow.md) · [`../MEMORY.md`](../MEMORY.md)

@@ -73,7 +73,7 @@
 |-------|----------|------|
 | **Project Engine** | Proyectos, estados (B2), versiones, entregables, eventos de dominio. Review tokens / deploys = **diferidos** ([ADR-013](./adr/ADR-013-project-engine.md)) | **Cerrado (B2)** |
 | **Workflow Engine** | Procesos reutilizables | Frontera en B4 · runtime posterior |
-| **Tool Registry** | I/O externo | Frontera B4 · runtime **mínimo** LLM en B5 · vendors publish = **B7 (ADR-017)** |
+| **Tool Registry** | I/O externo | Frontera B4 · runtime **mínimo** LLM en B5 · vendors publish = **posterior a B7 ZIP** (ADR-017: sin providers en recorte inicial) |
 | **Memory Engine** | Memoria runtime | Frontera B4 · runtime **mínimo** runs en B5 · KB corporativa posterior |
 | **Capability Registry** | Capabilities → agentes | Frontera B4 · runtime **mínimo** manifests en B5 |
 
@@ -109,7 +109,7 @@ Descubrimiento por manifest; cero `if/else` de servicio en el core.
 | JARVIS Core + fronteras motores (B4) | **Implementado** (ADR-014) |
 | Agent runtime · service modules | **Implementado** (ADR-015 · sin UI completa) |
 | `/r/[token]` · Review Engine | **Implementado** ([`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md)) |
-| Deploy / ZIP | **No implementado** — contrato [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md) |
+| Deploy / ZIP | **No implementado** — contrato [`ADR-017`](./adr/ADR-017-bloque-7-deploy-engine.md) · B7-A docs only |
 | Extensión modular formal | **Parcial** — módulo `web` (B5) |
 
 ---
@@ -144,7 +144,7 @@ Ver [`security.md`](./security.md) · [`ADR-016`](./adr/ADR-016-bloque-6-review-
 - `/ops` y `/api/ops/*`: autenticación + RBAC.  
 - `/r/[token]`: autorización por token de revisión; sin sesión staff; `noindex`.  
 - Agentes y prompts: nunca en respuestas del portal ni de la web pública.  
-- Deploy: solo B7 (ADR-017); confirmación humana; sin auto-publish.
+- Deploy: solo B7 (ADR-017); ZIP primero; sin providers en recorte inicial; sin auto-deploy tras Review.
 
 ---
 

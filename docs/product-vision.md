@@ -85,7 +85,7 @@ Estados en dominio: `draft|planning|in_progress|qa|review|approved|delivered|mai
 |--------|----------|--------|
 | 5 | Agent runtime + service modules | **Cerrado** |
 | 6 | Review Engine + `/r/[token]` | **Cerrado** |
-| 7 | Entrega ZIP + Deployment Engine | Contrato ADR-017 · código pendiente |
+| 7 | Entrega ZIP + Deployment Engine (sin providers en recorte inicial) | Contrato ADR-017 · código pendiente |
 
 Detalle: [`flow.md`](./flow.md), [`core-engines.md`](./core-engines.md), [`ADR-016`](./adr/ADR-016-bloque-6-review-engine.md).
 

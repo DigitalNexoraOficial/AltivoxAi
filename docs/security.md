@@ -48,12 +48,13 @@ Contrato de seguridad (cuando exista código):
 
 | Superficie | Regla |
 |------------|--------|
-| Ops | `deploy.preview` · `deploy.production` vía `can()` |
-| Publish | Confirmación humana obligatoria antes de producción |
+| Ops | `deploy.create` · `deploy.execute` · `deploy.cancel` · `deploy.configure` vía `can()` |
+| Catálogo B1 | Existen `deploy.preview` / `deploy.production` históricos; B7 alinea al contrato anterior sin reabrir ADR-012 |
 | Frontend | Sin `service_role` |
 | Cliente `/r` | Sin APIs de deploy |
-| JARVIS | Caller; techo actual permite `deploy.preview`, **no** `deploy.production` |
-| Aislamiento | Agent Runtime no publica; sin prompts/runs en respuestas deploy |
+| JARVIS | Solo orquesta (caller) |
+| Agent | **No** ejecuta deployment directo |
+| Aislamiento | Sin credenciales expuestas; sin bypass; con auditoría |
 
 ## Rollback
 
