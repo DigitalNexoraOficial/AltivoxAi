@@ -125,7 +125,8 @@ Mínimo funcional a medio plazo:
 
 ## 8. Relación con el código actual (honestidad)
 
-Hoy en producción existen: landing Next.js, admin HTML (`public/*.html`), APIs lead/chat/n8n, CRM ligero Supabase.
+Hoy existen: landing Next.js, admin HTML (`public/*.html`, temporal ADR-001), APIs lead/chat/n8n, CRM ligero Supabase, **Security (B1)**, **Project Engine (B2)** y **shell `/ops` App Router (B3)** con UI de proyectos.
 
-**Altivox OS (`/ops`), portal `/r/[token]`, dominio Proyectos y JARVIS orquestador aún no están implementados.**  
+**Aún no:** portal `/r/[token]`, JARVIS runtime, motores Workflow/Tool/Memory/Capability, Agent Runtime, CRM App Router.
+
 Esta visión es la **fuente oficial de verdad** para el diseño; la implementación sigue el [`roadmap.md`](./roadmap.md) bloque a bloque.

@@ -1,0 +1,426 @@
+/* Altivox OS — Ops shell (Bloque 3). Scoped under .ops-root */
+
+.ops-root {
+  --ops-bg: #0b0f14;
+  --ops-panel: #121821;
+  --ops-panel-2: #182230;
+  --ops-line: rgba(148, 163, 184, 0.18);
+  --ops-text: #e8eef6;
+  --ops-muted: #8b9bb0;
+  --ops-accent: #2dd4bf;
+  --ops-accent-dim: rgba(45, 212, 191, 0.14);
+  --ops-warn: #fbbf24;
+  --ops-danger: #fb7185;
+  --ops-ok: #34d399;
+  --ops-font: "Segoe UI", "IBM Plex Sans", "Source Sans 3", system-ui, sans-serif;
+  --ops-mono: "IBM Plex Mono", "SF Mono", ui-monospace, monospace;
+
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  background:
+    radial-gradient(ellipse 80% 50% at 0% 0%, rgba(45, 212, 191, 0.08), transparent 55%),
+    linear-gradient(180deg, #0b0f14 0%, #0a1018 100%);
+  color: var(--ops-text);
+  font-family: var(--ops-font);
+}
+
+@media (max-width: 900px) {
+  .ops-root {
+    grid-template-columns: 1fr;
+  }
+  .ops-sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    border-right: none;
+    border-bottom: 1px solid var(--ops-line);
+  }
+}
+
+.ops-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem 1.15rem;
+  background: rgba(10, 14, 20, 0.92);
+  border-right: 1px solid var(--ops-line);
+  min-height: 100vh;
+}
+
+.ops-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+}
+
+.ops-brand-mark {
+  color: var(--ops-text);
+}
+
+.ops-brand-os {
+  color: var(--ops-accent);
+}
+
+.ops-brand-sub {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--ops-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ops-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 1rem;
+}
+
+.ops-nav-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.5rem;
+  color: var(--ops-text);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.ops-nav-link:hover {
+  background: var(--ops-accent-dim);
+}
+
+.ops-nav-link.is-active {
+  background: var(--ops-accent-dim);
+  border-color: rgba(45, 212, 191, 0.35);
+  color: var(--ops-accent);
+}
+
+.ops-nav-link.is-legacy {
+  opacity: 0.92;
+}
+
+.ops-legacy-tag {
+  font-size: 0.65rem;
+  color: var(--ops-warn);
+  letter-spacing: 0.02em;
+}
+
+.ops-sidebar-foot {
+  margin-top: auto;
+  font-size: 0.7rem;
+  color: var(--ops-muted);
+  line-height: 1.4;
+}
+
+.ops-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ops-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--ops-line);
+  background: rgba(12, 18, 26, 0.85);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.ops-eyebrow {
+  display: block;
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ops-muted);
+}
+
+.ops-header-title strong {
+  font-size: 1.05rem;
+}
+
+.ops-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ops-user {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.85rem;
+}
+
+.ops-role {
+  font-size: 0.7rem;
+  color: var(--ops-muted);
+  font-family: var(--ops-mono);
+}
+
+.ops-content {
+  padding: 1.25rem 1.5rem 2.5rem;
+  max-width: 1100px;
+  width: 100%;
+}
+
+.ops-breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  font-size: 0.8rem;
+  color: var(--ops-muted);
+}
+
+.ops-breadcrumbs a {
+  color: var(--ops-accent);
+  text-decoration: none;
+}
+
+.ops-bc-sep {
+  margin: 0 0.15rem;
+  opacity: 0.5;
+}
+
+.ops-page-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.65rem;
+  letter-spacing: -0.02em;
+}
+
+.ops-lede {
+  margin: 0 0 1.5rem;
+  color: var(--ops-muted);
+  max-width: 42rem;
+  line-height: 1.5;
+}
+
+.ops-panel {
+  background: var(--ops-panel);
+  border: 1px solid var(--ops-line);
+  border-radius: 0.75rem;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.ops-panel h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.ops-grid-cards {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.ops-card-link {
+  display: block;
+  padding: 1rem;
+  border-radius: 0.65rem;
+  border: 1px solid var(--ops-line);
+  background: var(--ops-panel-2);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.ops-card-link:hover {
+  border-color: rgba(45, 212, 191, 0.45);
+  transform: translateY(-1px);
+}
+
+.ops-card-link h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.ops-card-link p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--ops-muted);
+}
+
+.ops-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.45rem;
+  border: 1px solid rgba(45, 212, 191, 0.45);
+  background: var(--ops-accent-dim);
+  color: var(--ops-accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.ops-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ops-btn-ghost {
+  border-color: var(--ops-line);
+  background: transparent;
+  color: var(--ops-text);
+}
+
+.ops-btn-danger {
+  border-color: rgba(251, 113, 133, 0.45);
+  background: rgba(251, 113, 133, 0.12);
+  color: var(--ops-danger);
+}
+
+.ops-muted {
+  color: var(--ops-muted);
+  font-size: 0.85rem;
+}
+
+.ops-error {
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(251, 113, 133, 0.4);
+  background: rgba(251, 113, 133, 0.1);
+  color: #fecdd3;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.ops-ok {
+  color: var(--ops-ok);
+  font-size: 0.85rem;
+}
+
+.ops-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.ops-table th,
+.ops-table td {
+  text-align: left;
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid var(--ops-line);
+  vertical-align: top;
+}
+
+.ops-table th {
+  color: var(--ops-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ops-table a {
+  color: var(--ops-accent);
+  text-decoration: none;
+}
+
+.ops-status {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-family: var(--ops-mono);
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--ops-text);
+}
+
+.ops-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.ops-form-row {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.ops-form-row label {
+  font-size: 0.75rem;
+  color: var(--ops-muted);
+}
+
+.ops-form-row input,
+.ops-form-row textarea,
+.ops-form-row select {
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--ops-line);
+  background: #0a1018;
+  color: var(--ops-text);
+  font: inherit;
+}
+
+.ops-form-row textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+
+.ops-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.ops-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.ops-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.ops-timeline li {
+  padding: 0.65rem 0.75rem;
+  border-left: 2px solid var(--ops-accent);
+  background: rgba(18, 24, 33, 0.8);
+  border-radius: 0 0.4rem 0.4rem 0;
+}
+
+.ops-timeline time {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--ops-muted);
+  font-family: var(--ops-mono);
+}
+
+.ops-mono {
+  font-family: var(--ops-mono);
+  font-size: 0.8rem;
+}
+
+.ops-callout {
+  font-size: 0.8rem;
+  color: var(--ops-muted);
+  border: 1px dashed var(--ops-line);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
