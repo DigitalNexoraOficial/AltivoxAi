@@ -195,7 +195,7 @@ function guessCarTitle(description: string, clientName: string): string {
   return clientName || "Edition";
 }
 
-/** Photo-textured Fox-body Mustang scroll landing (Wikimedia + /assets). */
+/** Real textured Mustang GLB + WebGL scroll landing. */
 function buildCinematicCarHtml(input: {
   clientName: string;
   description: string;
