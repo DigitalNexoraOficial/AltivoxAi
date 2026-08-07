@@ -9,6 +9,11 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import {
+  clientIpFromHeaders,
+  rateLimit,
+  writeAuditEvent,
+} from "@/core/security";
 
 const SUPABASE_URL =
   process.env.SUPABASE_URL || "https://soeyfivsuwohuuzgfqar.supabase.co";
@@ -40,7 +45,6 @@ const FUENTE_SCORE: Record<string, number> = {
   web: 55,
 };
 
-const rateBucket = new Map<string, { count: number; start: number }>();
 const MAX_BODY_BYTES = 32 * 1024;
 
 type ApiError = Error & {
@@ -78,24 +82,7 @@ function withCors(req: NextRequest, res: NextResponse): NextResponse {
 }
 
 function clientIp(req: NextRequest): string {
-  const xf = String(req.headers.get("x-forwarded-for") || "")
-    .split(",")[0]
-    .trim();
-  return xf || "unknown";
-}
-
-function rateLimit(ip: string): boolean {
-  const now = Date.now();
-  const windowMs = 60 * 1000;
-  const maxHits = 20;
-  const entry = rateBucket.get(ip) || { count: 0, start: now };
-  if (now - entry.start > windowMs) {
-    entry.count = 0;
-    entry.start = now;
-  }
-  entry.count += 1;
-  rateBucket.set(ip, entry);
-  return entry.count <= maxHits;
+  return clientIpFromHeaders(req.headers);
 }
 
 function pickAllowedFields(input: unknown): Record<string, unknown> {
@@ -210,7 +197,16 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!rateLimit(clientIp(req))) {
+  const ip = clientIp(req);
+  const rl = await rateLimit("lead", ip);
+  if (!rl.success) {
+    await writeAuditEvent({
+      actorType: "anonymous",
+      action: "lead.create_public",
+      result: "rate_limited",
+      ip,
+      errorCode: rl.reason,
+    });
     return withCors(
       req,
       NextResponse.json(

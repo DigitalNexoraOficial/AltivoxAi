@@ -86,8 +86,34 @@
         setStatus("Acceso denegado. Credenciales no válidas o usuario no autorizado.", false);
         return;
       }
+      var sync = await fetch("/api/ops/session", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + result.data.session.access_token },
+      });
+      var syncBody = await sync.json().catch(function () { return {}; });
+      if (!sync.ok) {
+        await sb.auth.signOut().catch(function () {});
+        if (sync.status === 403) {
+          setStatus(
+            (syncBody && syncBody.message) ||
+              "Cuenta sin rol staff. Pide a un SuperAdmin que asigne app_metadata.role.",
+            false
+          );
+        } else {
+          setStatus("No se pudo crear la sesión de Ops.", false);
+        }
+        return;
+      }
       setStatus("Acceso correcto", true);
-      window.location.href = "dashboard.html";
+      var params = new URLSearchParams(window.location.search);
+      var next = params.get("next") || "dashboard.html";
+      if (next.indexOf("/") !== 0 && next.indexOf("http") !== 0) {
+        window.location.href = next;
+      } else if (next.indexOf("/") === 0 && next.indexOf("//") !== 0) {
+        window.location.href = next;
+      } else {
+        window.location.href = "dashboard.html";
+      }
     } catch (err) {
       console.error(err);
       setStatus("Acceso denegado. Credenciales no válidas o usuario no autorizado.", false);
@@ -100,11 +126,27 @@
   passEl.addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
   emailEl.addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
 
-  sb.auth.getSession().then(function (res) {
+  sb.auth.getSession().then(async function (res) {
     if (res && res.data && res.data.session) {
-      window.location.href = "dashboard.html";
+      var sync = await fetch("/api/ops/session", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + res.data.session.access_token },
+      });
+      if (sync.ok) {
+        window.location.href = "dashboard.html";
+      }
     }
   }).catch(function () {});
+
+  (function showQueryError() {
+    var params = new URLSearchParams(window.location.search);
+    var err = params.get("error");
+    if (err === "forbidden") {
+      setStatus("Acceso denegado: tu usuario no tiene rol staff (app_metadata.role).", false);
+    } else if (err === "auth_required") {
+      setStatus("Debes iniciar sesión para acceder al panel.", false);
+    }
+  })();
 })();
 </script>
 </body>

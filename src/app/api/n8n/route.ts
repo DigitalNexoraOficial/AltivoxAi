@@ -11,6 +11,15 @@
 
 import { timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+import {
+  can,
+  clientIpFromHeaders,
+  n8nIntegrationSubject,
+  rateLimit,
+  resolveOpsUserFromToken,
+  writeAuditEvent,
+  type Subject,
+} from "@/core/security";
 
 const SUPABASE_URL =
   process.env.SUPABASE_URL || "https://soeyfivsuwohuuzgfqar.supabase.co";
@@ -49,8 +58,6 @@ const CLIENTE_FIELDS = [
   "created_at",
 ] as const;
 
-const rateBucket = new Map<string, { count: number; start: number }>();
-
 type ApiError = Error & { code?: string; status?: number };
 
 function isAllowedOrigin(origin: string): boolean {
@@ -76,23 +83,7 @@ function withCors(req: NextRequest, res: NextResponse): NextResponse {
 }
 
 function clientIp(req: NextRequest): string {
-  const xf = String(req.headers.get("x-forwarded-for") || "")
-    .split(",")[0]
-    .trim();
-  return xf || "unknown";
-}
-
-function rateLimit(ip: string, maxHits = 30): boolean {
-  const now = Date.now();
-  const windowMs = 60 * 1000;
-  const entry = rateBucket.get(ip) || { count: 0, start: now };
-  if (now - entry.start > windowMs) {
-    entry.count = 0;
-    entry.start = now;
-  }
-  entry.count += 1;
-  rateBucket.set(ip, entry);
-  return entry.count <= maxHits;
+  return clientIpFromHeaders(req.headers);
 }
 
 function safeEqual(a: string, b: string): boolean {
@@ -110,28 +101,59 @@ function okSecret(req: NextRequest): boolean {
   return safeEqual(got, expected);
 }
 
-async function okSupabaseUser(req: NextRequest): Promise<boolean> {
+async function resolveSubject(req: NextRequest): Promise<Subject | null> {
+  if (okSecret(req)) return n8nIntegrationSubject();
   const auth = req.headers.get("authorization") || "";
   const token = auth.replace(/^Bearer\s+/i, "").trim();
-  if (!token || token.length < 20) return false;
-  const anon = String(process.env.SUPABASE_ANON_KEY || "").trim();
-  if (!anon) return false;
-  try {
-    const res = await fetch(SUPABASE_URL + "/auth/v1/user", {
-      headers: {
-        Authorization: "Bearer " + token,
-        apikey: anon,
-      },
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
+  if (!token) return null;
+  const user = await resolveOpsUserFromToken(token);
+  return user?.subject || null;
 }
 
-async function okAuth(req: NextRequest): Promise<boolean> {
-  if (okSecret(req)) return true;
-  return okSupabaseUser(req);
+async function authorize(
+  req: NextRequest,
+  action: "n8n.emit" | "n8n.write_crm",
+  resourceType?: string,
+  resourceId?: string
+): Promise<{ ok: true; subject: Subject } | { ok: false; res: NextResponse }> {
+  const ip = clientIp(req);
+  const subject = await resolveSubject(req);
+  const decision = can(subject, action, {
+    type: resourceType || "n8n",
+    id: resourceId,
+  });
+  if (!subject || !decision.allowed) {
+    await writeAuditEvent({
+      actorType:
+        subject?.type === "machine"
+          ? "machine"
+          : subject
+            ? "human"
+            : "anonymous",
+      actorId: subject?.id,
+      actorRole:
+        subject?.type === "human"
+          ? subject.role
+          : subject?.type === "machine"
+            ? subject.principalType
+            : undefined,
+      action: "n8n." + action,
+      permission: action,
+      resourceType,
+      resourceId,
+      result: "deny",
+      ip,
+      errorCode: decision.reason,
+    });
+    return {
+      ok: false,
+      res: withCors(
+        req,
+        NextResponse.json({ error: "No autorizado" }, { status: 401 })
+      ),
+    };
+  }
+  return { ok: true, subject };
 }
 
 function pickAllowedFields(
@@ -142,7 +164,10 @@ function pickAllowedFields(
   if (!input || typeof input !== "object" || Array.isArray(input)) return out;
   const obj = input as Record<string, unknown>;
   for (const key of allowlist) {
-    if (Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== undefined) {
+    if (
+      Object.prototype.hasOwnProperty.call(obj, key) &&
+      obj[key] !== undefined
+    ) {
       out[key] = obj[key];
     }
   }
@@ -237,7 +262,16 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!rateLimit(clientIp(req))) {
+  const ip = clientIp(req);
+  const rl = await rateLimit("n8n", ip);
+  if (!rl.success) {
+    await writeAuditEvent({
+      actorType: "anonymous",
+      action: "n8n.request",
+      result: "rate_limited",
+      ip,
+      errorCode: rl.reason,
+    });
     return withCors(
       req,
       NextResponse.json({ error: "Demasiadas peticiones" }, { status: 429 })
@@ -256,20 +290,25 @@ export async function POST(req: NextRequest) {
           ? { message: "pong", from: String(body.from || "api").slice(0, 80) }
           : body.data || {};
 
-      // Require N8N_SECRET or authenticated Supabase admin session.
-      if (!(await okAuth(req))) {
-        return withCors(
-          req,
-          NextResponse.json({ error: "No autorizado" }, { status: 401 })
-        );
-      }
+      const authz = await authorize(req, "n8n.emit");
+      if (!authz.ok) return authz.res;
 
       try {
         const result = await forwardToN8n(event, data, Boolean(body.test));
-        return withCors(
-          req,
-          NextResponse.json({ event, ...result })
-        );
+        await writeAuditEvent({
+          actorType: authz.subject.type === "machine" ? "machine" : "human",
+          actorId: authz.subject.id,
+          actorRole:
+            authz.subject.type === "human"
+              ? authz.subject.role
+              : authz.subject.principalType,
+          action: "n8n.emit",
+          permission: "n8n.emit",
+          result: "ok",
+          ip,
+          metadata: { event },
+        });
+        return withCors(req, NextResponse.json({ event, ...result }));
       } catch (e: any) {
         if (e.code === "NO_WEBHOOK") {
           return withCors(
@@ -284,15 +323,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!(await okAuth(req))) {
-      return withCors(
-        req,
-        NextResponse.json(
-          { error: "No autorizado" },
-          { status: 401 }
-        )
-      );
-    }
+    const authzWrite = await authorize(req, "n8n.write_crm");
+    if (!authzWrite.ok) return authzWrite.res;
 
     if (action === "update_lead") {
       if (!body.id || !body.patch || typeof body.patch !== "object") {
@@ -315,6 +347,20 @@ export async function POST(req: NextRequest) {
         "leads?id=eq." + encodeURIComponent(String(body.id)),
         { method: "PATCH", body: patch }
       );
+      await writeAuditEvent({
+        actorType: authzWrite.subject.type === "machine" ? "machine" : "human",
+        actorId: authzWrite.subject.id,
+        actorRole:
+          authzWrite.subject.type === "human"
+            ? authzWrite.subject.role
+            : authzWrite.subject.principalType,
+        action: "n8n.update_lead",
+        permission: "n8n.write_crm",
+        resourceType: "lead",
+        resourceId: String(body.id),
+        result: "ok",
+        ip,
+      });
       return withCors(req, NextResponse.json({ ok: true, data }));
     }
 
@@ -338,6 +384,19 @@ export async function POST(req: NextRequest) {
       const data = await supabaseRest("clientes", {
         method: "POST",
         body: payload,
+      });
+      await writeAuditEvent({
+        actorType: authzWrite.subject.type === "machine" ? "machine" : "human",
+        actorId: authzWrite.subject.id,
+        actorRole:
+          authzWrite.subject.type === "human"
+            ? authzWrite.subject.role
+            : authzWrite.subject.principalType,
+        action: "n8n.create_cliente",
+        permission: "n8n.write_crm",
+        resourceType: "cliente",
+        result: "ok",
+        ip,
       });
       return withCors(req, NextResponse.json({ ok: true, data }));
     }
@@ -363,6 +422,20 @@ export async function POST(req: NextRequest) {
         "clientes?id=eq." + encodeURIComponent(String(body.id)),
         { method: "PATCH", body: patch }
       );
+      await writeAuditEvent({
+        actorType: authzWrite.subject.type === "machine" ? "machine" : "human",
+        actorId: authzWrite.subject.id,
+        actorRole:
+          authzWrite.subject.type === "human"
+            ? authzWrite.subject.role
+            : authzWrite.subject.principalType,
+        action: "n8n.update_cliente",
+        permission: "n8n.write_crm",
+        resourceType: "cliente",
+        resourceId: String(body.id),
+        result: "ok",
+        ip,
+      });
       return withCors(req, NextResponse.json({ ok: true, data }));
     }
 

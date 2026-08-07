@@ -41,12 +41,8 @@ const DEFAULTS = {
 };
 
 function key() {
-  return String(
-    process.env.SUPABASE_ANON_KEY ||
-      process.env.SUPABASE_SERVICE_ROLE_KEY ||
-      process.env.SUPABASE_SECRET_KEY ||
-      ""
-  ).trim();
+  // Public read path: anon key only (never service role fallback).
+  return String(process.env.SUPABASE_ANON_KEY || "").trim();
 }
 
 export async function GET() {

@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  clientIpFromHeaders,
+  rateLimit,
+  writeAuditEvent,
+} from "@/core/security";
 
 const ALLOWED_ORIGINS = [
   "https://www.altivoxai.es",
@@ -9,7 +14,6 @@ const ALLOWED_ORIGINS = [
 
 const MAX_MESSAGE_CHARS = 1000;
 const MAX_BODY_BYTES = 16 * 1024;
-const rateBucket = new Map<string, { count: number; start: number }>();
 
 const ALLOWED_AGENTS: Record<string, string> = {
   asistente: "Asistente",
@@ -42,24 +46,7 @@ function withCors(req: NextRequest, res: NextResponse): NextResponse {
 }
 
 function clientIp(req: NextRequest): string {
-  const xf = String(req.headers.get("x-forwarded-for") || "")
-    .split(",")[0]
-    .trim();
-  return xf || "unknown";
-}
-
-function rateLimit(ip: string): boolean {
-  const now = Date.now();
-  const windowMs = 60 * 1000;
-  const maxHits = 10;
-  const entry = rateBucket.get(ip) || { count: 0, start: now };
-  if (now - entry.start > windowMs) {
-    entry.count = 0;
-    entry.start = now;
-  }
-  entry.count += 1;
-  rateBucket.set(ip, entry);
-  return entry.count <= maxHits;
+  return clientIpFromHeaders(req.headers);
 }
 
 function resolveAgent(raw: unknown): string {
@@ -83,7 +70,16 @@ export async function OPTIONS(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!rateLimit(clientIp(req))) {
+  const ip = clientIp(req);
+  const rl = await rateLimit("chat", ip);
+  if (!rl.success) {
+    await writeAuditEvent({
+      actorType: "anonymous",
+      action: "chat.message",
+      result: "rate_limited",
+      ip,
+      errorCode: rl.reason,
+    });
     return withCors(
       req,
       NextResponse.json(

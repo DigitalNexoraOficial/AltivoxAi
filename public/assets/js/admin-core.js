@@ -96,6 +96,26 @@
       '<div class="sidebar-foot"><a href="/" target="_blank" rel="noopener">Ver web pública →</a></div>';
   }
 
+  async function syncOpsSession(accessToken) {
+    if (!accessToken) return { ok: false, status: 0 };
+    try {
+      var res = await fetch("/api/ops/session", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + accessToken },
+      });
+      var data = await res.json().catch(function () { return {}; });
+      return { ok: res.ok, status: res.status, data: data };
+    } catch (e) {
+      return { ok: false, status: 0, error: String(e && e.message || e) };
+    }
+  }
+
+  async function clearOpsSession() {
+    try {
+      await fetch("/api/ops/session", { method: "DELETE" });
+    } catch (e) {}
+  }
+
   async function requireAuth(sb, emailEl) {
     var res = await sb.auth.getSession();
     if (res.error || !res.data.session) {
@@ -103,8 +123,19 @@
       return null;
     }
     var session = res.data.session;
+    var sync = await syncOpsSession(session.access_token);
+    if (!sync.ok) {
+      await sb.auth.signOut().catch(function () {});
+      await clearOpsSession();
+      var q = sync.status === 403 ? "error=forbidden" : "error=auth_required";
+      window.location.href = "login.html?" + q;
+      return null;
+    }
     var email = session.user && session.user.email;
     if (emailEl && email) emailEl.textContent = email;
+    if (sync.data && sync.data.user && sync.data.user.role && emailEl) {
+      emailEl.textContent = email + " · " + sync.data.user.role;
+    }
     if (global.AltivoxN8n && global.AltivoxN8n.setAuthToken) {
       global.AltivoxN8n.setAuthToken(session.access_token);
     }
@@ -112,11 +143,14 @@
       if (global.AltivoxN8n && global.AltivoxN8n.setAuthToken) {
         global.AltivoxN8n.setAuthToken(next && next.access_token ? next.access_token : null);
       }
+      if (next && next.access_token) syncOpsSession(next.access_token);
+      else clearOpsSession();
     });
     return session;
   }
 
   async function logout(sb) {
+    await clearOpsSession();
     await sb.auth.signOut();
     window.location.href = "login.html";
   }
