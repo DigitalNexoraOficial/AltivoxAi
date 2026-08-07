@@ -93,7 +93,13 @@
       var syncBody = await sync.json().catch(function () { return {}; });
       if (!sync.ok) {
         await sb.auth.signOut().catch(function () {});
-        if (sync.status === 403) {
+        if (sync.status === 429) {
+          setStatus(
+            (syncBody && syncBody.message) ||
+              "Demasiados intentos. Espera ~15 minutos y no pulses varias veces.",
+            false
+          );
+        } else if (sync.status === 403) {
           setStatus(
             (syncBody && syncBody.message) ||
               "Cuenta sin rol staff. Pide a un SuperAdmin que asigne app_metadata.role.",
@@ -133,7 +139,22 @@
         headers: { Authorization: "Bearer " + res.data.session.access_token },
       });
       if (sync.ok) {
-        window.location.href = "dashboard.html";
+        var params = new URLSearchParams(window.location.search);
+        var next = params.get("next") || "dashboard.html";
+        if (next.indexOf("/") === 0 && next.indexOf("//") !== 0) {
+          window.location.href = next;
+        } else if (next.indexOf("/") !== 0 && next.indexOf("http") !== 0) {
+          window.location.href = next;
+        } else {
+          window.location.href = "dashboard.html";
+        }
+        return;
+      }
+      if (sync.status === 429) {
+        setStatus(
+          "Demasiados intentos de sesión. Espera unos minutos sin recargar esta página.",
+          false
+        );
       }
     }
   }).catch(function () {});
