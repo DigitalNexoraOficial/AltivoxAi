@@ -18,8 +18,19 @@ export async function POST(req: NextRequest) {
   const { user, ip } = gate;
   try {
     const body = await readJson(req);
+    const agentId = String(body.agentId || "");
+    // Delivery agents only run via Encargos approve gate (use-cases), never HTTP create.
+    if (agentId.startsWith("delivery.")) {
+      return NextResponse.json(
+        {
+          error: "forbidden",
+          message: "delivery_agents_encargo_only",
+        },
+        { status: 403 }
+      );
+    }
     const run = await createAgentRun(user.subject, {
-      agentId: String(body.agentId || ""),
+      agentId,
       projectId:
         body.projectId === undefined || body.projectId === null
           ? null

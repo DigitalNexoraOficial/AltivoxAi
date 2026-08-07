@@ -230,6 +230,16 @@ export async function proposeStep(
   }
 
   const steps = await store.listSteps(encargoId);
+  const blockers = steps.filter(
+    (s) => s.sortOrder < step.sortOrder && s.status !== "done"
+  );
+  if (blockers.length) {
+    throw new EncargoError(
+      "conflict",
+      `prior_steps_incomplete:${blockers.map((b) => b.role).join(",")}`
+    );
+  }
+
   const prior = steps
     .filter((s) => s.sortOrder < step.sortOrder && s.output)
     .map((s) => `[${s.role}]\n${s.output}`)
@@ -286,6 +296,17 @@ export async function approveStep(
   }
   if (step.status !== "proposed") {
     throw new EncargoError("gate_required", "step_must_be_proposed");
+  }
+
+  const allSteps = await store.listSteps(encargoId);
+  const priorIncomplete = allSteps.filter(
+    (s) => s.sortOrder < step.sortOrder && s.status !== "done"
+  );
+  if (priorIncomplete.length) {
+    throw new EncargoError(
+      "conflict",
+      `prior_steps_incomplete:${priorIncomplete.map((b) => b.role).join(",")}`
+    );
   }
 
   await store.updateStep(step.id, { status: "approved" });

@@ -58,6 +58,19 @@ export async function POST(
         { status: 400 }
       );
     }
+    const existing = await getAgentRun(user.subject, id);
+    if (
+      existing.agentId.startsWith("delivery.") &&
+      existing.input?.humanApproved !== true
+    ) {
+      return NextResponse.json(
+        {
+          error: "forbidden",
+          message: "delivery_run_requires_human_ok",
+        },
+        { status: 403 }
+      );
+    }
     const run = await executeAgentRun(user.subject, id);
     await auditOk(user, ip, "agent.run.execute", "agent.execute", id);
     return NextResponse.json({ run });

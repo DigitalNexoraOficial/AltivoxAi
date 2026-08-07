@@ -19,17 +19,9 @@ import {
   type OpsLead,
 } from "@/lib/ops-api";
 
-const DEFAULT_SERVICES: OpsEncargoService[] = [
-  {
-    key: "web",
-    label: "Página web / landing",
-    hint: "Sitio o landing funcional según brief",
-  },
-  {
-    key: "chatbot",
-    label: "Chatbot",
-    hint: "Asistente conversacional",
-  },
+const SERVICES: OpsEncargoService[] = [
+  { key: "web", label: "Web / landing", hint: "Página o sitio según el brief" },
+  { key: "chatbot", label: "Chatbot", hint: "Asistente conversacional" },
   {
     key: "automation",
     label: "Automatización",
@@ -46,25 +38,19 @@ function guessServiceKey(text: string): string {
 }
 
 function roleLabel(role: string): string {
-  switch (role) {
-    case "reasoning":
-      return "Razonamiento";
-    case "design":
-      return "Diseño";
-    case "code":
-      return "Código";
-    case "qa":
-      return "QA";
-    default:
-      return role;
-  }
+  const map: Record<string, string> = {
+    reasoning: "1 · Razonamiento",
+    design: "2 · Diseño",
+    code: "3 · Código",
+    qa: "4 · QA",
+  };
+  return map[role] || role;
 }
 
 export default function OpsEncargosPage() {
   const { can, loading: sessionLoading } = useOpsSession();
   const [clients, setClients] = useState<OpsClient[]>([]);
   const [leads, setLeads] = useState<OpsLead[]>([]);
-  const [services, setServices] = useState<OpsEncargoService[]>(DEFAULT_SERVICES);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -73,9 +59,9 @@ export default function OpsEncargosPage() {
   const [serviceKey, setServiceKey] = useState("");
   const [detectedService, setDetectedService] = useState("");
   const [description, setDescription] = useState("");
-  const [phase, setPhase] = useState<"wizard" | "console">("wizard");
+  const [phase, setPhase] = useState<"brief" | "run">("brief");
   const [view, setView] = useState<OpsEncargoView | null>(null);
-  const [consoleLog, setConsoleLog] = useState<string[]>([]);
+  const [filter, setFilter] = useState("");
 
   const selectedClient = useMemo(
     () => clients.find((c) => c.id === selectedClientId) || null,
@@ -83,25 +69,30 @@ export default function OpsEncargosPage() {
   );
 
   const linkedLead = useMemo(() => {
-    if (!selectedClient?.leadId) {
-      // soft match by email
-      if (!selectedClient?.email) return null;
-      return (
-        leads.find(
-          (l) =>
-            l.email &&
-            l.email.toLowerCase() === selectedClient.email.toLowerCase()
-        ) || null
-      );
+    if (!selectedClient) return null;
+    if (selectedClient.leadId) {
+      return leads.find((l) => l.id === selectedClient.leadId) || null;
     }
-    return leads.find((l) => l.id === selectedClient.leadId) || null;
+    if (!selectedClient.email) return null;
+    return (
+      leads.find(
+        (l) =>
+          l.email &&
+          l.email.toLowerCase() === selectedClient.email.toLowerCase()
+      ) || null
+    );
   }, [selectedClient, leads]);
 
+  const filteredClients = useMemo(() => {
+    const q = filter.trim().toLowerCase();
+    if (!q) return clients;
+    return clients.filter((c) =>
+      `${c.nombre} ${c.empresa} ${c.email}`.toLowerCase().includes(q)
+    );
+  }, [clients, filter]);
+
   const canContinue = Boolean(
-    selectedClientId &&
-      serviceKey &&
-      description.trim().length >= 8 &&
-      !busy
+    selectedClientId && serviceKey && description.trim().length >= 8 && !busy
   );
 
   const load = useCallback(async () => {
@@ -111,13 +102,9 @@ export default function OpsEncargosPage() {
       const [c, l] = await Promise.all([listClients(), listLeads()]);
       setClients(c);
       setLeads(l);
-      setServices(DEFAULT_SERVICES);
     } catch (e) {
-      if (e instanceof OpsApiError) {
-        setError(`${e.code}: ${e.message}`);
-      } else {
-        setError("No se pudo cargar clientes/leads");
-      }
+      if (e instanceof OpsApiError) setError(`${e.code}: ${e.message}`);
+      else setError("No se pudo cargar clientes");
     } finally {
       setLoading(false);
     }
@@ -132,50 +119,19 @@ export default function OpsEncargosPage() {
       setDetectedService("");
       return;
     }
-    const fromNotas = selectedClient.notas || "";
     const fromLead = linkedLead
       ? `${linkedLead.tipoInteres} ${linkedLead.mensaje}`
       : "";
-    const guess = guessServiceKey(`${fromNotas} ${fromLead}`);
+    const guess = guessServiceKey(`${selectedClient.notas} ${fromLead}`);
     setDetectedService(guess);
-    if (guess && !serviceKey) setServiceKey(guess);
-    if (!description.trim()) {
-      const msg =
-        linkedLead?.mensaje?.trim() ||
-        selectedClient.notas?.trim() ||
-        "";
-      if (msg) setDescription(msg);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when client changes
-  }, [selectedClientId, linkedLead?.id]);
-
-  function appendLog(line: string) {
-    setConsoleLog((prev) => [...prev, line]);
-  }
+    if (guess) setServiceKey(guess);
+    const msg =
+      linkedLead?.mensaje?.trim() || selectedClient.notas?.trim() || "";
+    if (msg) setDescription(msg);
+  }, [selectedClientId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function syncView(next: OpsEncargoView) {
     setView(next);
-    const lines: string[] = [
-      `Encargo ${next.encargo.id}`,
-      `Cliente: ${next.encargo.clientName}`,
-      `Servicio: ${next.encargo.serviceLabel} (${next.encargo.serviceKey})`,
-      `Estado: ${next.encargo.status}`,
-      next.encargo.projectId
-        ? `Proyecto PE: ${next.encargo.projectId}`
-        : "Proyecto PE: (pendiente)",
-      "———",
-    ];
-    for (const s of next.steps) {
-      lines.push(`▸ [${s.role}] ${s.agentId} · ${s.status}`);
-      if (s.proposal) {
-        lines.push(`PROPUESTA (requiere tu OK):\n${s.proposal}`);
-      }
-      if (s.output) {
-        lines.push(`SALIDA:\n${s.output}`);
-      }
-      lines.push("———");
-    }
-    setConsoleLog(lines);
   }
 
   async function onContinue() {
@@ -183,7 +139,6 @@ export default function OpsEncargosPage() {
     setBusy(true);
     setError(null);
     try {
-      appendLog("Creando encargo…");
       const created = await createEncargo({
         clientId: selectedClient.id,
         clientName: selectedClient.nombre,
@@ -191,16 +146,12 @@ export default function OpsEncargosPage() {
         serviceKey,
         description: description.trim(),
       });
-      appendLog("Encargo creado. Arrancando orquestación (propuesta del primer agente)…");
       const continued = await continueEncargo(created.encargo.id);
       syncView(continued);
-      setPhase("console");
+      setPhase("run");
     } catch (e) {
-      if (e instanceof OpsApiError) {
-        setError(`${e.code}: ${e.message}`);
-      } else {
-        setError("No se pudo continuar el encargo");
-      }
+      if (e instanceof OpsApiError) setError(`${e.code}: ${e.message}`);
+      else setError("No se pudo iniciar el encargo");
     } finally {
       setBusy(false);
     }
@@ -211,9 +162,7 @@ export default function OpsEncargosPage() {
     setBusy(true);
     setError(null);
     try {
-      appendLog(`OK humano → aprobando paso ${stepId}…`);
-      const next = await approveEncargoStep(view.encargo.id, stepId);
-      syncView(next);
+      syncView(await approveEncargoStep(view.encargo.id, stepId));
     } catch (e) {
       if (e instanceof OpsApiError) setError(`${e.code}: ${e.message}`);
       else setError("Error al aprobar");
@@ -232,9 +181,7 @@ export default function OpsEncargosPage() {
     setBusy(true);
     setError(null);
     try {
-      appendLog(`Rechazo humano → paso ${stepId}`);
-      const next = await rejectEncargoStep(view.encargo.id, stepId);
-      syncView(next);
+      syncView(await rejectEncargoStep(view.encargo.id, stepId));
     } catch (e) {
       if (e instanceof OpsApiError) setError(`${e.code}: ${e.message}`);
       else setError("Error al rechazar");
@@ -248,8 +195,7 @@ export default function OpsEncargosPage() {
     setBusy(true);
     setError(null);
     try {
-      const next = await proposeEncargoStep(view.encargo.id, stepId);
-      syncView(next);
+      syncView(await proposeEncargoStep(view.encargo.id, stepId));
     } catch (e) {
       if (e instanceof OpsApiError) setError(`${e.code}: ${e.message}`);
       else setError("Error al re-proponer");
@@ -259,7 +205,7 @@ export default function OpsEncargosPage() {
   }
 
   if (sessionLoading || loading) {
-    return <p className="ops-muted">Cargando encargos…</p>;
+    return <p className="ops-muted">Cargando Encargos…</p>;
   }
 
   return (
@@ -272,48 +218,48 @@ export default function OpsEncargosPage() {
       />
       <h1 className="ops-page-title">Encargos</h1>
       <p className="ops-lede">
-        Selecciona cliente → servicio → descripción → Continuar. Los agentes
-        solo proponen; <strong>nada se implementa sin tu OK</strong>.
+        Elige cliente, servicio y brief. Los agentes proponen; tú das el OK
+        antes de cada implementación.
       </p>
 
       {error ? <div className="ops-error">{error}</div> : null}
 
-      <ul className="ops-wizard-steps" aria-label="Fases">
-        <li className={phase === "wizard" ? "is-active" : "is-done"}>
-          1 · Brief
+      <ul className="ops-wizard-steps">
+        <li className={phase === "brief" ? "is-active" : "is-done"}>
+          Brief
         </li>
-        <li className={phase === "console" ? "is-active" : ""}>
-          2 · Orquestación
-        </li>
+        <li className={phase === "run" ? "is-active" : ""}>Agentes</li>
       </ul>
 
-      {phase === "wizard" ? (
+      {phase === "brief" ? (
         <div className="ops-stack">
           <section className="ops-panel">
-            <h2>1 · Cliente</h2>
-            <p className="ops-help">
-              Clientes con ID en CRM. Al seleccionar, se intenta detectar el
-              servicio y rellenar la descripción desde el lead vinculado o
-              notas.
-            </p>
-            {clients.length === 0 ? (
+            <h2>Cliente</h2>
+            <div className="ops-form-row">
+              <label htmlFor="enc-search">Buscar</label>
+              <input
+                id="enc-search"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                placeholder="Nombre, empresa o email"
+              />
+            </div>
+            {filteredClients.length === 0 ? (
               <p className="ops-muted">
-                No hay clientes. Crea uno en Clientes (legacy) o vía CRM y
-                recarga.
+                No hay clientes. Créalos en Clientes (menú) y vuelve aquí.
               </p>
             ) : (
-              <div style={{ overflowX: "auto" }}>
+              <div style={{ overflowX: "auto", marginTop: "0.75rem" }}>
                 <table className="ops-table">
                   <thead>
                     <tr>
                       <th>Nombre</th>
                       <th>Empresa</th>
                       <th>Email</th>
-                      <th>Origen</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {clients.map((c) => (
+                    {filteredClients.map((c) => (
                       <tr
                         key={c.id}
                         className={
@@ -323,11 +269,9 @@ export default function OpsEncargosPage() {
                       >
                         <td>
                           <strong>{c.nombre}</strong>
-                          <div className="ops-mono">{c.id}</div>
                         </td>
                         <td>{c.empresa || "—"}</td>
                         <td className="ops-mono">{c.email || "—"}</td>
-                        <td>{c.origen || "—"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -337,23 +281,19 @@ export default function OpsEncargosPage() {
           </section>
 
           <section className="ops-panel">
-            <h2>2 · Servicio</h2>
-            {selectedClient ? (
+            <h2>Servicio</h2>
+            {!selectedClient ? (
+              <p className="ops-muted">Selecciona un cliente arriba.</p>
+            ) : (
               <>
                 <p className="ops-help">
                   Cliente: <strong>{selectedClient.nombre}</strong>
-                  {detectedService ? (
-                    <>
-                      {" "}
-                      · Detectado:{" "}
-                      <span className="ops-mono">{detectedService}</span>
-                    </>
-                  ) : (
-                    " · Sin detección automática — elige abajo"
-                  )}
+                  {detectedService
+                    ? ` · sugerido: ${detectedService}`
+                    : " · elige el servicio"}
                 </p>
                 <div className="ops-form-row">
-                  <label htmlFor="enc-service">Servicio a entregar</label>
+                  <label htmlFor="enc-service">Qué vamos a entregar</label>
                   <select
                     id="enc-service"
                     value={serviceKey}
@@ -361,55 +301,36 @@ export default function OpsEncargosPage() {
                     disabled={busy}
                   >
                     <option value="">Seleccionar…</option>
-                    {services.map((s) => (
+                    {SERVICES.map((s) => (
                       <option key={s.key} value={s.key}>
                         {s.label}
                       </option>
                     ))}
                   </select>
-                  <p className="ops-field-hint">
-                    {services.find((s) => s.key === serviceKey)?.hint ||
-                      "Elige el servicio que vamos a realizar."}
-                  </p>
                 </div>
               </>
-            ) : (
-              <p className="ops-muted">Selecciona un cliente primero.</p>
             )}
           </section>
 
           <section className="ops-panel">
-            <h2>3 · Descripción / comentario</h2>
+            <h2>Descripción</h2>
             <p className="ops-help">
-              Brief del cliente (lead, chat, email) o el que escribas tú. Mínimo
-              8 caracteres.
+              Comentario del cliente (lead/chat) o lo que indiques tú.
             </p>
             <div className="ops-form-row">
-              <label htmlFor="enc-desc">Descripción del encargo</label>
+              <label htmlFor="enc-desc">Brief</label>
               <textarea
                 id="enc-desc"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={busy || !selectedClientId}
-                rows={6}
-                placeholder="Qué necesita el cliente, tono, secciones, plazos…"
+                rows={5}
+                placeholder="Qué necesita, estilo, secciones, tono…"
               />
-              {linkedLead ? (
-                <p className="ops-field-hint">
-                  Lead vinculado: {linkedLead.tipoInteres || "sin tipo"} ·{" "}
-                  {linkedLead.fuente || "fuente?"}
-                </p>
-              ) : null}
             </div>
           </section>
 
           <section className="ops-panel">
-            <h2>4 · Continuar</h2>
-            <p className="ops-help">
-              El botón verde solo se activa con cliente + servicio +
-              descripción válidos. Luego verás la consola de agentes; cada paso
-              espera tu aprobación.
-            </p>
             <div className="ops-form-actions">
               <button
                 type="button"
@@ -417,105 +338,110 @@ export default function OpsEncargosPage() {
                 disabled={!canContinue || !can("project.create")}
                 onClick={() => void onContinue()}
               >
-                {busy ? "Procesando…" : "Continuar"}
+                {busy ? "Iniciando…" : "Continuar"}
               </button>
             </div>
-            {!can("project.create") ? (
-              <p className="ops-muted">Sin permiso project.create</p>
+            {!canContinue && selectedClientId ? (
+              <p className="ops-field-hint">
+                Completa servicio y una descripción de al menos 8 caracteres.
+              </p>
             ) : null}
           </section>
         </div>
       ) : (
         <div className="ops-stack">
           <section className="ops-panel">
-            <h2>Orquestación · consola</h2>
+            <h2>
+              {view?.encargo.clientName} · {view?.encargo.serviceLabel}
+            </h2>
             <p className="ops-help">
-              Jarvis/tú orquestáis. Los agentes proponen; al pulsar{" "}
-              <strong>Aprobar</strong> implementan. <strong>Rechazar</strong>{" "}
-              bloquea ese paso hasta nueva propuesta.
+              Estado: <span className="ops-status">{view?.encargo.status}</span>
+              {view?.encargo.projectId ? (
+                <>
+                  {" "}
+                  · Proyecto{" "}
+                  <span className="ops-mono">{view.encargo.projectId}</span>
+                </>
+              ) : null}
             </p>
-            <pre className="ops-console" aria-live="polite">
-              {consoleLog.join("\n\n") || "Sin actividad aún."}
-            </pre>
+            <p className="ops-callout">
+              Nada se implementa sin pulsar <strong>Aprobar</strong>. Rechazar
+              pide una nueva propuesta.
+            </p>
             <div className="ops-form-actions" style={{ marginTop: "0.75rem" }}>
               <button
                 type="button"
                 className="ops-btn ops-btn-ghost"
                 disabled={busy}
                 onClick={() => {
-                  setPhase("wizard");
+                  setPhase("brief");
                   setView(null);
-                  setConsoleLog([]);
                 }}
               >
-                Nuevo encargo
+                ← Nuevo encargo
               </button>
             </div>
           </section>
 
-          <section className="ops-panel">
-            <h2>Pasos de agentes</h2>
-            {!view?.steps.length ? (
-              <p className="ops-muted">Sin pasos.</p>
-            ) : (
-              view.steps.map((s) => (
-                <div
-                  key={s.id}
-                  className={
-                    "ops-step-card" +
-                    (s.status === "proposed"
-                      ? " is-proposed"
-                      : s.status === "done"
-                        ? " is-done"
-                        : "")
-                  }
-                >
-                  <strong>
-                    {roleLabel(s.role)} · {s.status}
-                  </strong>
-                  <div className="ops-mono">{s.agentId}</div>
-                  {s.proposal ? (
-                    <p className="ops-help" style={{ marginTop: "0.5rem" }}>
-                      {s.proposal.slice(0, 600)}
-                      {s.proposal.length > 600 ? "…" : ""}
-                    </p>
-                  ) : null}
-                  <div className="ops-form-actions">
-                    {s.status === "proposed" ? (
-                      <>
-                        <button
-                          type="button"
-                          className="ops-btn ops-btn-go"
-                          disabled={busy || !can("agent.execute")}
-                          onClick={() => void onApprove(s.id)}
-                        >
-                          Aprobar e implementar
-                        </button>
-                        <button
-                          type="button"
-                          className="ops-btn ops-btn-danger"
-                          disabled={busy}
-                          onClick={() => void onReject(s.id)}
-                        >
-                          Rechazar
-                        </button>
-                      </>
-                    ) : null}
-                    {s.status === "rejected" || s.status === "failed" ? (
-                      <button
-                        type="button"
-                        className="ops-btn"
-                        disabled={busy}
-                        onClick={() => void onRepropose(s.id)}
-                      >
-                        Nueva propuesta
-                      </button>
-                    ) : null}
-                  </div>
-                </div>
-              ))
-            )}
-          </section>
+          {view?.steps.map((s) => (
+            <section
+              key={s.id}
+              className={
+                "ops-step-card" +
+                (s.status === "proposed"
+                  ? " is-proposed"
+                  : s.status === "done"
+                    ? " is-done"
+                    : "")
+              }
+            >
+              <strong>
+                {roleLabel(s.role)} · {s.status}
+              </strong>
+              {s.proposal ? (
+                <pre className="ops-console" style={{ marginTop: "0.65rem" }}>
+                  {s.proposal}
+                </pre>
+              ) : null}
+              {s.output ? (
+                <pre className="ops-console" style={{ marginTop: "0.65rem" }}>
+                  {s.output}
+                </pre>
+              ) : null}
+              <div className="ops-form-actions" style={{ marginTop: "0.65rem" }}>
+                {s.status === "proposed" ? (
+                  <>
+                    <button
+                      type="button"
+                      className="ops-btn ops-btn-go"
+                      disabled={busy || !can("agent.execute")}
+                      onClick={() => void onApprove(s.id)}
+                    >
+                      Aprobar
+                    </button>
+                    <button
+                      type="button"
+                      className="ops-btn ops-btn-danger"
+                      disabled={busy}
+                      onClick={() => void onReject(s.id)}
+                    >
+                      Rechazar
+                    </button>
+                  </>
+                ) : null}
+                {s.status === "rejected" || s.status === "failed" ? (
+                  <button
+                    type="button"
+                    className="ops-btn"
+                    disabled={busy}
+                    onClick={() => void onRepropose(s.id)}
+                  >
+                    Nueva propuesta
+                  </button>
+                ) : null}
+              </div>
+            </section>
+          ))}
         </div>
       )}
     </>

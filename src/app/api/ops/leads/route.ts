@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   const { user, ip } = gate;
 
   try {
-    if (!can(user.subject, "lead.read").allowed && !can(user.subject, "project.read").allowed) {
+    if (!can(user.subject, "lead.read").allowed) {
       return NextResponse.json({ error: "forbidden" }, { status: 403 });
     }
 
