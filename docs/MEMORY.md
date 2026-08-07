@@ -126,6 +126,7 @@ Spec: [`core-engines.md`](./core-engines.md).
 | 2026-08-07 | **Prebloque B7-A:** sync docs + ADR-017 (corte Deploy Engine) | ADR-017 |
 | 2026-08 | **Bloque 7:** Deploy Engine + ZIP (ADR-017) | cerrado |
 | 2026-08 | **Hardening post B0–B7:** sync ADR-014…017 · encapsulación Agent Runtime · lead anon+RLS · legacy/ · `.env.example` | hardening |
+| 2026-08 | **P0 production readiness:** docs/production/* (SQL/env/smoke/backup/release/security) | ops docs |
 
 ---
 
@@ -133,6 +134,7 @@ Spec: [`core-engines.md`](./core-engines.md).
 
 Ver [`todo.md`](./todo.md) y [`roadmap.md`](./roadmap.md).  
 **Bloques 0–7 cerrados.** Hardening de cierre aplicado.  
+**Producción:** checklist en [`production/`](./production/README.md) — aplicar SQL/env/Upstash/smoke en entorno.  
 **Próximo:** fases 8–9 (perf/SEO · analítica/facturación) u OK explícito posterior — **sin B8 de motores**.  
 Deploy Engine **implementado** (ZIP interno; sin providers). Review = B6. Agent Runtime interno.  
 Ops entorno: SQL B1/B2/B5 + `review.sql` + `deploy.sql` + Upstash.  

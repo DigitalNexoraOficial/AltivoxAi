@@ -64,9 +64,12 @@ Aplicar `supabase/sql/deploy.sql` en el entorno.
 
 ## 5. Checklist release Altivox (plataforma)
 
+**Detalle P0:** carpeta [`docs/production/`](./production/README.md)  
+(`sql-checklist` · `env-checklist` · `smoke-test` · `backup-plan` · `release-checklist` · `security-audit`).
+
 1. lint + build  
 2. SQL/migraciones aplicadas  
-3. Env completas (`.env.example`)  
+3. Env completas (`.env.example` + `env-checklist.md`)  
 4. Smoke pública: `/`, lead, chat  
 5. Smoke OS (`/ops` B3): login RBAC, proyecto  
 6. Smoke agentes (B5): run interno sin fuga a pública  
