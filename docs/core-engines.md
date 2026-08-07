@@ -75,11 +75,10 @@ Procesos reutilizables.
 
 ---
 
-## 7. Agent Runtime + Service Modules — Bloque 5
+## 7. Agent Runtime + Service Modules — Bloque 5 · **cerrado**
 
 Contrato: [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md).  
-Pendiente de **OK de implementación**.  
-Agent Manager pasa de boundary a **runtime de registro** en B5.
+Código: `src/core/agent-runtime`, `src/core/agent-manager`, Tool/Memory/Capability mínimos, `src/modules/web`, APIs `/api/ops/agents*` · `/api/ops/agent-runs*`.
 
 ---
 
@@ -89,7 +88,7 @@ Agent Manager pasa de boundary a **runtime de registro** en B5.
 2. Project Engine — B2 ✅  
 3. Ops Shell — B3 ✅  
 4. JARVIS + fronteras motores — B4 ✅ (ADR-014)  
-5. **Agent Runtime + service modules** — B5 · ADR-015 (contrato docs; código tras OK)  
+5. **Agent Runtime + service modules** — B5 ✅ (ADR-015)  
 6. **Review Engine + `/r/[token]`** — B6  
 7. **Entrega ZIP + Deployment Engine** — B7  
 

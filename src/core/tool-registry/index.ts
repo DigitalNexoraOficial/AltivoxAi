@@ -1,7 +1,12 @@
 /**
- * Tool Registry — frontier contract (Bloque 4 · ADR-014).
- * No runtime, adapters, or providers in this block.
+ * Tool Registry — public surface (Bloque 5 · ADR-015 mínimo).
  */
-export interface ToolRegistry {
-  readonly __frontier: "ToolRegistry";
-}
+
+export type { ToolRegistry } from "./frontier";
+export {
+  completeLlm,
+  assertToolAllowed,
+  setLlmCompleterForTests,
+  type LlmCompleteInput,
+  type LlmCompleteResult,
+} from "./complete";

@@ -103,10 +103,10 @@ Descubrimiento por manifest; cero `if/else` de servicio en el core.
 | Project Engine (B2) | **Implementado** (ADR-013) |
 | Shell `/ops` + UI Proyectos (B3) | **Implementado** |
 | JARVIS Core + fronteras motores (B4) | **Implementado** (ADR-014 · caller + interfaces) |
-| Agent runtime · service modules | Bloque **5** — contrato ADR-015 · **código pendiente de OK** |
+| Agent runtime · service modules | **Implementado** (ADR-015 · sin UI completa) |
 | `/r/[token]` · Review Engine | Bloque **6** — no B5 |
 | Deploy / ZIP | Bloque **7** — no B5 |
-| Extensión modular formal | **No implementado** (B5 · ADR-015) |
+| Extensión modular formal | **Parcial** — módulo `web` (B5) |
 
 La auditoría histórica de la landing permanece como contexto en el historial git; el **norte de diseño** es este documento + product-vision.
 

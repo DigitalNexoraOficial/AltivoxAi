@@ -17,7 +17,7 @@ B4: [`ADR-014`](./adr/ADR-014-bloque-4-jarvis-motores-interfaces.md) · B5: [`AD
 | **B4-A** | Sync docs JARVIS + motores (interfaces) | Completado (ADR-014) |
 | **4** | JARVIS + resto de motores (interfaces) | **Cerrado** (ADR-014) |
 | **B5-A** | Sync docs Agent Runtime + módulos | **Completado** (ADR-015) |
-| **5** | Agent runtime + service modules | Pendiente de **aprobación de implementación** |
+| **5** | Agent runtime + service modules | **Cerrado** (ADR-015 · Agent Runtime + módulo web + Tool/Memory/Capability mínimos) |
 | **6** | Review Engine + `/r/[token]` | Pendiente (después de B5) |
 | **7** | Entrega ZIP + Deployment Engine | Pendiente (después de B6) |
 
@@ -49,15 +49,13 @@ APIs `/api/ops/projects*` · sin review/deploy/capabilities/agents.
 
 ---
 
-## Fase 5 — Agent runtime + service modules
+## Fase 5 — Agent runtime + service modules · **cerrada**
 
 **Contrato:** [`ADR-015`](./adr/ADR-015-bloque-5-agent-runtime.md)
 
-**Incluye (recorte):** Agent Runtime · Agent Manager runtime · un primer service module · integración JARVIS · Tool/Memory/Capability **mínimos** según ADR-015.
+**Implementado:** Agent Runtime · Agent Manager runtime · módulo `web` · Tool `llm.complete` · Memory/Capability mínimos · JARVIS intenciones agente · APIs `/api/ops/agents*` · `/api/ops/agent-runs*`.
 
-**No es Fase 5:** Review · `/r/[token]` · Deploy · ZIP · Workflow runtime · Tool Registry de vendors de entrega · CRM · chat como agente.
-
-*Implementación de código: solo tras OK explícito. B5-A solo sincronizó docs.*
+**No es Fase 5:** Review · `/r/[token]` · Deploy · ZIP · Workflow runtime · Tool vendors de entrega · CRM · chat como agente · UI completa de agentes.
 
 ---
 

@@ -11,7 +11,8 @@
     "test:project-engine": "npx --yes tsx src/core/project-engine/project-engine.selftest.ts",
     "test:jarvis": "npx --yes tsx src/core/jarvis/jarvis.selftest.ts",
     "test:engines-contracts": "npx --yes tsx src/core/engines-contracts.selftest.ts",
-    "test:core": "npm run test:security && npm run test:project-engine && npm run test:jarvis && npm run test:engines-contracts"
+    "test:agent-runtime": "ALTIVOX_SELFTEST=1 npx --yes tsx src/core/agent-runtime/agent-runtime.selftest.ts",
+    "test:core": "npm run test:security && npm run test:project-engine && npm run test:jarvis && npm run test:engines-contracts && npm run test:agent-runtime"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
