@@ -1,10 +1,13 @@
 /**
  * Package blob store for deployment ZIPs (Bloque 7 · ADR-017).
  * Memory for selftests; filesystem when not in selftest (no vendors).
+ *
+ * On Vercel/Lambda only `/tmp` is writable — never mkdir under `/var/task`.
  */
 
 import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync, existsSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DeployError } from "../errors";
 
@@ -23,10 +26,22 @@ function useMemory(): boolean {
   );
 }
 
+function isServerlessReadonlyFs(): boolean {
+  return Boolean(
+    process.env.VERCEL ||
+      process.env.AWS_LAMBDA_FUNCTION_NAME ||
+      process.env.AWS_EXECUTION_ENV
+  );
+}
+
 function packageRoot(): string {
   const override = String(process.env.ALTIVOX_DEPLOY_PACKAGE_DIR || "").trim();
-  // Statically scoped under cwd so Turbopack does not trace the whole project.
-  return override || join(/*turbopackIgnore: true*/ process.cwd(), ".altivox-packages");
+  if (override) return override;
+  if (isServerlessReadonlyFs()) {
+    return join(/*turbopackIgnore: true*/ tmpdir(), "altivox-packages");
+  }
+  // Local/dev: under cwd so Turbopack does not trace the whole project.
+  return join(/*turbopackIgnore: true*/ process.cwd(), ".altivox-packages");
 }
 
 export function storePackageBlob(
