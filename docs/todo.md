@@ -17,37 +17,40 @@ Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](.
 
 ---
 
-## P0 — Seguridad (Bloque 1 código)
+## P0 — Seguridad (Bloque 1)
 
 | ID | Tarea | Estado |
 |----|-------|--------|
-| T-001…T-006 | RBAC, RLS, middleware, RL, n8n, settings | **done** (código; ops entorno pendiente) |
+| T-001…T-006 | RBAC, RLS, middleware, RL, n8n, settings | **done** (ops entorno pendiente) |
 
 ---
 
-## P0 — Project Engine Bloque 2 (código pendiente OK)
+## P0 — Project Engine (Bloque 2)
 
-| ID | Tarea | Notas |
-|----|-------|-------|
-| T-100 | Schema `projects` + estados B2 | ADR-013 |
-| T-101 | `project_versions` + `deliverables` | |
-| T-102 | `project_events` (dominio) | no audit técnico |
-| T-103 | Use-cases + APIs ops listadas en api.md | sin review/deploy |
-| T-104 | RLS + `can()` en mutaciones | |
+| ID | Tarea | Estado |
+|----|-------|--------|
+| T-100…T-104 | Schema, use-cases, APIs, RLS/`can()` | **done** / cerrado |
+| Harden post-auditoría | RPC atómicas, status guard, approve | **done** |
 
 **Fuera de B2:** review_tokens, deployments, capabilities, agents, TR, workflows, JARVIS runtime.
 
-| T-105 | Interfaces módulo de servicio | core vs plugins |
+---
+
+## P0 — Ops Shell (Bloque 3)
+
+| ID | Tarea | Estado |
+|----|-------|--------|
+| T-200 | Shell `/ops` App Router | **done** |
+| T-200b | UI Proyectos (APIs B2) | **done** |
+| T-200c | Puente legacy HTML CRM/Clientes/Ajustes | **done** |
 
 ---
 
-## P1 — Altivox OS UI (Fase 3)
+## P1 — UI CRM App Router (posterior)
 
 | ID | Tarea | Notas |
 |----|-------|-------|
-| T-200 | Shell `/ops` App Router | Centro operaciones |
-| T-201 | Migrar leads/clientes desde HTML | gradual |
-| T-202 | Pantallas Proyectos / JARVIS stub | |
+| T-201 | Migrar leads/clientes desde HTML | gradual; no en B3 |
 
 ---
 
@@ -56,7 +59,6 @@ Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](.
 | ID | Tarea | Notas |
 |----|-------|-------|
 | T-300 | JARVIS Core como caller de motores | core-engines.md |
-| T-301 | Project Engine | |
 | T-302 | Workflow Engine | |
 | T-303 | Tool Registry | |
 | T-304 | Memory Engine | |
@@ -103,6 +105,7 @@ Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](.
 | ID antiguo | Motivo |
 |------------|--------|
 | T-023 Chat → tools agentes OS | Viola aislamiento público/OS |
+| T-202 JARVIS stub en B3 | Prohibido fingir motores |
 | Plataforma agentes pública | ADR-010 |
 | JARVIS respuesta unificada al visitante | ADR-010 |
 | Portal demo como producto cliente IA | Sustituido por `/r/[token]` |
@@ -113,6 +116,5 @@ Visión: [`product-vision.md`](./product-vision.md) · Roadmap: [`roadmap.md`](.
 
 | Ítem | Ref |
 |------|-----|
-| Docs pre-pivot | PR #5 base |
-| Bloque 0 Altivox OS docs | este cambio |
-| WhatsApp número | PR #4 (paralelo) |
+| Bloque 2 Project Engine | ADR-013 |
+| Bloque 3 Ops Shell | `/ops` + proyectos UI |

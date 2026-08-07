@@ -48,7 +48,7 @@
 | ADR-010 | Pivot Altivox OS | Aceptado |
 | ADR-011 | Cinco motores del núcleo | Aceptado |
 | ADR-012 | Security foundation | Aceptado — [`adr/ADR-012-security-foundation.md`](./adr/ADR-012-security-foundation.md) |
-| **ADR-013** | **Project Engine B2 (recorte)** | **Aceptado (docs)** — [`adr/ADR-013-project-engine.md`](./adr/ADR-013-project-engine.md) |
+| **ADR-013** | **Project Engine B2 (recorte)** | **Aceptado · implementado** — [`adr/ADR-013-project-engine.md`](./adr/ADR-013-project-engine.md) |
 
 ### ADR-005 (enmienda 2026-08-07)
 
@@ -73,7 +73,8 @@ Nuevos servicios = módulos con interfaces (capabilities, workflows, QA, entrega
 ### 5.1 Motores del núcleo (ADR-011 + fases)
 
 Visión: cinco motores.  
-**Implementación actual de dominio (B2):** solo Project Engine recortado (ADR-013).  
+**Dominio en código:** Project Engine recortado (ADR-013 · Bloque 2 cerrado).  
+**UI OS:** shell `/ops` (Bloque 3) consume PE; CRM sigue en HTML temporal.  
 Spec: [`core-engines.md`](./core-engines.md).
 
 ---
@@ -83,9 +84,9 @@ Spec: [`core-engines.md`](./core-engines.md).
 | Área | Path objetivo / actual | Owner |
 |------|------------------------|-------|
 | Pública | `src/app/(public)`, sections | Marketing + Frontend |
-| OS | `src/app/ops` (futuro) | OS + Backend |
+| OS | `src/app/ops` | OS + Frontend |
 | Review | `src/app/r` (futuro) | Delivery |
-| Core | `src/core` (futuro) | Arquitectura |
+| Core | `src/core/security`, `src/core/project-engine` | Arquitectura |
 | Módulos | `src/modules` (futuro) | Por servicio |
 | Admin legacy | `public/*.html` | Temporal |
 | Docs | `docs/` | CTO / arquitectura |
@@ -101,14 +102,17 @@ Spec: [`core-engines.md`](./core-engines.md).
 | 2026-08-07 | **Bloque 0: pivot documental Altivox OS** | ADR-010 |
 | 2026-08-07 | Ampliación núcleo: 5 motores oficiales | ADR-011 |
 | 2026-08 | Bloque 1 seguridad (código) | ADR-012 · rama `cursor/bloque-1-security-4521` |
-| 2026-08-07 | Prebloque B2-A: sync docs + ADR-013 PE recorte | este cambio |
+| 2026-08-07 | Prebloque B2-A: sync docs + ADR-013 PE recorte | docs |
+| 2026-08 | Bloque 2 Project Engine (+ harden) | ADR-013 · cerrado |
+| 2026-08 | Bloque 3 Ops Shell `/ops` + UI proyectos | este cambio |
 
 ---
 
 ## 8. Pendiente de implementación (no docs)
 
 Ver [`todo.md`](./todo.md) y [`roadmap.md`](./roadmap.md).  
-Siguiente bloque de **código** tras validar Bloque 0: **Seguridad OS**.
+Siguiente bloque de **código** tras Bloque 3: **Fase 4 — JARVIS + motores** (interfaces), o migración CRM UI según prioridad del owner.  
+Ops entorno: aplicar SQL B1/B2 + Upstash en producción.
 
 ---
 

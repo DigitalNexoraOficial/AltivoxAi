@@ -1,6 +1,8 @@
 User-agent: *
 Allow: /
 
+Disallow: /ops
+Disallow: /ops/
 Disallow: /login.html
 Disallow: /dashboard.html
 Disallow: /clientes.html
