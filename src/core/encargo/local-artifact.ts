@@ -4,6 +4,10 @@
  */
 
 import type { EncargoServiceKey } from "./types";
+import {
+  buildCinematic3dScrollLandingHtml,
+  defaultCinematicBeats,
+} from "./cinematic-3d-landing";
 import { buildMustangPhotoLandingHtml } from "./mustang-landing";
 
 function escapeHtml(s: string): string {
@@ -168,41 +172,81 @@ function buildChatbotHtml(input: {
 </html>`;
 }
 
-function wantsCinematicCarLanding(description: string): boolean {
+/**
+ * Same trigger as the Mustang cinematic pattern, generalized to any object.
+ * @see .cursor/skills/cinematic-3d-scroll-landing/SKILL.md
+ */
+function wantsCinematic3dLanding(description: string): boolean {
   const d = description.toLowerCase();
-  const hasCar =
-    /mustang|veh[ií]culo|coche|auto|carro|gt\b|deportivo|motor|cap[oó]|puertas|interior/.test(
-      d
-    );
   const hasMotion =
-    /3d|scroll|animaci[oó]n|cinemat|modelaci[oó]n|three|premium|luna|parabrisas|capot|capó/.test(
+    /3d|webgl|gltf|glb|three\.?js|scroll|animaci[oó]n|cinemat|modelaci[oó]n|inmersiv|recorrido|orbita/.test(
       d
     );
-  return hasCar && hasMotion;
+  const hasObject =
+    /mustang|veh[ií]culo|coche|auto|carro|gt\b|deportivo|moto|reloj|zapat|sneaker|botella|perfume|producto|objeto|mueble|furniture|cap[oó]|puertas|interior|luna|parabrisas|motor|landing/.test(
+      d
+    );
+  return hasMotion && hasObject;
 }
 
-function guessCarTitle(description: string, clientName: string): string {
+function trimObjectTitle(raw: string): string {
+  const stop =
+    /\b(?:modelaci[oó]n|animaci[oó]n|scroll|cinemat|landing|premium|webgl|three|gltf|glb|3d|con|para|y)\b/i;
+  const cut = raw.search(stop);
+  const base = (cut > 0 ? raw.slice(0, cut) : raw).trim();
+  return base.replace(/[,\.;:]+$/g, "").trim().slice(0, 48);
+}
+
+function guessObjectTitle(description: string, clientName: string): string {
   const mustang = description.match(/mustang/i);
   if (mustang) {
     const year = description.match(/\b(19\d{2}|20\d{2})\b/);
     const gt = /\bgt\b/i.test(description) ? " GT" : "";
     return `Ford Mustang${gt}${year ? ` ${year[1]}` : ""}`;
   }
-  const model = description.match(
-    /(?:modelo|coche|auto|veh[ií]culo)\s+([A-Za-z0-9][A-Za-z0-9 \-]{2,40})/i
+  const labeled = description.match(
+    /(?:modelo|producto|objeto|reloj|zapatillas?|moto|botella|perfume|coche|auto|veh[ií]culo)\s+([A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9][A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9 \-]{2,60})/i
   );
-  if (model?.[1]) return model[1].trim();
+  if (labeled?.[1]) {
+    const title = trimObjectTitle(labeled[1]);
+    if (title.length >= 2) return title;
+  }
   return clientName || "Edition";
 }
 
-/** Real textured Mustang GLB + WebGL scroll landing. */
-function buildCinematicCarHtml(input: {
+function slugifyObject(title: string): string {
+  return title
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48) || "object";
+}
+
+/** Real textured GLB + WebGL scroll landing (Mustang preset or generic object swap). */
+function buildCinematicObjectHtml(input: {
   clientName: string;
   description: string;
 }): string {
-  return buildMustangPhotoLandingHtml({
-    clientName: input.clientName,
-    carTitle: guessCarTitle(input.description, input.clientName),
+  const title = guessObjectTitle(input.description, input.clientName);
+  if (/mustang/i.test(input.description)) {
+    return buildMustangPhotoLandingHtml({
+      clientName: input.clientName,
+      carTitle: title,
+    });
+  }
+  const slug = slugifyObject(title);
+  return buildCinematic3dScrollLandingHtml({
+    brand: input.clientName || "Altivox",
+    objectTitle: title,
+    loadLabel: `Cargando ${title} 3D`,
+    assetSlug: slug,
+    modelFiles: [`${slug}.glb`],
+    beats: defaultCinematicBeats(title),
+    pinBranch: "main",
+    openPartMeshPattern: "",
+    fpsGlobal: "__cinematicFps",
   });
 }
 
@@ -210,8 +254,8 @@ function buildWebHtml(input: {
   clientName: string;
   description: string;
 }): string {
-  if (wantsCinematicCarLanding(input.description)) {
-    return buildCinematicCarHtml(input);
+  if (wantsCinematic3dLanding(input.description)) {
+    return buildCinematicObjectHtml(input);
   }
   const title = escapeHtml(input.clientName || "Landing");
   const brief = escapeHtml(input.description.slice(0, 400));

@@ -106,8 +106,11 @@ function implementPrompt(
               ? `- JSON de flujo (n8n-like) válido.`
               : [
                   `- HTML autocontenido de landing/web que respete el brief del cliente.`,
-                  `- Si el brief pide 3D, scroll cinematográfico, coche/auto, puertas, interior o motor:`,
-                  `  usa Three.js vía CDN, escena scroll-driven (scrub), y cumple la secuencia pedida.`,
+                  `- Si el brief pide 3D / WebGL / GLB / scroll cinematográfico / modelación (cualquier objeto: coche, reloj, producto…):`,
+                  `  reproduce el patrón Mustang (sticky WebGL + scrub ~360vh + cámara scroll + HUD beats + GLB texturizado real).`,
+                  `  Usa Three.js vía CDN + GLTFLoader. Nunca cubos/primitivos ni embeds Sketchfab como experiencia principal.`,
+                  `  No uses mergeGeometries ni partas la malla para simular puertas; pivotes solo si el GLB tiene piezas separables.`,
+                  `  setPixelRatio(1), sin AA/sombras/envmap. Títulos de venta sincronizados al scroll (beatPanel).`,
                   `- No entregues un hero genérico si el brief describe una experiencia específica.`,
                 ].join("\n"),
           `Obligatorio: envuelve el archivo en un bloque markdown \`\`\`html o \`\`\`json.`,

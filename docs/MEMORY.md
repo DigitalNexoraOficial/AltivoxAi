@@ -131,6 +131,7 @@ Spec: [`core-engines.md`](./core-engines.md).
 | 2026-08 | **Release v0.7.0-b7:** merge release → `main` + tag oficial | release |
 | 2026-08 | **Production activation docs:** ENV/SQL/security/backup/smoke checklists (ops PENDING) | activation |
 | 2026-08 | **Final activation check:** PENDING (sin env/SQL/smoke live) — no ACTIVE inventado | activation |
+| 2026-08 | **Patrón canónico landing 3D scroll** (Mustang → cualquier objeto) memorizado en skill + builder genérico | patterns |
 
 ---
 
@@ -144,8 +145,19 @@ Ops: env · SQL · Upstash · backup · smoke HTTP.
 
 ---
 
-## 9. Cómo actualizar
+## 9. Patrones de entrega reutilizables
+
+| Patrón | Cuándo | Ref |
+|--------|--------|-----|
+| **Landing 3D scroll cinematográfica** | Cliente pide experiencia tipo Mustang (WebGL + scroll + beats) con **cualquier objeto** | [`patterns/cinematic-3d-scroll-landing.md`](./patterns/cinematic-3d-scroll-landing.md) · skill `.cursor/skills/cinematic-3d-scroll-landing/` · `src/core/encargo/cinematic-3d-landing.ts` |
+
+**Regla:** mismo modelo UX que el Mustang; solo se cambia el objeto/GLB/copy/pivote. No reinventar arquitectura.
+
+---
+
+## 10. Cómo actualizar
 
 1. Nueva decisión → ADR en `docs/adr/` + fila aquí.  
 2. Merge relevante → una línea en §7.  
-3. No duplicar specs: enlazar.
+3. No duplicar specs: enlazar.  
+4. Nuevo patrón de entrega recurrente → fila en §9 + skill en `.cursor/skills/`.

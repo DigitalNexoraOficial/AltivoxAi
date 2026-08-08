@@ -131,6 +131,26 @@ async function main() {
     "mustang marketing scroll beats"
   );
 
+  const localWatch = buildLocalImplementation({
+    role: "code",
+    serviceKey: "web",
+    clientName: "ClienteReloj",
+    description:
+      "Landing producto reloj Rolex Submariner modelación 3d animación scroll cinematográfica premium",
+    proposal: "cinematic",
+  });
+  const watchArt = extractPrimaryArtifact(localWatch, "web", "ClienteReloj");
+  assert(watchArt?.kind === "html", "generic object cinematic html");
+  assert(
+    watchArt.content.includes("GLTFLoader") &&
+      watchArt.content.includes("rolex-submariner.glb") &&
+      watchArt.content.includes("setPixelRatio(1)") &&
+      watchArt.content.includes("__cinematicFps") &&
+      !watchArt.content.includes("mergeGeometries") &&
+      /beatPanel|setBeat/i.test(watchArt.content),
+    "generic object reuses cinematic 3d scroll pattern"
+  );
+
   setLlmCompleterForTests(null);
   console.log("encargo.selftest: ok");
 }
