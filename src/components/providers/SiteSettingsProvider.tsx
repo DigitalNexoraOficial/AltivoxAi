@@ -41,7 +41,7 @@ const DEFAULTS: SiteSettings = {
     mark: "ALTIVOXAI",
     tagline: "AI-Native Studio",
     email: "info@altivoxai.es",
-    whatsapp: "34600000000",
+    whatsapp: "34633906519",
   },
   hero: {
     title: "Más leads.",
@@ -52,7 +52,7 @@ const DEFAULTS: SiteSettings = {
   },
   contact: {
     email: "info@altivoxai.es",
-    whatsapp: "34600000000",
+    whatsapp: "34633906519",
     whatsappLabel: "Solicita una reunión",
   },
   flags: {

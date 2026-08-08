@@ -1,16 +1,20 @@
 "use client";
 
 import { useIndustry } from "@/components/providers/IndustryProvider";
+import { useSiteSettings } from "@/components/providers/SiteSettingsProvider";
 
-const WA_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "34600000000";
+const FALLBACK_WA = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "34633906519";
 const CAL_URL = process.env.NEXT_PUBLIC_CAL_URL || "";
 
 export function WhatsAppCTA() {
   const { industry } = useIndustry();
+  const site = useSiteSettings();
+  const waNumber =
+    site.contact.whatsapp || site.brand.whatsapp || FALLBACK_WA;
   const text = encodeURIComponent(
     `Hola Altivox AI. Soy ${industry.label}. Quiero info sobre chatbot/automatización. ${industry.hook}`
   );
-  const href = `https://wa.me/${WA_NUMBER}?text=${text}`;
+  const href = `https://wa.me/${waNumber}?text=${text}`;
 
   return (
     <div className="flex flex-col gap-2">

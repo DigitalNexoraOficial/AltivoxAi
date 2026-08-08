@@ -11,7 +11,7 @@ export function Contact() {
   const [ok, setOk] = useState(false);
   const [loading, setLoading] = useState(false);
   const email = site.contact.email || "info@altivoxai.es";
-  const wa = site.contact.whatsapp || "34600000000";
+  const wa = site.contact.whatsapp || "34633906519";
   const waLabel = site.contact.whatsappLabel || t.contact.waLink;
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {

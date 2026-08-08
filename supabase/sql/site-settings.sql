@@ -26,9 +26,16 @@ using (true)
 with check (true);
 
 insert into public.site_settings (key, value) values
-  ('brand', '{"name":"AltivoxAi","mark":"ALTIVOXAI","tagline":"AI-Native Studio","email":"info@altivoxai.es","whatsapp":"34600000000"}'::jsonb),
+  ('brand', '{"name":"AltivoxAi","mark":"ALTIVOXAI","tagline":"AI-Native Studio","email":"info@altivoxai.es","whatsapp":"34633906519"}'::jsonb),
   ('hero', '{"title":"Más leads.","titleAccent":"Menos trabajo manual","cta1":"Ver ofertas y precios","cta2":"Reservar llamada gratis","risk":"Riesgo bajo · Precio cerrado · Entrega en días, no meses"}'::jsonb),
-  ('contact', '{"email":"info@altivoxai.es","whatsapp":"34600000000","whatsappLabel":"Solicita una reunión"}'::jsonb),
+  ('contact', '{"email":"info@altivoxai.es","whatsapp":"34633906519","whatsappLabel":"Solicita una reunión"}'::jsonb),
   ('flags', '{"chatEnabled":true,"bookingEnabled":true,"leadMagnetEnabled":true,"stickyCtaEnabled":true}'::jsonb),
   ('social', '{"linkedin":"","instagram":"","x":""}'::jsonb)
 on conflict (key) do nothing;
+
+-- Keep WhatsApp in sync if rows already exist from an earlier seed
+update public.site_settings
+set value = jsonb_set(coalesce(value, '{}'::jsonb), '{whatsapp}', '"34633906519"'::jsonb),
+    updated_at = now()
+where key in ('brand', 'contact');
+
