@@ -119,6 +119,11 @@ async function main() {
     "mustang door/hood pivots"
   );
   assert(
+    mustangArt.content.includes("setPixelRatio(1)") &&
+      mustangArt.content.includes("__mustangFps"),
+    "mustang 60fps render path"
+  );
+  assert(
     /puertas|interior|luna|cap[oó]|motor/i.test(mustangArt.content),
     "mustang brief sequence copy"
   );
