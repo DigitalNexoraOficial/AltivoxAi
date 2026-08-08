@@ -1,6 +1,7 @@
 /**
- * Mustang landing: real textured GLB (1965 classic) + scroll-driven Three.js camera.
- * Mesh: Nathan Kenopic / NateKenopic 3d-car (no primitive boxes).
+ * Mustang landing: real textured GLB + scroll-driven cinematic animation.
+ * Sequence (client brief): doors open → interior → out windshield → hood/engine.
+ * Mesh: Nathan Kenopic / NateKenopic 3d-car (doors/hood pivoted at runtime).
  */
 
 function escapeHtml(s: string): string {
@@ -12,16 +13,15 @@ function escapeHtml(s: string): string {
 }
 
 const MODEL = {
-  title: "Ford Mustang 1965",
+  title: "Ford Mustang",
   author: "Nathan Kenopic",
   authorUrl: "https://github.com/NateKenopic",
   sourceUrl: "https://github.com/NateKenopic/3d-car",
 } as const;
 
-/** Prefer prod/self (JPEG GLB), then CDN for Ops blob preview. */
+/** Prefer prod/self, then CDN for Ops blob preview. */
 function modelUrlCandidates(file: string): string[] {
-  /** Branch pin — jsDelivr for blob:// Ops preview (no same-origin /assets). */
-  const pin = "cursor/mustang-textures-prod-4521";
+  const pin = "cursor/mustang-scroll-anim-full-4521";
   const repo = "digitalnexoraoficial/altivoxai";
   return [
     `https://www.altivoxai.es/assets/encargos/mustang/${file}`,
@@ -31,14 +31,14 @@ function modelUrlCandidates(file: string): string[] {
 }
 
 /**
- * Full-bleed WebGL Mustang + scroll narrative (doors → interior → windshield → hood).
+ * Full-bleed WebGL Mustang + scroll narrative matching the client brief.
  */
 export function buildMustangPhotoLandingHtml(input: {
   clientName: string;
   carTitle: string;
 }): string {
   const brand = escapeHtml(input.clientName || "Altivox");
-  const carTitle = escapeHtml(input.carTitle || MODEL.title);
+  const carTitle = escapeHtml(input.carTitle || "Ford Mustang GT 1990");
   const author = escapeHtml(MODEL.author);
   const urlsJson = JSON.stringify([
     ...modelUrlCandidates("mustang.glb"),
@@ -65,7 +65,7 @@ export function buildMustangPhotoLandingHtml(input: {
     --line: rgba(243,240,234,.12);
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: auto; }
   body {
     margin: 0; color: var(--text);
     font-family: "DM Sans", system-ui, sans-serif;
@@ -96,7 +96,7 @@ export function buildMustangPhotoLandingHtml(input: {
     font-family: "Bebas Neue", Impact, sans-serif;
     letter-spacing: .14em; font-size: clamp(1.35rem, 3vw, 1.9rem);
   }
-  .hero-copy { max-width: 22rem; }
+  .hero-copy { max-width: 24rem; }
   .hero-copy .kicker {
     color: var(--accent); text-transform: uppercase; letter-spacing: .16em;
     font-size: 11px; font-weight: 700; margin-bottom: 10px;
@@ -132,14 +132,20 @@ export function buildMustangPhotoLandingHtml(input: {
     display: none; position: absolute; inset: auto 12% 18%; z-index: 4;
     text-align: center; color: #e8b4a0; font-size: 14px;
   }
+  /* Tall scrub track so each beat has room */
+  .scrub {
+    position: relative; z-index: 3;
+    height: 520vh;
+    pointer-events: none;
+  }
   .story {
     position: relative; z-index: 3;
     background: linear-gradient(180deg, transparent, var(--bg) 48px);
-    padding: 12vh 0 18vh;
+    padding: 8vh 0 18vh;
   }
   .beat {
     max-width: 720px; margin: 0 auto;
-    padding: clamp(48px, 10vh, 96px) clamp(18px, 4vw, 40px);
+    padding: clamp(40px, 8vh, 80px) clamp(18px, 4vw, 40px);
     border-top: 1px solid var(--line);
   }
   .beat .n {
@@ -159,6 +165,7 @@ export function buildMustangPhotoLandingHtml(input: {
   .credit a { color: #c9a27a; }
   @media (max-width: 720px) {
     .hint { justify-self: start; }
+    .scrub { height: 480vh; }
   }
 </style>
 </head>
@@ -175,46 +182,46 @@ export function buildMustangPhotoLandingHtml(input: {
       <div>
         <div class="brand">${brand}</div>
         <div class="hero-copy" style="margin-top:18px">
-          <div class="kicker">Modelo 3D · WebGL</div>
+          <div class="kicker">Modelo 3D · animación scroll</div>
           <h1>${carTitle}</h1>
-          <p>Scroll para un recorrido cinematográfico: puertas, habitáculo, luna y capó.</p>
+          <p>Scroll: se abren las puertas, entras al interior, sales por la luna y el capó revela el motor.</p>
         </div>
       </div>
       <div class="hint">Scroll · <span id="beatLabel">Presentación</span></div>
     </div>
   </section>
+  <div class="scrub" aria-hidden="true"></div>
 
   <main class="story">
     <article class="beat" data-beat="0">
       <div class="n">01 · Presentación</div>
       <h2>${carTitle}</h2>
-      <p>Silueta clásica con mesh texturizado de alta densidad — carrocería, faros y líneas de techo reales, no primitivas.</p>
+      <p>Modelo principal en 3D texturizado. El recorrido empieza con la silueta completa del muscle car.</p>
     </article>
     <article class="beat" data-beat="1">
       <div class="n">02 · Puertas</div>
-      <h2>Acceso lateral</h2>
-      <p>La cámara se acerca al flanco del conductor: panel, manilla y proporción del vano frente al pilar.</p>
+      <h2>Conductor y copiloto</h2>
+      <p>Al hacer scroll se abren ambas puertas — acceso lateral al habitáculo, paneles y manillas en movimiento.</p>
     </article>
     <article class="beat" data-beat="2">
       <div class="n">03 · Interior</div>
       <h2>Habitáculo</h2>
-      <p>Entramos hacia la cabina: asientos, salpicadero y el volumen del habitáculo clásico.</p>
+      <p>La cámara entra al interior: asientos, salpicadero y el volumen del cockpit clásico.</p>
     </article>
     <article class="beat" data-beat="3">
       <div class="n">04 · Luna</div>
-      <h2>Parabrisas</h2>
-      <p>Vista frontal a través de la luna: parrilla, óptica y el morro del Mustang.</p>
+      <h2>Salida por el parabrisas</h2>
+      <p>Salimos por la luna delantera hacia el morro: óptica, parrilla y la línea del frontal.</p>
     </article>
     <article class="beat" data-beat="4">
-      <div class="n">05 · Capó</div>
-      <h2>Capó y vano</h2>
-      <p>Plano alto sobre el capó: nervaduras, vano motor y la línea que define el muscle car.</p>
+      <div class="n">05 · Capó y motor</div>
+      <h2>Vista superior</h2>
+      <p>El capó se abre y la cámara baja a vista superior sobre el vano motor.</p>
     </article>
     <p class="credit">
-      Modelo 3D basado en
-      <a href="${MODEL.sourceUrl}" target="_blank" rel="noopener noreferrer">${MODEL.title}</a>
-      por <a href="${MODEL.authorUrl}" target="_blank" rel="noopener noreferrer">${author}</a>
-      · render WebGL Altivox
+      Modelo 3D basado en trabajo de
+      <a href="${MODEL.sourceUrl}" target="_blank" rel="noopener noreferrer">${author}</a>
+      · animación scroll WebGL Altivox
     </p>
   </main>
 <script type="importmap">
@@ -231,7 +238,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 const URLS = ${urlsJson};
-const LABELS = ["Presentación", "Puertas", "Interior", "Luna", "Capó"];
+const LABELS = ["Presentación", "Puertas", "Interior", "Luna", "Capó / motor"];
 
 const canvas = document.getElementById("c");
 const loadEl = document.getElementById("load");
@@ -249,7 +256,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x07080c);
-scene.fog = new THREE.Fog(0x07080c, 8, 28);
+scene.fog = new THREE.Fog(0x07080c, 10, 32);
 
 const camera = new THREE.PerspectiveCamera(40, 1, 0.05, 80);
 const clock = new THREE.Clock();
@@ -273,21 +280,28 @@ scene.add(key);
 const rim = new THREE.DirectionalLight(0x8eb4ff, 0.85);
 rim.position.set(-5, 3, -4);
 scene.add(rim);
-const fill = new THREE.DirectionalLight(0xffc9a0, 0.35);
-fill.position.set(0, 2, -6);
+const fill = new THREE.DirectionalLight(0xffc9a0, 0.45);
+fill.position.set(0, 2.5, -5);
 scene.add(fill);
+const engineLight = new THREE.SpotLight(0xffe0b0, 0, 8, Math.PI / 5, 0.4, 1);
+engineLight.position.set(0, 3.2, 1.2);
+engineLight.target.position.set(0, 0.5, 1.1);
+scene.add(engineLight);
+scene.add(engineLight.target);
 
 const ground = new THREE.Mesh(
   new THREE.CircleGeometry(9, 64),
   new THREE.MeshStandardMaterial({ color: 0x101218, metalness: 0.4, roughness: 0.85 })
 );
 ground.rotation.x = -Math.PI / 2;
-ground.position.y = 0;
 ground.receiveShadow = true;
 scene.add(ground);
 
 const car = new THREE.Group();
 scene.add(car);
+
+/** @type {{ doorL: THREE.Group|null, doorR: THREE.Group|null, hood: THREE.Group|null }} */
+const rig = { doorL: null, doorR: null, hood: null };
 
 function resize() {
   const w = canvas.clientWidth || window.innerWidth;
@@ -300,9 +314,18 @@ resize();
 window.addEventListener("resize", resize);
 
 function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp01(t) { return Math.min(1, Math.max(0, t)); }
 function smoothstep(t) {
-  const x = Math.min(1, Math.max(0, t));
+  const x = clamp01(t);
   return x * x * (3 - 2 * x);
+}
+function smootherstep(t) {
+  const x = clamp01(t);
+  return x * x * x * (x * (x * 6 - 15) + 10);
+}
+/** Map global u into segment [a,b] → 0..1 */
+function seg(u, a, b) {
+  return smootherstep((u - a) / Math.max(1e-6, b - a));
 }
 function catmull(p0, p1, p2, p3, t) {
   const t2 = t * t, t3 = t2 * t;
@@ -329,20 +352,23 @@ function samplePath(pts, u) {
   );
 }
 
-/** Camera + lookAt keyed to scroll narrative */
+/**
+ * Camera path keyed to brief:
+ * 0 present → 1 doors → 2 interior → 3 out windshield → 4 hood/engine top
+ */
 const camPath = [
-  new THREE.Vector3(4.6, 1.55, 5.2),   // presentation 3/4
-  new THREE.Vector3(-3.8, 1.05, 1.4),  // driver door
-  new THREE.Vector3(0.15, 1.05, 0.35), // interior
-  new THREE.Vector3(0.0, 1.15, 5.4),   // windshield / front
-  new THREE.Vector3(0.2, 3.4, 1.1),    // hood top
+  new THREE.Vector3(4.4, 1.5, 4.8),
+  new THREE.Vector3(-4.2, 1.15, 0.9),
+  new THREE.Vector3(0.2, 1.05, 0.15),
+  new THREE.Vector3(0.0, 1.2, 4.6),
+  new THREE.Vector3(0.15, 3.6, 1.35),
 ];
 const lookPath = [
-  new THREE.Vector3(0.1, 0.55, 0.2),
-  new THREE.Vector3(-0.35, 0.7, 0.15),
-  new THREE.Vector3(0.05, 0.85, -0.2),
-  new THREE.Vector3(0.0, 0.75, 0.8),
-  new THREE.Vector3(0.0, 0.55, 0.4),
+  new THREE.Vector3(0.05, 0.55, 0.15),
+  new THREE.Vector3(-0.2, 0.7, 0.05),
+  new THREE.Vector3(0.05, 0.8, -0.15),
+  new THREE.Vector3(0.0, 0.7, 1.0),
+  new THREE.Vector3(0.0, 0.55, 1.15),
 ];
 
 let scrollT = 0;
@@ -352,7 +378,7 @@ let idleSpin = 0;
 
 function scrollProgress() {
   const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-  return Math.min(1, Math.max(0, window.scrollY / max));
+  return clamp01(window.scrollY / max);
 }
 
 window.addEventListener("scroll", () => {
@@ -371,6 +397,114 @@ function fitCar(root) {
   root.updateMatrixWorld(true);
   const box2 = new THREE.Box3().setFromObject(root);
   root.position.y -= box2.min.y;
+  root.updateMatrixWorld(true);
+}
+
+function makePivot(parent, name, hingeWorld) {
+  const pivot = new THREE.Group();
+  pivot.name = name;
+  parent.add(pivot);
+  const local = hingeWorld.clone();
+  parent.worldToLocal(local);
+  pivot.position.copy(local);
+  return pivot;
+}
+
+function inDoorRegion(x, y, z, side) {
+  const xOk = side === "L" ? (x < -0.40 && x > -0.85) : (x > 0.40 && x < 0.85);
+  return xOk && y > 0.22 && y < 1.05 && z > -0.70 && z < 0.85;
+}
+
+function splitDoorFromMesh(mesh, side) {
+  const geom = mesh.geometry;
+  if (!geom || !geom.index) return null;
+  const pos = geom.attributes.position;
+  const idx = geom.index;
+  const world = new THREE.Vector3();
+  const doorTris = [];
+  const keepTris = [];
+  for (let i = 0; i < idx.count; i += 3) {
+    const a = idx.getX(i), b = idx.getX(i + 1), c = idx.getX(i + 2);
+    const pts = [a, b, c].map((vi) => {
+      world.fromBufferAttribute(pos, vi);
+      mesh.localToWorld(world);
+      return world.clone();
+    });
+    // Majority of verts in door volume → belongs to the swinging panel
+    const hits = pts.filter((p) => inDoorRegion(p.x, p.y, p.z, side)).length;
+    if (hits >= 2) doorTris.push(a, b, c);
+    else keepTris.push(a, b, c);
+  }
+  if (doorTris.length < 60) return null;
+  const doorGeom = geom.clone();
+  doorGeom.setIndex(doorTris);
+  doorGeom.computeVertexNormals();
+  const doorMesh = new THREE.Mesh(doorGeom, mesh.material);
+  doorMesh.name = "Door" + side + "_" + mesh.name;
+  doorMesh.castShadow = true;
+  doorMesh.receiveShadow = true;
+  doorMesh.position.copy(mesh.position);
+  doorMesh.quaternion.copy(mesh.quaternion);
+  doorMesh.scale.copy(mesh.scale);
+  geom.setIndex(keepTris);
+  geom.computeVertexNormals();
+  return doorMesh;
+}
+
+/** Build DoorL / DoorR / Hood pivots on fitted car. */
+function rigAnimatableParts(carRoot) {
+  carRoot.updateMatrixWorld(true);
+
+  // Hood (Kapoot)
+  const hoodPivot = makePivot(carRoot, "HoodPivot", new THREE.Vector3(0, 0.62, 0.78));
+  const hoodAttach = [];
+  carRoot.traverse((o) => {
+    if (/^Kapoot_7$|^Rooye_Kapoot|^Rooye Kapoot/i.test(o.name)) hoodAttach.push(o);
+  });
+  hoodAttach.forEach((n) => hoodPivot.attach(n));
+  rig.hood = hoodPivot;
+
+  // Doors — spatial split from body skins
+  const doorL = makePivot(carRoot, "DoorLPivot", new THREE.Vector3(-0.68, 0.55, 0.55));
+  const doorR = makePivot(carRoot, "DoorRPivot", new THREE.Vector3(0.68, 0.55, 0.55));
+  const targets = [];
+  carRoot.traverse((o) => {
+    if (!o.isMesh) return;
+    const key = (o.parent?.name || "") + " " + o.name;
+    if (/Object_245|Object_265|Object_334|Object_368|Front_light7|lockdoor|Door_lock|Miror1001|Miror1/i.test(key)) {
+      targets.push(o);
+    }
+  });
+  for (const mesh of targets) {
+    const parent = mesh.parent;
+    if (!parent) continue;
+    const left = splitDoorFromMesh(mesh, "L");
+    if (left) {
+      parent.add(left);
+      left.updateMatrixWorld(true);
+      doorL.attach(left);
+    }
+    const right = splitDoorFromMesh(mesh, "R");
+    if (right) {
+      parent.add(right);
+      right.updateMatrixWorld(true);
+      doorR.attach(right);
+    }
+  }
+  // Fallback: if split found nothing, still rotate whole side mirrors as cue
+  if (doorL.children.length === 0 || doorR.children.length === 0) {
+    carRoot.traverse((o) => {
+      if (/Miror1001_20|Miror1\.001_20/i.test(o.name)) {
+        // split mirrors by x of children meshes
+        o.updateMatrixWorld(true);
+        const meshes = [];
+        o.traverse((m) => { if (m.isMesh) meshes.push(m); });
+        // attach entire mirror group to both is wrong; skip
+      }
+    });
+  }
+  rig.doorL = doorL;
+  rig.doorR = doorR;
 }
 
 async function loadFirst(urls) {
@@ -406,13 +540,14 @@ try {
         const mats = Array.isArray(o.material) ? o.material : [o.material];
         mats.forEach((m) => {
           if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
-          m.envMapIntensity = 1.1;
+          m.envMapIntensity = 1.15;
         });
       }
     }
   });
   fitCar(gltf.scene);
   car.add(gltf.scene);
+  rigAnimatableParts(car);
   ready = true;
   progEl.style.width = "100%";
   loadEl.dataset.done = "1";
@@ -440,23 +575,48 @@ if ("IntersectionObserver" in window) {
   });
 }
 
+function applyPartAnimation(u) {
+  // Doors open during 0.12–0.38, stay open through interior, start closing after windshield
+  const doorOpen = seg(u, 0.10, 0.32);
+  const doorHold = u < 0.72 ? 1 : 1 - seg(u, 0.72, 0.88);
+  const doorAmt = doorOpen * doorHold;
+  const doorAngle = doorAmt * 1.15; // ~66°
+  if (rig.doorL) rig.doorL.rotation.y = -doorAngle;
+  if (rig.doorR) rig.doorR.rotation.y = doorAngle;
+
+  // Hood opens late: 0.72–0.95
+  const hoodAmt = seg(u, 0.70, 0.92);
+  if (rig.hood) rig.hood.rotation.x = -hoodAmt * 0.95; // open upward
+
+  engineLight.intensity = hoodAmt * 2.4;
+}
+
 function animate() {
   requestAnimationFrame(animate);
   const dt = Math.min(0.05, clock.getDelta());
-  scrollT = lerp(scrollT, targetT, 1 - Math.pow(0.001, dt));
-  const u = smoothstep(scrollT);
+  scrollT = lerp(scrollT, targetT, 1 - Math.pow(0.0008, dt));
+  const u = clamp01(scrollT);
 
-  if (ready && scrollT < 0.02) {
-    idleSpin += dt * 0.15;
-    car.rotation.y = idleSpin;
+  if (ready && u < 0.04) {
+    idleSpin += dt * 0.12;
+    car.rotation.y = idleSpin * (1 - seg(u, 0.0, 0.08));
   } else if (ready) {
-    car.rotation.y = lerp(car.rotation.y, 0, 1 - Math.pow(0.02, dt));
+    car.rotation.y = lerp(car.rotation.y, 0, 1 - Math.pow(0.015, dt));
   }
 
-  const camPos = samplePath(camPath, u);
-  const look = samplePath(lookPath, u);
+  applyPartAnimation(u);
+
+  // Camera uses eased path; bias samples so each beat lands cleanly
+  const camU = smootherstep(u);
+  const camPos = samplePath(camPath, camU);
+  const look = samplePath(lookPath, camU);
   camera.position.copy(camPos);
   camera.lookAt(look);
+
+  // Slight FOV punch into interior
+  const fovTarget = 40 - seg(u, 0.32, 0.5) * 8 + seg(u, 0.55, 0.7) * 6;
+  camera.fov = lerp(camera.fov, fovTarget, 1 - Math.pow(0.05, dt));
+  camera.updateProjectionMatrix();
 
   renderer.render(scene, camera);
 }
