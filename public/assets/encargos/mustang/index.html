@@ -169,9 +169,8 @@
 <script type="module">
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 
-const URLS = ["https://www.altivoxai.es/assets/encargos/mustang/mustang.glb","/assets/encargos/mustang/mustang.glb","https://cdn.jsdelivr.net/gh/digitalnexoraoficial/altivoxai@cursor/mustang-60fps-4521/public/assets/encargos/mustang/mustang.glb","https://www.altivoxai.es/assets/encargos/mustang/foxbody.glb","/assets/encargos/mustang/foxbody.glb","https://cdn.jsdelivr.net/gh/digitalnexoraoficial/altivoxai@cursor/mustang-60fps-4521/public/assets/encargos/mustang/foxbody.glb"];
+const URLS = ["https://www.altivoxai.es/assets/encargos/mustang/mustang.glb","/assets/encargos/mustang/mustang.glb","https://cdn.jsdelivr.net/gh/digitalnexoraoficial/altivoxai@cursor/mustang-fix-full-car-4521/public/assets/encargos/mustang/mustang.glb","https://www.altivoxai.es/assets/encargos/mustang/foxbody.glb","/assets/encargos/mustang/foxbody.glb","https://cdn.jsdelivr.net/gh/digitalnexoraoficial/altivoxai@cursor/mustang-fix-full-car-4521/public/assets/encargos/mustang/foxbody.glb"];
 const LABELS = ["Presentación", "Puertas", "Interior", "Luna", "Capó / motor"];
 const PATH_SAMPLES = 128;
 
@@ -382,56 +381,6 @@ function toStandard(m) {
   return std;
 }
 
-function isHoodObject(o) {
-  let p = o;
-  while (p) {
-    if (/Kapoot|Rooye_Kapoot|Rooye Kapoot|HoodPivot/i.test(p.name || "")) return true;
-    p = p.parent;
-  }
-  return false;
-}
-
-/** Merge static (non-hood) meshes by material → far fewer draw calls. */
-function mergeStaticMeshes(root) {
-  const groups = new Map();
-  const toRemove = [];
-  root.updateMatrixWorld(true);
-  const invRoot = new THREE.Matrix4().copy(root.matrixWorld).invert();
-  const bake = new THREE.Matrix4();
-  root.traverse((o) => {
-    if (!o.isMesh || isHoodObject(o)) return;
-    const mats = Array.isArray(o.material) ? o.material : [o.material];
-    if (mats.length !== 1 || !mats[0]) return;
-    const mat = toStandard(mats[0]);
-    const key = (mat.map ? mat.map.uuid : "nomap") + "|" + (mat.transparent ? "t" : "o") + "|" + mat.color.getHexString() + "|" + (mat.metalness ?? 0).toFixed(2);
-    if (!groups.has(key)) groups.set(key, { mat, geos: [] });
-    const g = o.geometry.clone();
-    bake.multiplyMatrices(invRoot, o.matrixWorld);
-    g.applyMatrix4(bake);
-    groups.get(key).geos.push(g);
-    toRemove.push(o);
-  });
-
-  for (const o of toRemove) {
-    if (o.parent) o.parent.remove(o);
-    o.geometry?.dispose?.();
-  }
-
-  const batch = new THREE.Group();
-  batch.name = "MergedBody";
-  for (const { mat, geos } of groups.values()) {
-    if (!geos.length) continue;
-    const merged = mergeGeometries(geos, false);
-    geos.forEach((g) => g.dispose());
-    if (!merged) continue;
-    const mesh = new THREE.Mesh(merged, mat);
-    mesh.frustumCulled = true;
-    batch.add(mesh);
-  }
-  root.add(batch);
-  return batch;
-}
-
 function cheapifyMaterials(root) {
   root.traverse((o) => {
     if (!o.isMesh) return;
@@ -463,9 +412,8 @@ try {
   const gltf = await loadFirst(URLS);
   fitCar(gltf.scene);
   car.add(gltf.scene);
-  rigAnimatableParts(car);      // keep Kapoot hierarchy
+  rigAnimatableParts(car);      // Kapoot hood pivot only — never strip body meshes
   cheapifyMaterials(car);
-  mergeStaticMeshes(car);       // batch non-hood into few draw calls (car-local)
   ready = true;
   progEl.style.width = "100%";
   loadEl.dataset.done = "1";
