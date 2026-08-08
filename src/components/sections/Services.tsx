@@ -71,11 +71,11 @@ export function Services() {
             <button type="button" className="float-right text-mist hover:text-white" aria-label="Close" onClick={() => setActive(null)}>
               ×
             </button>
-            <p className="step-num">Servicio</p>
+            <p className="step-num">{t.services.eyebrow}</p>
             <h3 className="mt-3 font-sans font-semibold text-3xl text-white">{activeItem.title}</h3>
             <p className="mt-4 text-sm leading-relaxed text-mist">{activeItem.long}</p>
             <a href="#contact" className="btn-primary ui-lift mt-8" onClick={() => setActive(null)}>
-              Contact
+              {t.about.cta}
             </a>
           </div>
         </div>

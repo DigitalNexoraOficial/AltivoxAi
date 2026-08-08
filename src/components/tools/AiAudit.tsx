@@ -21,8 +21,8 @@ function scoreAudit(a: Answers) {
 }
 
 function planFor(score: number) {
-  if (score >= 75) return { name: "Piloto 7 días", focus: "Chatbot + routing + alertas", cta: "#ofertas" };
-  if (score >= 55) return { name: "Automatización de leads", focus: "Captura + score + seguimiento", cta: "#calculator" };
+  if (score >= 75) return { name: "Chatbot web con IA", focus: "Chatbot + routing + alertas · desde 990€", cta: "#ofertas" };
+  if (score >= 55) return { name: "Automatización de leads", focus: "Captura + score + seguimiento · desde 1.890€", cta: "#calculator" };
   return { name: "Diagnóstico guiado", focus: "Llamada gratis + mapa de fricción", cta: "#contact" };
 }
 
