@@ -19,13 +19,49 @@ const MODEL = {
 } as const;
 
 function modelUrlCandidates(file: string): string[] {
-  const pin = "cursor/mustang-fix-full-car-4521";
+  const pin = "cursor/mustang-marketing-copy-4521";
   const repo = "digitalnexoraoficial/altivoxai";
   return [
     `https://www.altivoxai.es/assets/encargos/mustang/${file}`,
     `/assets/encargos/mustang/${file}`,
     `https://cdn.jsdelivr.net/gh/${repo}@${pin}/public/assets/encargos/mustang/${file}`,
   ];
+}
+
+/** Scroll-synced marketing beats (titles + sales copy). */
+function marketingBeats(carTitle: string) {
+  return [
+    {
+      step: "01",
+      label: "Leyenda",
+      title: carTitle,
+      desc: "La silueta que para el scroll. Presencia de muscle car para enamorar al cliente antes del primer mensaje.",
+    },
+    {
+      step: "02",
+      label: "Acceso",
+      title: "Puertas que invitan a subir",
+      desc: "Conductor y copiloto: el momento en el que la experiencia se vuelve personal y el deseo de probarlo se dispara.",
+    },
+    {
+      step: "03",
+      label: "Cockpit",
+      title: "Interior que cierra el trato",
+      desc: "Asientos, salpicadero y detalle premium. Enséñalo en 3D y convierte curiosidad en reserva.",
+    },
+    {
+      step: "04",
+      label: "Mirada",
+      title: "La luna que vende emoción",
+      desc: "Salimos por el parabrisas hacia el morro: el plano heroico para campañas, anuncios y demos que convierten.",
+    },
+    {
+      step: "05",
+      label: "Potencia",
+      title: "Capó abierto, motor al frente",
+      desc: "Espectáculo técnico y comercial: el vano motor como argumento de venta que nadie puede ignorar.",
+    },
+  ] as const;
 }
 
 export function buildMustangPhotoLandingHtml(input: {
@@ -35,10 +71,21 @@ export function buildMustangPhotoLandingHtml(input: {
   const brand = escapeHtml(input.clientName || "Altivox");
   const carTitle = escapeHtml(input.carTitle || "Ford Mustang GT 1990");
   const author = escapeHtml(MODEL.author);
+  const beats = marketingBeats(carTitle);
+  const beatsJson = JSON.stringify(beats);
   const urlsJson = JSON.stringify([
     ...modelUrlCandidates("mustang.glb"),
     ...modelUrlCandidates("foxbody.glb"),
   ]);
+  const storyHtml = beats
+    .map(
+      (b) => `<article class="beat">
+      <div class="n">${b.step} · ${escapeHtml(b.label)}</div>
+      <h2>${escapeHtml(b.title)}</h2>
+      <p>${escapeHtml(b.desc)}</p>
+    </article>`
+    )
+    .join("\n    ");
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -89,29 +136,60 @@ export function buildMustangPhotoLandingHtml(input: {
   }
   .hud {
     position: absolute; inset: 0; z-index: 2; pointer-events: none;
-    display: grid; align-content: space-between;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
     padding: clamp(18px, 4vw, 40px);
+    gap: 12px;
   }
   .brand {
     font-family: "Bebas Neue", Impact, sans-serif;
     letter-spacing: .14em; font-size: clamp(1.35rem, 3vw, 1.9rem);
   }
-  .hero-copy { max-width: 24rem; }
-  .hero-copy .kicker {
+  .beat-panel {
+    align-self: end;
+    max-width: min(28rem, 92vw);
+    transform: translateY(0);
+    opacity: 1;
+    transition: opacity .45s ease, transform .55s cubic-bezier(.22,1,.36,1);
+    will-change: opacity, transform;
+  }
+  .beat-panel.is-swap {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  .beat-panel .step {
     color: var(--accent); text-transform: uppercase; letter-spacing: .16em;
     font-size: 11px; font-weight: 700; margin-bottom: 10px;
   }
-  .hero-copy h1 {
+  .beat-panel h2 {
     font-family: "Bebas Neue", Impact, sans-serif;
-    font-size: clamp(2.6rem, 8vw, 5rem);
-    line-height: .9; margin: 0 0 12px;
+    font-size: clamp(2.2rem, 7vw, 4.2rem);
+    line-height: .92; margin: 0 0 12px;
+    max-width: 18ch;
   }
-  .hero-copy p { margin: 0; color: var(--muted); line-height: 1.5; font-size: .98rem; }
+  .beat-panel p {
+    margin: 0; color: var(--muted); line-height: 1.55;
+    font-size: clamp(.95rem, 2.4vw, 1.05rem);
+    max-width: 34rem;
+  }
+  .hud-foot {
+    display: flex; justify-content: space-between; align-items: end; gap: 12px;
+  }
   .hint {
-    justify-self: end; color: var(--muted);
+    color: var(--muted);
     font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
   }
   .hint span { color: var(--steel); }
+  .progress {
+    display: flex; gap: 6px; align-items: center;
+  }
+  .progress i {
+    width: 18px; height: 2px; background: rgba(243,240,234,.18);
+    transition: background .35s ease, width .35s ease;
+  }
+  .progress i.on {
+    width: 28px; background: var(--accent);
+  }
   .load {
     position: absolute; left: 50%; top: 52%; transform: translate(-50%,-50%);
     z-index: 3; text-align: center; pointer-events: none;
@@ -173,29 +251,23 @@ export function buildMustangPhotoLandingHtml(input: {
     </div>
     <p class="err" id="err"></p>
     <div class="hud">
-      <div>
-        <div class="brand">${brand}</div>
-        <div class="hero-copy" style="margin-top:18px">
-          <div class="kicker">Modelo 3D · 60 FPS</div>
-          <h1>${carTitle}</h1>
-          <p>Scroll continuo: puertas, interior, luna y capó con el motor a la vista.</p>
-        </div>
+      <div class="brand">${brand}</div>
+      <div class="beat-panel" id="beatPanel" aria-live="polite">
+        <div class="step" id="beatStep">${beats[0].step} · ${escapeHtml(beats[0].label)}</div>
+        <h2 id="beatTitle">${escapeHtml(beats[0].title)}</h2>
+        <p id="beatDesc">${escapeHtml(beats[0].desc)}</p>
       </div>
-      <div class="hint">Scroll · <span id="beatLabel">Presentación</span></div>
+      <div class="hud-foot">
+        <div class="progress" id="beatProgress" aria-hidden="true">
+          ${beats.map((_, i) => `<i class="${i === 0 ? "on" : ""}"></i>`).join("")}
+        </div>
+        <div class="hint">Scroll · <span id="beatLabel">${escapeHtml(beats[0].label)}</span></div>
+      </div>
     </div>
   </section>
   <div class="scrub" aria-hidden="true"></div>
   <main class="story">
-    <article class="beat"><div class="n">01 · Presentación</div><h2>${carTitle}</h2>
-      <p>Modelo principal en 3D texturizado. Silueta completa del muscle car.</p></article>
-    <article class="beat"><div class="n">02 · Puertas</div><h2>Conductor y copiloto</h2>
-      <p>La cámara se acerca a ambos flancos: acceso al habitáculo.</p></article>
-    <article class="beat"><div class="n">03 · Interior</div><h2>Habitáculo</h2>
-      <p>Entrada al cockpit: asientos y salpicadero.</p></article>
-    <article class="beat"><div class="n">04 · Luna</div><h2>Salida por el parabrisas</h2>
-      <p>Salida por la luna hacia el morro del Mustang.</p></article>
-    <article class="beat"><div class="n">05 · Capó y motor</div><h2>Vista superior</h2>
-      <p>El capó se abre y la cámara muestra el vano motor.</p></article>
+    ${storyHtml}
     <p class="credit">Modelo 3D basado en trabajo de
       <a href="${MODEL.sourceUrl}" target="_blank" rel="noopener noreferrer">${author}</a>
       · WebGL Altivox</p>
@@ -213,7 +285,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 const URLS = ${urlsJson};
-const LABELS = ["Presentación", "Puertas", "Interior", "Luna", "Capó / motor"];
+const BEATS = ${beatsJson};
 const PATH_SAMPLES = 128;
 
 const canvas = document.getElementById("c");
@@ -221,6 +293,26 @@ const loadEl = document.getElementById("load");
 const progEl = document.getElementById("prog");
 const errEl = document.getElementById("err");
 const beatLabel = document.getElementById("beatLabel");
+const beatPanel = document.getElementById("beatPanel");
+const beatStep = document.getElementById("beatStep");
+const beatTitle = document.getElementById("beatTitle");
+const beatDesc = document.getElementById("beatDesc");
+const beatProgress = document.getElementById("beatProgress");
+const progressDots = beatProgress ? [...beatProgress.querySelectorAll("i")] : [];
+
+function setBeat(idx) {
+  const b = BEATS[idx];
+  if (!b || !beatPanel) return;
+  beatPanel.classList.add("is-swap");
+  window.setTimeout(() => {
+    beatStep.textContent = b.step + " · " + b.label;
+    beatTitle.textContent = b.title;
+    beatDesc.textContent = b.desc;
+    beatLabel.textContent = b.label;
+    progressDots.forEach((el, i) => el.classList.toggle("on", i === idx));
+    beatPanel.classList.remove("is-swap");
+  }, 220);
+}
 
 /* --- Renderer tuned for stable 60 FPS --- */
 const renderer = new THREE.WebGLRenderer({
@@ -497,10 +589,10 @@ function animate(now) {
   camera.position.copy(_cam);
   camera.lookAt(_look);
 
-  const idx = Math.min(LABELS.length - 1, (u * LABELS.length) | 0);
+  const idx = Math.min(BEATS.length - 1, (u * BEATS.length) | 0);
   if (idx !== lastLabel) {
     lastLabel = idx;
-    beatLabel.textContent = LABELS[idx];
+    setBeat(idx);
   }
 
   renderer.render(scene, camera);

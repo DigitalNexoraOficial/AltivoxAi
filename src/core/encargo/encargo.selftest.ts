@@ -125,8 +125,10 @@ async function main() {
     "mustang 60fps render path (full car, no mesh merge)"
   );
   assert(
-    /puertas|interior|luna|cap[oó]|motor/i.test(mustangArt.content),
-    "mustang brief sequence copy"
+    /Puertas que invitan|Interior que cierra|Capó abierto|beatPanel|setBeat/i.test(
+      mustangArt.content
+    ),
+    "mustang marketing scroll beats"
   );
 
   setLlmCompleterForTests(null);
