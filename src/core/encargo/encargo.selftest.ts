@@ -120,8 +120,9 @@ async function main() {
   );
   assert(
     mustangArt.content.includes("setPixelRatio(1)") &&
-      mustangArt.content.includes("__mustangFps"),
-    "mustang 60fps render path"
+      mustangArt.content.includes("__mustangFps") &&
+      !mustangArt.content.includes("mergeGeometries"),
+    "mustang 60fps render path (full car, no mesh merge)"
   );
   assert(
     /puertas|interior|luna|cap[oó]|motor/i.test(mustangArt.content),
