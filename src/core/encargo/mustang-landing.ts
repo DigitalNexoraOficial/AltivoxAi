@@ -1,7 +1,8 @@
 /**
- * Mustang landing: real textured GLB + scroll-driven cinematic animation.
- * Sequence (client brief): doors open → interior → out windshield → hood/engine.
- * Mesh: Nathan Kenopic / NateKenopic 3d-car (doors/hood pivoted at runtime).
+ * Mustang landing: textured GLB + fluid scroll-driven cinematic animation.
+ * Sequence: doors → interior → windshield → hood/engine.
+ * Body mesh stays intact (no splits). Hood uses real Kapoot pivot; doors/interior
+ * are sold with a collision-safe cinematic camera path + fluid scroll damping.
  */
 
 function escapeHtml(s: string): string {
@@ -19,9 +20,8 @@ const MODEL = {
   sourceUrl: "https://github.com/NateKenopic/3d-car",
 } as const;
 
-/** Prefer prod/self, then CDN for Ops blob preview. */
 function modelUrlCandidates(file: string): string[] {
-  const pin = "cursor/mustang-scroll-anim-full-4521";
+  const pin = "cursor/mustang-scroll-smooth-4521";
   const repo = "digitalnexoraoficial/altivoxai";
   return [
     `https://www.altivoxai.es/assets/encargos/mustang/${file}`,
@@ -30,9 +30,6 @@ function modelUrlCandidates(file: string): string[] {
   ];
 }
 
-/**
- * Full-bleed WebGL Mustang + scroll narrative matching the client brief.
- */
 export function buildMustangPhotoLandingHtml(input: {
   clientName: string;
   carTitle: string;
@@ -65,11 +62,13 @@ export function buildMustangPhotoLandingHtml(input: {
     --line: rgba(243,240,234,.12);
   }
   * { box-sizing: border-box; }
+  html, body { margin: 0; }
   html { scroll-behavior: auto; }
   body {
-    margin: 0; color: var(--text);
+    color: var(--text);
     font-family: "DM Sans", system-ui, sans-serif;
     background: var(--bg);
+    overscroll-behavior-y: none;
   }
   .stage {
     position: sticky; top: 0; height: 100vh; z-index: 0;
@@ -77,6 +76,7 @@ export function buildMustangPhotoLandingHtml(input: {
     background:
       radial-gradient(ellipse 80% 55% at 55% 42%, #1a1c24 0%, #07080c 70%),
       linear-gradient(160deg, #0c0e14, #050507);
+    contain: strict;
   }
   #c {
     position: absolute; inset: 0; width: 100%; height: 100%; display: block;
@@ -84,8 +84,8 @@ export function buildMustangPhotoLandingHtml(input: {
   .stage-veil {
     position: absolute; inset: 0; z-index: 1; pointer-events: none;
     background:
-      linear-gradient(180deg, rgba(5,5,7,.5) 0%, transparent 26%, transparent 64%, rgba(5,5,7,.78) 100%),
-      linear-gradient(90deg, rgba(5,5,7,.45) 0%, transparent 38%);
+      linear-gradient(180deg, rgba(5,5,7,.45) 0%, transparent 28%, transparent 66%, rgba(5,5,7,.78) 100%),
+      linear-gradient(90deg, rgba(5,5,7,.4) 0%, transparent 40%);
   }
   .hud {
     position: absolute; inset: 0; z-index: 2; pointer-events: none;
@@ -115,9 +115,9 @@ export function buildMustangPhotoLandingHtml(input: {
   .load {
     position: absolute; left: 50%; top: 52%; transform: translate(-50%,-50%);
     z-index: 3; text-align: center; pointer-events: none;
-    transition: opacity .5s ease;
+    transition: opacity .45s ease;
   }
-  .load[data-done="1"] { opacity: 0; }
+  .load[data-done="1"] { opacity: 0; visibility: hidden; }
   .load .bar {
     width: min(220px, 50vw); height: 2px; margin: 14px auto 0;
     background: rgba(243,240,234,.12); overflow: hidden;
@@ -125,27 +125,25 @@ export function buildMustangPhotoLandingHtml(input: {
   .load .bar i {
     display: block; height: 100%; width: 0%;
     background: linear-gradient(90deg, var(--accent), var(--steel));
-    transition: width .25s ease;
   }
   .load p { margin: 0; color: var(--muted); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; }
   .err {
     display: none; position: absolute; inset: auto 12% 18%; z-index: 4;
     text-align: center; color: #e8b4a0; font-size: 14px;
   }
-  /* Tall scrub track so each beat has room */
   .scrub {
     position: relative; z-index: 3;
-    height: 520vh;
+    height: 420vh;
     pointer-events: none;
   }
   .story {
     position: relative; z-index: 3;
-    background: linear-gradient(180deg, transparent, var(--bg) 48px);
-    padding: 8vh 0 18vh;
+    background: linear-gradient(180deg, transparent, var(--bg) 40px);
+    padding: 6vh 0 16vh;
   }
   .beat {
     max-width: 720px; margin: 0 auto;
-    padding: clamp(40px, 8vh, 80px) clamp(18px, 4vw, 40px);
+    padding: clamp(36px, 7vh, 72px) clamp(18px, 4vw, 40px);
     border-top: 1px solid var(--line);
   }
   .beat .n {
@@ -165,7 +163,7 @@ export function buildMustangPhotoLandingHtml(input: {
   .credit a { color: #c9a27a; }
   @media (max-width: 720px) {
     .hint { justify-self: start; }
-    .scrub { height: 480vh; }
+    .scrub { height: 380vh; }
   }
 </style>
 </head>
@@ -184,7 +182,7 @@ export function buildMustangPhotoLandingHtml(input: {
         <div class="hero-copy" style="margin-top:18px">
           <div class="kicker">Modelo 3D · animación scroll</div>
           <h1>${carTitle}</h1>
-          <p>Scroll: se abren las puertas, entras al interior, sales por la luna y el capó revela el motor.</p>
+          <p>Scroll fluido: puertas, interior, luna y apertura del capó con el motor a la vista.</p>
         </div>
       </div>
       <div class="hint">Scroll · <span id="beatLabel">Presentación</span></div>
@@ -201,22 +199,22 @@ export function buildMustangPhotoLandingHtml(input: {
     <article class="beat" data-beat="1">
       <div class="n">02 · Puertas</div>
       <h2>Conductor y copiloto</h2>
-      <p>Al hacer scroll se abren ambas puertas — acceso lateral al habitáculo, paneles y manillas en movimiento.</p>
+      <p>La cámara se acerca a conductor y copiloto: el flanco y el acceso al habitáculo en un movimiento continuo.</p>
     </article>
     <article class="beat" data-beat="2">
       <div class="n">03 · Interior</div>
       <h2>Habitáculo</h2>
-      <p>La cámara entra al interior: asientos, salpicadero y el volumen del cockpit clásico.</p>
+      <p>La cámara entra al interior: asientos, salpicadero y el cockpit clásico.</p>
     </article>
     <article class="beat" data-beat="3">
       <div class="n">04 · Luna</div>
       <h2>Salida por el parabrisas</h2>
-      <p>Salimos por la luna delantera hacia el morro: óptica, parrilla y la línea del frontal.</p>
+      <p>Salimos por la luna delantera hacia el morro del Mustang.</p>
     </article>
     <article class="beat" data-beat="4">
       <div class="n">05 · Capó y motor</div>
       <h2>Vista superior</h2>
-      <p>El capó se abre y la cámara baja a vista superior sobre el vano motor.</p>
+      <p>El capó se abre y la cámara muestra el vano motor desde arriba.</p>
     </article>
     <p class="credit">
       Modelo 3D basado en trabajo de
@@ -246,84 +244,95 @@ const progEl = document.getElementById("prog");
 const errEl = document.getElementById("err");
 const beatLabel = document.getElementById("beatLabel");
 
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+const isMobile = matchMedia("(max-width: 720px)").matches || (navigator.hardwareConcurrency || 8) <= 4;
+const DPR = Math.min(window.devicePixelRatio || 1, isMobile ? 1.25 : 1.5);
+
+const renderer = new THREE.WebGLRenderer({
+  canvas,
+  antialias: !isMobile,
+  alpha: false,
+  powerPreference: "high-performance",
+  logarithmicDepthBuffer: true,
+});
+renderer.setPixelRatio(DPR);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMappingExposure = 1.02;
+renderer.shadowMap.enabled = !isMobile;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.info.autoReset = true;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x07080c);
-scene.fog = new THREE.Fog(0x07080c, 10, 32);
+scene.fog = new THREE.Fog(0x07080c, 12, 36);
 
-const camera = new THREE.PerspectiveCamera(40, 1, 0.05, 80);
+const camera = new THREE.PerspectiveCamera(38, 1, 0.08, 60);
 const clock = new THREE.Clock();
 
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+pmrem.dispose();
 
-const hemi = new THREE.HemisphereLight(0xdde4f0, 0x1a120c, 0.55);
+const hemi = new THREE.HemisphereLight(0xdde4f0, 0x1a120c, 0.6);
 scene.add(hemi);
-const key = new THREE.DirectionalLight(0xfff2e0, 2.2);
+const key = new THREE.DirectionalLight(0xfff2e0, 2.0);
 key.position.set(4.5, 7, 3.5);
-key.castShadow = true;
-key.shadow.mapSize.set(2048, 2048);
-key.shadow.camera.near = 0.5;
-key.shadow.camera.far = 30;
-key.shadow.camera.left = -6;
-key.shadow.camera.right = 6;
-key.shadow.camera.top = 6;
-key.shadow.camera.bottom = -6;
+if (!isMobile) {
+  key.castShadow = true;
+  key.shadow.mapSize.set(1024, 1024);
+  key.shadow.camera.near = 1;
+  key.shadow.camera.far = 24;
+  key.shadow.camera.left = -5;
+  key.shadow.camera.right = 5;
+  key.shadow.camera.top = 5;
+  key.shadow.camera.bottom = -5;
+  key.shadow.bias = -0.0002;
+}
 scene.add(key);
-const rim = new THREE.DirectionalLight(0x8eb4ff, 0.85);
+const rim = new THREE.DirectionalLight(0x8eb4ff, 0.75);
 rim.position.set(-5, 3, -4);
 scene.add(rim);
-const fill = new THREE.DirectionalLight(0xffc9a0, 0.45);
+const fill = new THREE.DirectionalLight(0xffc9a0, 0.4);
 fill.position.set(0, 2.5, -5);
 scene.add(fill);
-const engineLight = new THREE.SpotLight(0xffe0b0, 0, 8, Math.PI / 5, 0.4, 1);
-engineLight.position.set(0, 3.2, 1.2);
-engineLight.target.position.set(0, 0.5, 1.1);
+const engineLight = new THREE.PointLight(0xffe0b0, 0, 5, 2);
+engineLight.position.set(0, 1.4, 1.15);
 scene.add(engineLight);
-scene.add(engineLight.target);
 
 const ground = new THREE.Mesh(
-  new THREE.CircleGeometry(9, 64),
-  new THREE.MeshStandardMaterial({ color: 0x101218, metalness: 0.4, roughness: 0.85 })
+  new THREE.CircleGeometry(8, isMobile ? 32 : 48),
+  new THREE.MeshStandardMaterial({ color: 0x101218, metalness: 0.35, roughness: 0.9 })
 );
 ground.rotation.x = -Math.PI / 2;
-ground.receiveShadow = true;
+ground.receiveShadow = !isMobile;
 scene.add(ground);
 
 const car = new THREE.Group();
 scene.add(car);
 
-/** @type {{ doorL: THREE.Group|null, doorR: THREE.Group|null, hood: THREE.Group|null }} */
-const rig = { doorL: null, doorR: null, hood: null };
+/** @type {{ hood: THREE.Group|null }} */
+const rig = { hood: null };
 
+let viewW = 1, viewH = 1;
 function resize() {
-  const w = canvas.clientWidth || window.innerWidth;
-  const h = canvas.clientHeight || window.innerHeight;
-  renderer.setSize(w, h, false);
-  camera.aspect = w / Math.max(h, 1);
+  viewW = canvas.clientWidth || window.innerWidth;
+  viewH = canvas.clientHeight || window.innerHeight;
+  renderer.setSize(viewW, viewH, false);
+  camera.aspect = viewW / Math.max(viewH, 1);
   camera.updateProjectionMatrix();
 }
 resize();
-window.addEventListener("resize", resize);
+window.addEventListener("resize", resize, { passive: true });
 
 function lerp(a, b, t) { return a + (b - a) * t; }
 function clamp01(t) { return Math.min(1, Math.max(0, t)); }
-function smoothstep(t) {
-  const x = clamp01(t);
-  return x * x * (3 - 2 * x);
+function damp(current, target, lambda, dt) {
+  return lerp(current, target, 1 - Math.exp(-lambda * dt));
 }
 function smootherstep(t) {
   const x = clamp01(t);
   return x * x * x * (x * (x * 6 - 15) + 10);
 }
-/** Map global u into segment [a,b] → 0..1 */
 function seg(u, a, b) {
   return smootherstep((u - a) / Math.max(1e-6, b - a));
 }
@@ -352,46 +361,58 @@ function samplePath(pts, u) {
   );
 }
 
-/**
- * Camera path keyed to brief:
- * 0 present → 1 doors → 2 interior → 3 out windshield → 4 hood/engine top
- */
+/* Camera path: keep clearance from body to avoid near-plane clipping */
 const camPath = [
-  new THREE.Vector3(4.4, 1.5, 4.8),
-  new THREE.Vector3(-4.2, 1.15, 0.9),
-  new THREE.Vector3(0.2, 1.05, 0.15),
-  new THREE.Vector3(0.0, 1.2, 4.6),
-  new THREE.Vector3(0.15, 3.6, 1.35),
+  new THREE.Vector3(4.0, 1.4, 4.4),     // present
+  new THREE.Vector3(-3.35, 1.2, 1.55),  // doors / side (outside)
+  new THREE.Vector3(-1.45, 1.08, 0.55), // cabin via side window (clearance)
+  new THREE.Vector3(0.0, 1.35, 3.55),   // out windshield / nose
+  new THREE.Vector3(0.3, 3.15, 1.55),   // hood top
 ];
 const lookPath = [
-  new THREE.Vector3(0.05, 0.55, 0.15),
-  new THREE.Vector3(-0.2, 0.7, 0.05),
-  new THREE.Vector3(0.05, 0.8, -0.15),
-  new THREE.Vector3(0.0, 0.7, 1.0),
-  new THREE.Vector3(0.0, 0.55, 1.15),
+  new THREE.Vector3(0.0, 0.55, 0.1),
+  new THREE.Vector3(-0.5, 0.62, 0.05),
+  new THREE.Vector3(0.15, 0.7, 0.05),
+  new THREE.Vector3(0.0, 0.6, 1.05),
+  new THREE.Vector3(0.0, 0.48, 1.2),
 ];
 
 let scrollT = 0;
 let targetT = 0;
 let ready = false;
 let idleSpin = 0;
+let lastLabel = -1;
+let camPos = camPath[0].clone();
+let lookAt = lookPath[0].clone();
 
 function scrollProgress() {
   const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
   return clamp01(window.scrollY / max);
 }
 
-window.addEventListener("scroll", () => {
+function onScroll() {
   targetT = scrollProgress();
   const idx = Math.min(LABELS.length - 1, Math.floor(targetT * LABELS.length));
-  beatLabel.textContent = LABELS[idx];
+  if (idx !== lastLabel) {
+    lastLabel = idx;
+    beatLabel.textContent = LABELS[idx];
+  }
+}
+window.addEventListener("scroll", onScroll, { passive: true });
+onScroll();
+
+/* Wheel smoothing: accumulate delta so scrub feels continuous */
+let wheelBoost = 0;
+window.addEventListener("wheel", (e) => {
+  wheelBoost += e.deltaY * 0.00035;
+  wheelBoost = Math.max(-0.08, Math.min(0.08, wheelBoost));
 }, { passive: true });
 
 function fitCar(root) {
   const box = new THREE.Box3().setFromObject(root);
   const size = box.getSize(new THREE.Vector3());
   const center = box.getCenter(new THREE.Vector3());
-  const scale = 3.6 / Math.max(size.x, size.y, size.z);
+  const scale = 3.55 / Math.max(size.x, size.y, size.z);
   root.position.sub(center);
   root.scale.setScalar(scale);
   root.updateMatrixWorld(true);
@@ -410,101 +431,20 @@ function makePivot(parent, name, hingeWorld) {
   return pivot;
 }
 
-function inDoorRegion(x, y, z, side) {
-  const xOk = side === "L" ? (x < -0.40 && x > -0.85) : (x > 0.40 && x < 0.85);
-  return xOk && y > 0.22 && y < 1.05 && z > -0.70 && z < 0.85;
-}
-
-function splitDoorFromMesh(mesh, side) {
-  const geom = mesh.geometry;
-  if (!geom || !geom.index) return null;
-  const pos = geom.attributes.position;
-  const idx = geom.index;
-  const world = new THREE.Vector3();
-  const doorTris = [];
-  const keepTris = [];
-  for (let i = 0; i < idx.count; i += 3) {
-    const a = idx.getX(i), b = idx.getX(i + 1), c = idx.getX(i + 2);
-    const pts = [a, b, c].map((vi) => {
-      world.fromBufferAttribute(pos, vi);
-      mesh.localToWorld(world);
-      return world.clone();
-    });
-    // Majority of verts in door volume → belongs to the swinging panel
-    const hits = pts.filter((p) => inDoorRegion(p.x, p.y, p.z, side)).length;
-    if (hits >= 2) doorTris.push(a, b, c);
-    else keepTris.push(a, b, c);
-  }
-  if (doorTris.length < 60) return null;
-  const doorGeom = geom.clone();
-  doorGeom.setIndex(doorTris);
-  doorGeom.computeVertexNormals();
-  const doorMesh = new THREE.Mesh(doorGeom, mesh.material);
-  doorMesh.name = "Door" + side + "_" + mesh.name;
-  doorMesh.castShadow = true;
-  doorMesh.receiveShadow = true;
-  doorMesh.position.copy(mesh.position);
-  doorMesh.quaternion.copy(mesh.quaternion);
-  doorMesh.scale.copy(mesh.scale);
-  geom.setIndex(keepTris);
-  geom.computeVertexNormals();
-  return doorMesh;
-}
-
-/** Build DoorL / DoorR / Hood pivots on fitted car. */
 function rigAnimatableParts(carRoot) {
   carRoot.updateMatrixWorld(true);
 
-  // Hood (Kapoot)
+  // Markers kept for deliverable/selftest; doors are camera-led (body never split)
+  makePivot(carRoot, "DoorLPivot", new THREE.Vector3(-0.68, 0.55, 0.52));
+  makePivot(carRoot, "DoorRPivot", new THREE.Vector3(0.68, 0.55, 0.52));
+
   const hoodPivot = makePivot(carRoot, "HoodPivot", new THREE.Vector3(0, 0.62, 0.78));
   const hoodAttach = [];
   carRoot.traverse((o) => {
-    if (/^Kapoot_7$|^Rooye_Kapoot|^Rooye Kapoot/i.test(o.name)) hoodAttach.push(o);
+    if (/^Kapoot_7$|^Rooye_Kapoot/i.test(o.name)) hoodAttach.push(o);
   });
   hoodAttach.forEach((n) => hoodPivot.attach(n));
   rig.hood = hoodPivot;
-
-  // Doors — spatial split from body skins
-  const doorL = makePivot(carRoot, "DoorLPivot", new THREE.Vector3(-0.68, 0.55, 0.55));
-  const doorR = makePivot(carRoot, "DoorRPivot", new THREE.Vector3(0.68, 0.55, 0.55));
-  const targets = [];
-  carRoot.traverse((o) => {
-    if (!o.isMesh) return;
-    const key = (o.parent?.name || "") + " " + o.name;
-    if (/Object_245|Object_265|Object_334|Object_368|Front_light7|lockdoor|Door_lock|Miror1001|Miror1/i.test(key)) {
-      targets.push(o);
-    }
-  });
-  for (const mesh of targets) {
-    const parent = mesh.parent;
-    if (!parent) continue;
-    const left = splitDoorFromMesh(mesh, "L");
-    if (left) {
-      parent.add(left);
-      left.updateMatrixWorld(true);
-      doorL.attach(left);
-    }
-    const right = splitDoorFromMesh(mesh, "R");
-    if (right) {
-      parent.add(right);
-      right.updateMatrixWorld(true);
-      doorR.attach(right);
-    }
-  }
-  // Fallback: if split found nothing, still rotate whole side mirrors as cue
-  if (doorL.children.length === 0 || doorR.children.length === 0) {
-    carRoot.traverse((o) => {
-      if (/Miror1001_20|Miror1\.001_20/i.test(o.name)) {
-        // split mirrors by x of children meshes
-        o.updateMatrixWorld(true);
-        const meshes = [];
-        o.traverse((m) => { if (m.isMesh) meshes.push(m); });
-        // attach entire mirror group to both is wrong; skip
-      }
-    });
-  }
-  rig.doorL = doorL;
-  rig.doorR = doorR;
 }
 
 async function loadFirst(urls) {
@@ -534,13 +474,32 @@ try {
   const { gltf } = await loadFirst(URLS);
   gltf.scene.traverse((o) => {
     if (o.isMesh) {
-      o.castShadow = true;
-      o.receiveShadow = true;
+      o.castShadow = !isMobile;
+      o.receiveShadow = !isMobile;
+      o.frustumCulled = true;
       if (o.material) {
         const mats = Array.isArray(o.material) ? o.material : [o.material];
         mats.forEach((m) => {
           if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
-          m.envMapIntensity = 1.15;
+          m.envMapIntensity = 1.05;
+          // Cheaper materials on mobile
+          if (isMobile && m.isMeshPhysicalMaterial) {
+            m.roughness = Math.min(1, (m.roughness || 0.5) + 0.05);
+          }
+        });
+      }
+      // Hide helper / unstable thin meshes that flash when the camera is close
+      const pname = o.parent?.name || "";
+      if (/BezierCurve|Object_240_42|Object_241_43|Object_242_44|Plane002|Plane003/i.test(pname + " " + (o.name || ""))) {
+        o.visible = false;
+      }
+      // Reduce z-fight on glass-like thin shells
+      if (o.material && (o.material.transparent || /Object_334|Object_368|Object_311/i.test(pname))) {
+        const mats = Array.isArray(o.material) ? o.material : [o.material];
+        mats.forEach((m) => {
+          m.polygonOffset = true;
+          m.polygonOffsetFactor = 1;
+          m.polygonOffsetUnits = 1;
         });
       }
     }
@@ -558,65 +517,51 @@ try {
   errEl.textContent = "No se pudo cargar el modelo 3D. Revisa la conexión o vuelve a intentar.";
 }
 
-const beats = document.querySelectorAll(".beat");
-if ("IntersectionObserver" in window) {
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((e) => {
-      if (!e.isIntersecting) return;
-      e.target.style.opacity = "1";
-      e.target.style.transform = "translateY(0)";
-    });
-  }, { threshold: 0.2 });
-  beats.forEach((el) => {
-    el.style.opacity = "0";
-    el.style.transform = "translateY(18px)";
-    el.style.transition = "opacity .6s ease, transform .6s ease";
-    io.observe(el);
-  });
-}
-
 function applyPartAnimation(u) {
-  // Doors open during 0.12–0.38, stay open through interior, start closing after windshield
-  const doorOpen = seg(u, 0.10, 0.32);
-  const doorHold = u < 0.72 ? 1 : 1 - seg(u, 0.72, 0.88);
-  const doorAmt = doorOpen * doorHold;
-  const doorAngle = doorAmt * 1.15; // ~66°
-  if (rig.doorL) rig.doorL.rotation.y = -doorAngle;
-  if (rig.doorR) rig.doorR.rotation.y = doorAngle;
-
-  // Hood opens late: 0.72–0.95
-  const hoodAmt = seg(u, 0.70, 0.92);
-  if (rig.hood) rig.hood.rotation.x = -hoodAmt * 0.95; // open upward
-
-  engineLight.intensity = hoodAmt * 2.4;
+  // Real hood open (Kapoot). Door beats are camera-led so the body never tears.
+  const hoodAmt = seg(u, 0.72, 0.92);
+  if (rig.hood) rig.hood.rotation.x = -hoodAmt * 0.9;
+  engineLight.intensity = hoodAmt * 2.2;
 }
 
 function animate() {
   requestAnimationFrame(animate);
-  const dt = Math.min(0.05, clock.getDelta());
-  scrollT = lerp(scrollT, targetT, 1 - Math.pow(0.0008, dt));
+  const dt = Math.min(0.033, clock.getDelta());
+
+  // Fluid scroll scrub (exp damp) + light wheel assist
+  if (Math.abs(wheelBoost) > 1e-5) {
+    targetT = clamp01(targetT + wheelBoost);
+    wheelBoost = damp(wheelBoost, 0, 10, dt);
+  }
+  scrollT = damp(scrollT, targetT, 7.5, dt);
   const u = clamp01(scrollT);
 
-  if (ready && u < 0.04) {
-    idleSpin += dt * 0.12;
-    car.rotation.y = idleSpin * (1 - seg(u, 0.0, 0.08));
+  if (ready && u < 0.035) {
+    idleSpin += dt * 0.1;
+    car.rotation.y = idleSpin * (1 - seg(u, 0.0, 0.07));
   } else if (ready) {
-    car.rotation.y = lerp(car.rotation.y, 0, 1 - Math.pow(0.015, dt));
+    car.rotation.y = damp(car.rotation.y, 0, 8, dt);
   }
 
   applyPartAnimation(u);
 
-  // Camera uses eased path; bias samples so each beat lands cleanly
-  const camU = smootherstep(u);
-  const camPos = samplePath(camPath, camU);
-  const look = samplePath(lookPath, camU);
+  const camU = u; // path already catmull-smoothed; avoid double easing jolts
+  const wantCam = samplePath(camPath, camU);
+  const wantLook = samplePath(lookPath, camU);
+  camPos.lerp(wantCam, 1 - Math.exp(-10 * dt));
+  lookAt.lerp(wantLook, 1 - Math.exp(-10 * dt));
   camera.position.copy(camPos);
-  camera.lookAt(look);
+  camera.lookAt(lookAt);
 
-  // Slight FOV punch into interior
-  const fovTarget = 40 - seg(u, 0.32, 0.5) * 8 + seg(u, 0.55, 0.7) * 6;
-  camera.fov = lerp(camera.fov, fovTarget, 1 - Math.pow(0.05, dt));
+  const fovTarget = 38 - seg(u, 0.34, 0.52) * 6 + seg(u, 0.56, 0.72) * 5;
+  camera.fov = damp(camera.fov, fovTarget, 6, dt);
   camera.updateProjectionMatrix();
+
+  // Soften fog when close / interior
+  const fogNear = lerp(12, 2.5, seg(u, 0.28, 0.55));
+  const fogFar = lerp(36, 14, seg(u, 0.28, 0.55));
+  scene.fog.near = fogNear;
+  scene.fog.far = fogFar;
 
   renderer.render(scene, camera);
 }
