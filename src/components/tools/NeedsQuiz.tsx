@@ -33,10 +33,10 @@ const QUESTIONS = [
 ];
 
 const RESULTS: Record<string, { title: string; text: string; href: string }> = {
-  chatbot: { title: "Chatbot + piloto 7 días", text: "Ideal para responder ya y cualificar sin ampliar equipo.", href: "#ofertas" },
-  routing: { title: "Automatización de leads", text: "Score, alertas y seguimiento para que ventas solo entre en calientes.", href: "#calculator" },
-  sales: { title: "Agente comercial conversacional", text: "Recomendaciones, objeciones y handoff humano cuando convierte.", href: "#simulator" },
-  ops: { title: "AI Agency OS", text: "Capa operativa completa: captura, routing y panel.", href: "#services" },
+  chatbot: { title: "Chatbot web con IA", text: "Ideal para responder ya y cualificar sin ampliar equipo · desde 990€.", href: "#ofertas" },
+  routing: { title: "Automatización de leads", text: "Score, alertas y seguimiento para que ventas solo entre en calientes · desde 1.890€.", href: "#ofertas" },
+  sales: { title: "Agentes IA + operaciones", text: "Agentes, WhatsApp/web e integraciones para vender y atender con IA · desde 2.990€.", href: "#ofertas" },
+  ops: { title: "Agentes IA + operaciones", text: "Capa operativa completa: captura, routing y panel · desde 2.990€.", href: "#ofertas" },
   guide: { title: "Guía + llamada estratégica", text: "Empieza con diagnóstico y material práctico.", href: "#leadmagnet" },
 };
 
