@@ -27,21 +27,23 @@
     overscroll-behavior-y: none;
   }
   .stage {
-    position: sticky; top: 0; height: 100vh; z-index: 0;
+    position: sticky; top: 0; height: 100vh; height: 100dvh; z-index: 0;
     overflow: hidden;
     background:
       radial-gradient(ellipse 80% 55% at 55% 42%, #1a1c24 0%, #07080c 70%),
       linear-gradient(160deg, #0c0e14, #050507);
     contain: strict;
+    touch-action: pan-y;
   }
   #c {
     position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+    transform: translateZ(0);
   }
   .stage-veil {
     position: absolute; inset: 0; z-index: 1; pointer-events: none;
     background:
-      linear-gradient(180deg, rgba(5,5,7,.45) 0%, transparent 28%, transparent 66%, rgba(5,5,7,.78) 100%),
-      linear-gradient(90deg, rgba(5,5,7,.4) 0%, transparent 40%);
+      linear-gradient(180deg, rgba(5,5,7,.42) 0%, transparent 28%, transparent 66%, rgba(5,5,7,.78) 100%),
+      linear-gradient(90deg, rgba(5,5,7,.35) 0%, transparent 42%);
   }
   .hud {
     position: absolute; inset: 0; z-index: 2; pointer-events: none;
@@ -71,7 +73,7 @@
   .load {
     position: absolute; left: 50%; top: 52%; transform: translate(-50%,-50%);
     z-index: 3; text-align: center; pointer-events: none;
-    transition: opacity .45s ease;
+    transition: opacity .4s ease;
   }
   .load[data-done="1"] { opacity: 0; visibility: hidden; }
   .load .bar {
@@ -87,11 +89,7 @@
     display: none; position: absolute; inset: auto 12% 18%; z-index: 4;
     text-align: center; color: #e8b4a0; font-size: 14px;
   }
-  .scrub {
-    position: relative; z-index: 3;
-    height: 420vh;
-    pointer-events: none;
-  }
+  .scrub { position: relative; z-index: 3; height: 360vh; pointer-events: none; }
   .story {
     position: relative; z-index: 3;
     background: linear-gradient(180deg, transparent, var(--bg) 40px);
@@ -119,7 +117,7 @@
   .credit a { color: #c9a27a; }
   @media (max-width: 720px) {
     .hint { justify-self: start; }
-    .scrub { height: 380vh; }
+    .scrub { height: 320vh; }
   }
 </style>
 </head>
@@ -136,47 +134,29 @@
       <div>
         <div class="brand">Xabier</div>
         <div class="hero-copy" style="margin-top:18px">
-          <div class="kicker">Modelo 3D · animación scroll</div>
+          <div class="kicker">Modelo 3D · 60 FPS</div>
           <h1>Ford Mustang GT 1990</h1>
-          <p>Scroll fluido: puertas, interior, luna y apertura del capó con el motor a la vista.</p>
+          <p>Scroll continuo: puertas, interior, luna y capó con el motor a la vista.</p>
         </div>
       </div>
       <div class="hint">Scroll · <span id="beatLabel">Presentación</span></div>
     </div>
   </section>
   <div class="scrub" aria-hidden="true"></div>
-
   <main class="story">
-    <article class="beat" data-beat="0">
-      <div class="n">01 · Presentación</div>
-      <h2>Ford Mustang GT 1990</h2>
-      <p>Modelo principal en 3D texturizado. El recorrido empieza con la silueta completa del muscle car.</p>
-    </article>
-    <article class="beat" data-beat="1">
-      <div class="n">02 · Puertas</div>
-      <h2>Conductor y copiloto</h2>
-      <p>La cámara se acerca a conductor y copiloto: el flanco y el acceso al habitáculo en un movimiento continuo.</p>
-    </article>
-    <article class="beat" data-beat="2">
-      <div class="n">03 · Interior</div>
-      <h2>Habitáculo</h2>
-      <p>La cámara entra al interior: asientos, salpicadero y el cockpit clásico.</p>
-    </article>
-    <article class="beat" data-beat="3">
-      <div class="n">04 · Luna</div>
-      <h2>Salida por el parabrisas</h2>
-      <p>Salimos por la luna delantera hacia el morro del Mustang.</p>
-    </article>
-    <article class="beat" data-beat="4">
-      <div class="n">05 · Capó y motor</div>
-      <h2>Vista superior</h2>
-      <p>El capó se abre y la cámara muestra el vano motor desde arriba.</p>
-    </article>
-    <p class="credit">
-      Modelo 3D basado en trabajo de
+    <article class="beat"><div class="n">01 · Presentación</div><h2>Ford Mustang GT 1990</h2>
+      <p>Modelo principal en 3D texturizado. Silueta completa del muscle car.</p></article>
+    <article class="beat"><div class="n">02 · Puertas</div><h2>Conductor y copiloto</h2>
+      <p>La cámara se acerca a ambos flancos: acceso al habitáculo.</p></article>
+    <article class="beat"><div class="n">03 · Interior</div><h2>Habitáculo</h2>
+      <p>Entrada al cockpit: asientos y salpicadero.</p></article>
+    <article class="beat"><div class="n">04 · Luna</div><h2>Salida por el parabrisas</h2>
+      <p>Salida por la luna hacia el morro del Mustang.</p></article>
+    <article class="beat"><div class="n">05 · Capó y motor</div><h2>Vista superior</h2>
+      <p>El capó se abre y la cámara muestra el vano motor.</p></article>
+    <p class="credit">Modelo 3D basado en trabajo de
       <a href="https://github.com/NateKenopic/3d-car" target="_blank" rel="noopener noreferrer">Nathan Kenopic</a>
-      · animación scroll WebGL Altivox
-    </p>
+      · WebGL Altivox</p>
   </main>
 <script type="importmap">
 {
@@ -189,10 +169,11 @@
 <script type="module">
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 
-const URLS = ["https://www.altivoxai.es/assets/encargos/mustang/mustang.glb","/assets/encargos/mustang/mustang.glb","https://cdn.jsdelivr.net/gh/digitalnexoraoficial/altivoxai@cursor/mustang-scroll-smooth-4521/public/assets/encargos/mustang/mustang.glb","https://www.altivoxai.es/assets/encargos/mustang/foxbody.glb","/assets/encargos/mustang/foxbody.glb","https://cdn.jsdelivr.net/gh/digitalnexoraoficial/altivoxai@cursor/mustang-scroll-smooth-4521/public/assets/encargos/mustang/foxbody.glb"];
+const URLS = ["https://www.altivoxai.es/assets/encargos/mustang/mustang.glb","/assets/encargos/mustang/mustang.glb","https://cdn.jsdelivr.net/gh/digitalnexoraoficial/altivoxai@cursor/mustang-60fps-4521/public/assets/encargos/mustang/mustang.glb","https://www.altivoxai.es/assets/encargos/mustang/foxbody.glb","/assets/encargos/mustang/foxbody.glb","https://cdn.jsdelivr.net/gh/digitalnexoraoficial/altivoxai@cursor/mustang-60fps-4521/public/assets/encargos/mustang/foxbody.glb"];
 const LABELS = ["Presentación", "Puertas", "Interior", "Luna", "Capó / motor"];
+const PATH_SAMPLES = 128;
 
 const canvas = document.getElementById("c");
 const loadEl = document.getElementById("load");
@@ -200,91 +181,65 @@ const progEl = document.getElementById("prog");
 const errEl = document.getElementById("err");
 const beatLabel = document.getElementById("beatLabel");
 
-const isMobile = matchMedia("(max-width: 720px)").matches || (navigator.hardwareConcurrency || 8) <= 4;
-const DPR = Math.min(window.devicePixelRatio || 1, isMobile ? 1.25 : 1.5);
-
+/* --- Renderer tuned for stable 60 FPS --- */
 const renderer = new THREE.WebGLRenderer({
   canvas,
-  antialias: !isMobile,
+  antialias: false,
   alpha: false,
   powerPreference: "high-performance",
-  logarithmicDepthBuffer: true,
+  stencil: false,
+  depth: true,
 });
-renderer.setPixelRatio(DPR);
+renderer.setPixelRatio(1); // fixed: HiDPI is the #1 FPS killer here
+renderer.setSize(canvas.clientWidth || innerWidth, canvas.clientHeight || innerHeight, false);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.02;
-renderer.shadowMap.enabled = !isMobile;
-renderer.shadowMap.type = THREE.PCFShadowMap;
-renderer.info.autoReset = true;
+renderer.toneMapping = THREE.NoToneMapping;
+renderer.shadowMap.enabled = false;
+renderer.info.autoReset = false;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x07080c);
-scene.fog = new THREE.Fog(0x07080c, 12, 36);
+scene.fog = new THREE.Fog(0x07080c, 14, 40);
 
-const camera = new THREE.PerspectiveCamera(38, 1, 0.08, 60);
-const clock = new THREE.Clock();
+const camera = new THREE.PerspectiveCamera(38, 1, 0.12, 40);
+camera.matrixAutoUpdate = true;
 
-const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-pmrem.dispose();
-
-const hemi = new THREE.HemisphereLight(0xdde4f0, 0x1a120c, 0.6);
-scene.add(hemi);
-const key = new THREE.DirectionalLight(0xfff2e0, 2.0);
-key.position.set(4.5, 7, 3.5);
-if (!isMobile) {
-  key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024);
-  key.shadow.camera.near = 1;
-  key.shadow.camera.far = 24;
-  key.shadow.camera.left = -5;
-  key.shadow.camera.right = 5;
-  key.shadow.camera.top = 5;
-  key.shadow.camera.bottom = -5;
-  key.shadow.bias = -0.0002;
-}
+/* Cheap lighting — no env map / PMREM */
+scene.add(new THREE.HemisphereLight(0xdde4f0, 0x1a120c, 0.85));
+const key = new THREE.DirectionalLight(0xfff1e0, 1.75);
+key.position.set(4, 6, 3);
 scene.add(key);
-const rim = new THREE.DirectionalLight(0x8eb4ff, 0.75);
-rim.position.set(-5, 3, -4);
+const rim = new THREE.DirectionalLight(0x9bb7ff, 0.55);
+rim.position.set(-4, 2.5, -3);
 scene.add(rim);
-const fill = new THREE.DirectionalLight(0xffc9a0, 0.4);
-fill.position.set(0, 2.5, -5);
-scene.add(fill);
-const engineLight = new THREE.PointLight(0xffe0b0, 0, 5, 2);
-engineLight.position.set(0, 1.4, 1.15);
+const engineLight = new THREE.PointLight(0xffe0b0, 0, 4.5, 2);
+engineLight.position.set(0, 1.35, 1.15);
 scene.add(engineLight);
 
 const ground = new THREE.Mesh(
-  new THREE.CircleGeometry(8, isMobile ? 32 : 48),
-  new THREE.MeshStandardMaterial({ color: 0x101218, metalness: 0.35, roughness: 0.9 })
+  new THREE.CircleGeometry(7, 24),
+  new THREE.MeshBasicMaterial({ color: 0x0e1016 })
 );
 ground.rotation.x = -Math.PI / 2;
-ground.receiveShadow = !isMobile;
 scene.add(ground);
 
 const car = new THREE.Group();
 scene.add(car);
-
 /** @type {{ hood: THREE.Group|null }} */
 const rig = { hood: null };
 
-let viewW = 1, viewH = 1;
 function resize() {
-  viewW = canvas.clientWidth || window.innerWidth;
-  viewH = canvas.clientHeight || window.innerHeight;
-  renderer.setSize(viewW, viewH, false);
-  camera.aspect = viewW / Math.max(viewH, 1);
+  const w = canvas.clientWidth || innerWidth;
+  const h = canvas.clientHeight || innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / Math.max(h, 1);
   camera.updateProjectionMatrix();
 }
+addEventListener("resize", resize, { passive: true });
 resize();
-window.addEventListener("resize", resize, { passive: true });
 
+function clamp01(t) { return t < 0 ? 0 : t > 1 ? 1 : t; }
 function lerp(a, b, t) { return a + (b - a) * t; }
-function clamp01(t) { return Math.min(1, Math.max(0, t)); }
-function damp(current, target, lambda, dt) {
-  return lerp(current, target, 1 - Math.exp(-lambda * dt));
-}
 function smootherstep(t) {
   const x = clamp01(t);
   return x * x * x * (x * (x * 6 - 15) + 10);
@@ -294,38 +249,17 @@ function seg(u, a, b) {
 }
 function catmull(p0, p1, p2, p3, t) {
   const t2 = t * t, t3 = t2 * t;
-  return 0.5 * (
-    (2 * p1) +
-    (-p0 + p2) * t +
-    (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
-    (-p0 + 3 * p1 - 3 * p2 + p3) * t3
-  );
-}
-function samplePath(pts, u) {
-  const n = pts.length - 1;
-  const x = Math.min(0.9999, Math.max(0, u)) * n;
-  const i = Math.floor(x);
-  const t = x - i;
-  const p0 = pts[Math.max(0, i - 1)];
-  const p1 = pts[i];
-  const p2 = pts[Math.min(n, i + 1)];
-  const p3 = pts[Math.min(n, i + 2)];
-  return new THREE.Vector3(
-    catmull(p0.x, p1.x, p2.x, p3.x, t),
-    catmull(p0.y, p1.y, p2.y, p3.y, t),
-    catmull(p0.z, p1.z, p2.z, p3.z, t)
-  );
+  return 0.5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3);
 }
 
-/* Camera path: keep clearance from body to avoid near-plane clipping */
-const camPath = [
-  new THREE.Vector3(4.0, 1.4, 4.4),     // present
-  new THREE.Vector3(-3.35, 1.2, 1.55),  // doors / side (outside)
-  new THREE.Vector3(-1.45, 1.08, 0.55), // cabin via side window (clearance)
-  new THREE.Vector3(0.0, 1.35, 3.55),   // out windshield / nose
-  new THREE.Vector3(0.3, 3.15, 1.55),   // hood top
+const camKnots = [
+  new THREE.Vector3(4.0, 1.4, 4.4),
+  new THREE.Vector3(-3.35, 1.2, 1.55),
+  new THREE.Vector3(-1.45, 1.08, 0.55),
+  new THREE.Vector3(0.0, 1.35, 3.55),
+  new THREE.Vector3(0.3, 3.15, 1.55),
 ];
-const lookPath = [
+const lookKnots = [
   new THREE.Vector3(0.0, 0.55, 0.1),
   new THREE.Vector3(-0.5, 0.62, 0.05),
   new THREE.Vector3(0.15, 0.7, 0.05),
@@ -333,36 +267,56 @@ const lookPath = [
   new THREE.Vector3(0.0, 0.48, 1.2),
 ];
 
-let scrollT = 0;
+/* Bake path to LUTs — zero alloc in hot loop */
+const camLUT = new Float32Array(PATH_SAMPLES * 3);
+const lookLUT = new Float32Array(PATH_SAMPLES * 3);
+(function bake() {
+  for (let i = 0; i < PATH_SAMPLES; i++) {
+    const u = i / (PATH_SAMPLES - 1);
+    const n = camKnots.length - 1;
+    const x = u * n;
+    const i0 = Math.floor(x);
+    const t = x - i0;
+    const a = Math.max(0, i0 - 1), b = i0, c = Math.min(n, i0 + 1), d = Math.min(n, i0 + 2);
+    const o = i * 3;
+    camLUT[o]     = catmull(camKnots[a].x, camKnots[b].x, camKnots[c].x, camKnots[d].x, t);
+    camLUT[o + 1] = catmull(camKnots[a].y, camKnots[b].y, camKnots[c].y, camKnots[d].y, t);
+    camLUT[o + 2] = catmull(camKnots[a].z, camKnots[b].z, camKnots[c].z, camKnots[d].z, t);
+    lookLUT[o]     = catmull(lookKnots[a].x, lookKnots[b].x, lookKnots[c].x, lookKnots[d].x, t);
+    lookLUT[o + 1] = catmull(lookKnots[a].y, lookKnots[b].y, lookKnots[c].y, lookKnots[d].y, t);
+    lookLUT[o + 2] = catmull(lookKnots[a].z, lookKnots[b].z, lookKnots[c].z, lookKnots[d].z, t);
+  }
+})();
+
+const _cam = new THREE.Vector3();
+const _look = new THREE.Vector3();
+function sampleLUT(lut, u, out) {
+  const max = PATH_SAMPLES - 1;
+  const x = clamp01(u) * max;
+  const i = x | 0;
+  const f = x - i;
+  const i2 = i < max ? i + 1 : i;
+  const a = i * 3, b = i2 * 3;
+  out.x = lut[a] + (lut[b] - lut[a]) * f;
+  out.y = lut[a + 1] + (lut[b + 1] - lut[a + 1]) * f;
+  out.z = lut[a + 2] + (lut[b + 2] - lut[a + 2]) * f;
+  return out;
+}
+
+/* --- Scroll: read once per frame, light damp at fixed 60Hz --- */
 let targetT = 0;
+let scrollT = 0;
 let ready = false;
 let idleSpin = 0;
 let lastLabel = -1;
-let camPos = camPath[0].clone();
-let lookAt = lookPath[0].clone();
 
-function scrollProgress() {
-  const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-  return clamp01(window.scrollY / max);
+function maxScroll() {
+  return Math.max(1, document.documentElement.scrollHeight - innerHeight);
 }
-
-function onScroll() {
-  targetT = scrollProgress();
-  const idx = Math.min(LABELS.length - 1, Math.floor(targetT * LABELS.length));
-  if (idx !== lastLabel) {
-    lastLabel = idx;
-    beatLabel.textContent = LABELS[idx];
-  }
+function readTarget() {
+  return clamp01(scrollY / maxScroll());
 }
-window.addEventListener("scroll", onScroll, { passive: true });
-onScroll();
-
-/* Wheel smoothing: accumulate delta so scrub feels continuous */
-let wheelBoost = 0;
-window.addEventListener("wheel", (e) => {
-  wheelBoost += e.deltaY * 0.00035;
-  wheelBoost = Math.max(-0.08, Math.min(0.08, wheelBoost));
-}, { passive: true });
+targetT = readTarget();
 
 function fitCar(root) {
   const box = new THREE.Box3().setFromObject(root);
@@ -389,11 +343,8 @@ function makePivot(parent, name, hingeWorld) {
 
 function rigAnimatableParts(carRoot) {
   carRoot.updateMatrixWorld(true);
-
-  // Markers kept for deliverable/selftest; doors are camera-led (body never split)
   makePivot(carRoot, "DoorLPivot", new THREE.Vector3(-0.68, 0.55, 0.52));
   makePivot(carRoot, "DoorRPivot", new THREE.Vector3(0.68, 0.55, 0.52));
-
   const hoodPivot = makePivot(carRoot, "HoodPivot", new THREE.Vector3(0, 0.62, 0.78));
   const hoodAttach = [];
   carRoot.traverse((o) => {
@@ -403,66 +354,118 @@ function rigAnimatableParts(carRoot) {
   rig.hood = hoodPivot;
 }
 
+function toStandard(m) {
+  if (!m) return m;
+  if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
+  if (m.isMeshStandardMaterial && !m.isMeshPhysicalMaterial) {
+    m.envMapIntensity = 0;
+    m.toneMapped = false;
+    return m;
+  }
+  const std = new THREE.MeshStandardMaterial({
+    color: m.color ? m.color.clone() : 0xffffff,
+    map: m.map || null,
+    metalness: m.metalness ?? 0.4,
+    roughness: Math.min(1, (m.roughness ?? 0.5) + 0.1),
+    normalMap: m.normalMap || null,
+    roughnessMap: m.roughnessMap || null,
+    metalnessMap: m.metalnessMap || null,
+    emissive: m.emissive ? m.emissive.clone() : 0x000000,
+    emissiveMap: m.emissiveMap || null,
+    emissiveIntensity: m.emissiveIntensity ?? 1,
+    transparent: !!m.transparent,
+    opacity: m.opacity ?? 1,
+    side: m.side ?? THREE.FrontSide,
+    toneMapped: false,
+  });
+  std.envMapIntensity = 0;
+  return std;
+}
+
+function isHoodObject(o) {
+  let p = o;
+  while (p) {
+    if (/Kapoot|Rooye_Kapoot|Rooye Kapoot|HoodPivot/i.test(p.name || "")) return true;
+    p = p.parent;
+  }
+  return false;
+}
+
+/** Merge static (non-hood) meshes by material → far fewer draw calls. */
+function mergeStaticMeshes(root) {
+  const groups = new Map();
+  const toRemove = [];
+  root.updateMatrixWorld(true);
+  const invRoot = new THREE.Matrix4().copy(root.matrixWorld).invert();
+  const bake = new THREE.Matrix4();
+  root.traverse((o) => {
+    if (!o.isMesh || isHoodObject(o)) return;
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    if (mats.length !== 1 || !mats[0]) return;
+    const mat = toStandard(mats[0]);
+    const key = (mat.map ? mat.map.uuid : "nomap") + "|" + (mat.transparent ? "t" : "o") + "|" + mat.color.getHexString() + "|" + (mat.metalness ?? 0).toFixed(2);
+    if (!groups.has(key)) groups.set(key, { mat, geos: [] });
+    const g = o.geometry.clone();
+    bake.multiplyMatrices(invRoot, o.matrixWorld);
+    g.applyMatrix4(bake);
+    groups.get(key).geos.push(g);
+    toRemove.push(o);
+  });
+
+  for (const o of toRemove) {
+    if (o.parent) o.parent.remove(o);
+    o.geometry?.dispose?.();
+  }
+
+  const batch = new THREE.Group();
+  batch.name = "MergedBody";
+  for (const { mat, geos } of groups.values()) {
+    if (!geos.length) continue;
+    const merged = mergeGeometries(geos, false);
+    geos.forEach((g) => g.dispose());
+    if (!merged) continue;
+    const mesh = new THREE.Mesh(merged, mat);
+    mesh.frustumCulled = true;
+    batch.add(mesh);
+  }
+  root.add(batch);
+  return batch;
+}
+
+function cheapifyMaterials(root) {
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    o.castShadow = false;
+    o.receiveShadow = false;
+    o.frustumCulled = true;
+    if (Array.isArray(o.material)) o.material = o.material.map(toStandard);
+    else o.material = toStandard(o.material);
+  });
+}
+
 async function loadFirst(urls) {
   const loader = new GLTFLoader();
   let lastErr = null;
   for (const url of urls) {
     try {
       const gltf = await new Promise((resolve, reject) => {
-        loader.load(
-          url,
-          resolve,
-          (e) => {
-            if (e.total) progEl.style.width = Math.round((e.loaded / e.total) * 100) + "%";
-          },
-          reject
-        );
+        loader.load(url, resolve, (e) => {
+          if (e.total) progEl.style.width = ((e.loaded / e.total) * 100) + "%";
+        }, reject);
       });
-      return { gltf, url };
-    } catch (err) {
-      lastErr = err;
-    }
+      return gltf;
+    } catch (err) { lastErr = err; }
   }
   throw lastErr || new Error("model_load_failed");
 }
 
 try {
-  const { gltf } = await loadFirst(URLS);
-  gltf.scene.traverse((o) => {
-    if (o.isMesh) {
-      o.castShadow = !isMobile;
-      o.receiveShadow = !isMobile;
-      o.frustumCulled = true;
-      if (o.material) {
-        const mats = Array.isArray(o.material) ? o.material : [o.material];
-        mats.forEach((m) => {
-          if (m.map) m.map.colorSpace = THREE.SRGBColorSpace;
-          m.envMapIntensity = 1.05;
-          // Cheaper materials on mobile
-          if (isMobile && m.isMeshPhysicalMaterial) {
-            m.roughness = Math.min(1, (m.roughness || 0.5) + 0.05);
-          }
-        });
-      }
-      // Hide helper / unstable thin meshes that flash when the camera is close
-      const pname = o.parent?.name || "";
-      if (/BezierCurve|Object_240_42|Object_241_43|Object_242_44|Plane002|Plane003/i.test(pname + " " + (o.name || ""))) {
-        o.visible = false;
-      }
-      // Reduce z-fight on glass-like thin shells
-      if (o.material && (o.material.transparent || /Object_334|Object_368|Object_311/i.test(pname))) {
-        const mats = Array.isArray(o.material) ? o.material : [o.material];
-        mats.forEach((m) => {
-          m.polygonOffset = true;
-          m.polygonOffsetFactor = 1;
-          m.polygonOffsetUnits = 1;
-        });
-      }
-    }
-  });
+  const gltf = await loadFirst(URLS);
   fitCar(gltf.scene);
   car.add(gltf.scene);
-  rigAnimatableParts(car);
+  rigAnimatableParts(car);      // keep Kapoot hierarchy
+  cheapifyMaterials(car);
+  mergeStaticMeshes(car);       // batch non-hood into few draw calls (car-local)
   ready = true;
   progEl.style.width = "100%";
   loadEl.dataset.done = "1";
@@ -470,58 +473,59 @@ try {
   console.error(e);
   loadEl.style.display = "none";
   errEl.style.display = "block";
-  errEl.textContent = "No se pudo cargar el modelo 3D. Revisa la conexión o vuelve a intentar.";
+  errEl.textContent = "No se pudo cargar el modelo 3D.";
 }
 
-function applyPartAnimation(u) {
-  // Real hood open (Kapoot). Door beats are camera-led so the body never tears.
-  const hoodAmt = seg(u, 0.72, 0.92);
-  if (rig.hood) rig.hood.rotation.x = -hoodAmt * 0.9;
-  engineLight.intensity = hoodAmt * 2.2;
-}
+/* Hot loop — frame-rate-independent follow, zero alloc */
+let last = performance.now();
+let frames = 0;
+let fpsT = 0;
 
-function animate() {
-  requestAnimationFrame(animate);
-  const dt = Math.min(0.033, clock.getDelta());
+function animate(now) {
+  const rawDt = Math.min(0.05, (now - last) / 1000);
+  last = now;
 
-  // Fluid scroll scrub (exp damp) + light wheel assist
-  if (Math.abs(wheelBoost) > 1e-5) {
-    targetT = clamp01(targetT + wheelBoost);
-    wheelBoost = damp(wheelBoost, 0, 10, dt);
+  // Always track live scroll (cheap). Snappy exp damp kills “a golpes” lag.
+  targetT = readTarget();
+  scrollT += (targetT - scrollT) * (1 - Math.exp(-24 * rawDt));
+
+  if (ready) {
+    if (scrollT < 0.03) {
+      idleSpin += rawDt * 0.1;
+      car.rotation.y = idleSpin * (1 - seg(scrollT, 0, 0.06));
+    } else {
+      car.rotation.y += (0 - car.rotation.y) * (1 - Math.exp(-10 * rawDt));
+    }
+    const hoodAmt = seg(scrollT, 0.72, 0.92);
+    if (rig.hood) rig.hood.rotation.x = -hoodAmt * 0.9;
+    engineLight.intensity = hoodAmt * 1.8;
   }
-  scrollT = damp(scrollT, targetT, 7.5, dt);
+
   const u = clamp01(scrollT);
+  sampleLUT(camLUT, u, _cam);
+  sampleLUT(lookLUT, u, _look);
+  camera.position.copy(_cam);
+  camera.lookAt(_look);
 
-  if (ready && u < 0.035) {
-    idleSpin += dt * 0.1;
-    car.rotation.y = idleSpin * (1 - seg(u, 0.0, 0.07));
-  } else if (ready) {
-    car.rotation.y = damp(car.rotation.y, 0, 8, dt);
+  const idx = Math.min(LABELS.length - 1, (u * LABELS.length) | 0);
+  if (idx !== lastLabel) {
+    lastLabel = idx;
+    beatLabel.textContent = LABELS[idx];
   }
-
-  applyPartAnimation(u);
-
-  const camU = u; // path already catmull-smoothed; avoid double easing jolts
-  const wantCam = samplePath(camPath, camU);
-  const wantLook = samplePath(lookPath, camU);
-  camPos.lerp(wantCam, 1 - Math.exp(-10 * dt));
-  lookAt.lerp(wantLook, 1 - Math.exp(-10 * dt));
-  camera.position.copy(camPos);
-  camera.lookAt(lookAt);
-
-  const fovTarget = 38 - seg(u, 0.34, 0.52) * 6 + seg(u, 0.56, 0.72) * 5;
-  camera.fov = damp(camera.fov, fovTarget, 6, dt);
-  camera.updateProjectionMatrix();
-
-  // Soften fog when close / interior
-  const fogNear = lerp(12, 2.5, seg(u, 0.28, 0.55));
-  const fogFar = lerp(36, 14, seg(u, 0.28, 0.55));
-  scene.fog.near = fogNear;
-  scene.fog.far = fogFar;
 
   renderer.render(scene, camera);
+  frames++;
+  fpsT += rawDt;
+  if (fpsT >= 1) {
+    window.__mustangFps = frames;
+    window.__mustangCalls = renderer.info.render.calls;
+    frames = 0;
+    fpsT = 0;
+    renderer.info.reset();
+  }
+  requestAnimationFrame(animate);
 }
-animate();
+requestAnimationFrame(animate);
 </script>
 </body>
 </html>
