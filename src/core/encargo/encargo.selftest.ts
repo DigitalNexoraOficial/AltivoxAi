@@ -113,8 +113,14 @@ async function main() {
     "gltf mustang landing"
   );
   assert(
-    /Ford Mustang|NateKenopic|foxbody|WebGL/i.test(mustangArt.content),
-    "mustang landing content"
+    mustangArt.content.includes("DoorLPivot") &&
+      mustangArt.content.includes("HoodPivot") &&
+      mustangArt.content.includes("DoorRPivot"),
+    "mustang door/hood pivots"
+  );
+  assert(
+    /puertas|interior|luna|cap[oó]|motor/i.test(mustangArt.content),
+    "mustang brief sequence copy"
   );
 
   setLlmCompleterForTests(null);
